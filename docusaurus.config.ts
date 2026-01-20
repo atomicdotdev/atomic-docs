@@ -12,8 +12,8 @@ const config: Config = {
     v4: true,
   },
 
-  url: "https://atomicdotdev.github.io/",
-  baseUrl: "/atomic-docs",
+  url: "https://docs.atomic.dev/",
+  baseUrl: "/",
 
   organizationName: "atomicdotdev",
   projectName: "atomic-docs",
