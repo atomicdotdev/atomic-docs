@@ -12,11 +12,12 @@ const config: Config = {
     v4: true,
   },
 
-  url: "https://docs.beatomic.dev",
+  url: "https://atomicdotdev.github.io/atomic-docs",
   baseUrl: "/",
 
   organizationName: "atomicdotdev",
-  projectName: "docs",
+  projectName: "atomic-docs",
+  trailingSlash: false,
 
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -105,15 +106,15 @@ const config: Config = {
           items: [
             {
               label: "GitHub",
-              href: "https://github.com/castingclouds/atomic",
+              href: "https://github.com/atomicdotdev/atomic",
             },
             {
               label: "Contributing",
-              href: "https://github.com/castingclouds/atomic/blob/main/CONTRIBUTING.md",
+              href: "https://github.com/atomicdotdev/atomic/blob/main/CONTRIBUTING.md",
             },
             {
               label: "Changelog",
-              href: "https://github.com/castingclouds/atomic/blob/main/CHANGELOG.md",
+              href: "https://github.com/atomicdotdev/atomic/blob/main/CHANGELOG.md",
             },
           ],
         },
@@ -122,11 +123,11 @@ const config: Config = {
           items: [
             {
               label: "Discord",
-              href: "https://discord.gg/atomic-vcs",
+              href: "https://discord.gg/atomicdotdev",
             },
             {
               label: "Twitter / X",
-              href: "https://x.com/beatomic_dev",
+              href: "https://x.com/atomicdotdev",
             },
             {
               label: "LinkedIn",
@@ -139,15 +140,15 @@ const config: Config = {
           items: [
             {
               label: "Platform",
-              href: "https://beatomic.dev",
+              href: "https://atomic.dev",
             },
             {
               label: "Careers",
-              href: "https://beatomic.dev/careers",
+              href: "https://atomic.dev/careers",
             },
             {
               label: "About",
-              href: "https://beatomic.dev/about",
+              href: "https://atomic.dev/about",
             },
           ],
         },
