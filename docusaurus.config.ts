@@ -6,7 +6,7 @@ const config: Config = {
   title: "Atomic",
   tagline:
     "Mathematically sound distributed version control for AI-scale development",
-  favicon: "img/favicon.ico",
+  favicon: "img/Lime-Atomic-Logomark.png",
 
   future: {
     v4: true,
@@ -15,8 +15,8 @@ const config: Config = {
   url: "https://docs.beatomic.dev",
   baseUrl: "/",
 
-  organizationName: "castingclouds",
-  projectName: "atomic",
+  organizationName: "atomicdotdev",
+  projectName: "docs",
 
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -33,7 +33,7 @@ const config: Config = {
         docs: {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/",
-          editUrl: "https://github.com/atomic-vcs/atomic/tree/main/docs/",
+          editUrl: "https://github.com/atomicdotdev/atomic/tree/main/docs/",
         },
         blog: false,
         theme: {
@@ -44,9 +44,9 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: "img/atomic-social-card.jpg",
+    image: "img/Lime-Atomic-Logomark.png",
     colorMode: {
-      defaultMode: "light",
+      defaultMode: "dark",
       disableSwitch: false,
       respectPrefersColorScheme: true,
     },
@@ -54,7 +54,8 @@ const config: Config = {
       title: "",
       logo: {
         alt: "Atomic Logo",
-        src: "img/swag@2x.png",
+        src: "img/Lime-Atomic-Logomark.png",
+        srcDark: "img/Lime-Atomic-Logomark.png",
       },
       items: [
         {
@@ -64,7 +65,12 @@ const config: Config = {
           label: "Documentation",
         },
         {
-          href: "https://github.com/castingclouds/atomic",
+          href: "https://atomic.dev",
+          label: "Platform",
+          position: "right",
+        },
+        {
+          href: "https://github.com/atomicdotdev/atomic",
           label: "GitHub",
           position: "right",
         },
@@ -88,6 +94,10 @@ const config: Config = {
               label: "First Repository",
               to: "/getting-started/first-repository",
             },
+            {
+              label: "Migrating from Git",
+              to: "/getting-started/migrating-from-git",
+            },
           ],
         },
         {
@@ -95,11 +105,15 @@ const config: Config = {
           items: [
             {
               label: "GitHub",
-              href: "https://github.com/atomic-vcs/atomic",
+              href: "https://github.com/castingclouds/atomic",
             },
             {
               label: "Contributing",
-              href: "https://github.com/atomic-vcs/atomic/blob/main/CONTRIBUTING.md",
+              href: "https://github.com/castingclouds/atomic/blob/main/CONTRIBUTING.md",
+            },
+            {
+              label: "Changelog",
+              href: "https://github.com/castingclouds/atomic/blob/main/CHANGELOG.md",
             },
           ],
         },
@@ -107,26 +121,43 @@ const config: Config = {
           title: "Community",
           items: [
             {
-              label: "GitHub",
-              href: "https://github.com/atomic-vcs/atomic",
-            },
-            {
               label: "Discord",
               href: "https://discord.gg/atomic-vcs",
             },
             {
-              label: "Twitter",
-              href: "https://twitter.com/atomic_vcs",
+              label: "Twitter / X",
+              href: "https://x.com/beatomic_dev",
+            },
+            {
+              label: "LinkedIn",
+              href: "https://www.linkedin.com/company/atomic-software-co",
+            },
+          ],
+        },
+        {
+          title: "Company",
+          items: [
+            {
+              label: "Platform",
+              href: "https://beatomic.dev",
+            },
+            {
+              label: "Careers",
+              href: "https://beatomic.dev/careers",
+            },
+            {
+              label: "About",
+              href: "https://beatomic.dev/about",
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Atomic VCS. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Atomic Software, Co. All rights reserved.`,
     },
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
-      additionalLanguages: ["rust", "toml", "bash"],
+      additionalLanguages: ["rust", "toml", "bash", "json"],
     },
     algolia: {
       appId: "YOUR_APP_ID",

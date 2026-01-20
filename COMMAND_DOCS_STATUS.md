@@ -10,6 +10,7 @@ These commands have full, detailed documentation with examples, options, and use
 
 - **overview.md** - Command reference overview with categories
 - **init.md** - Initialize a new Atomic repository
+- **status.md** - Show working copy status summary
 - **record.md** - Record changes with AI attribution support
 - **log.md** - Display change history with filtering and formatting
 - **clone.md** - Clone remote repositories
@@ -67,6 +68,7 @@ These commands need complete documentation from source code:
 | remove | `atomic/atomic/src/commands/file_operations.rs` | 🟡 Needs expansion |
 | move | `atomic/atomic/src/commands/file_operations.rs` | 🟡 Needs expansion |
 | diff | `atomic/atomic/src/commands/diff.rs` | ✅ Documented |
+| status | `atomic/atomic/src/commands/status.rs` | ✅ Documented |
 | apply | `atomic/atomic/src/commands/apply.rs` | 🟡 Needs expansion |
 | unrecord | `atomic/atomic/src/commands/unrecord.rs` | 🟡 Needs expansion |
 | channel | `atomic/atomic/src/commands/channel.rs` | ✅ Documented |
@@ -165,12 +167,13 @@ To document a command:
 
 **Last Updated**: 2025-01-15
 
-**Total Commands**: 24
-**Documented**: 14 (58%) ⬆️ +5 commands
+**Total Commands**: 25
+**Documented**: 15 (60%) ⬆️ +6 commands
 **Partial**: 5 (21%)
 **Remaining**: 5 (21%)
 
 **Recent Progress**:
+- ✅ Completed **status** command (378 lines) - Working copy status summary
 - ✅ Completed **push** command (430+ lines) - Core collaboration
 - ✅ Completed **pull** command (549+ lines) - Core collaboration  
 - ✅ Completed **identity** command (712+ lines) - User & key management

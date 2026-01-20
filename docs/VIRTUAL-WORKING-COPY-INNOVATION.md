@@ -269,7 +269,7 @@ This is the difference between assembly language and high-level languages. Virtu
 
 ## Next Steps
 
-1. **Technical Deep Dive**: See [Virtual Working Copies Documentation](concepts/virtual-working-copies)
+1. **Technical Deep Dive**: See [Virtual Working Copies Documentation](proposals/virtual-working-copies)
 2. **Agent Sessions RFC**: See [AI Agent Workflows](getting-started/ai-agent-workflows#agent-sessions-rfc)
 3. **Demo**: Request access to reference implementation (OpenCode integration)
 

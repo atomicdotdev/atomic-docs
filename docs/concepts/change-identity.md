@@ -403,7 +403,7 @@ Hashes are encoded as **base32** for human readability:
 
 ## See Also
 
-- [Virtual Working Copies](virtual-working-copies.md) - How sessions use change identity
+- [Virtual Working Copies](../proposals/virtual-working-copies.md) - How sessions use change identity
 - [Stacked Diffs Guide](../getting-started/stacked-diffs.md) - Building on change identity
 - [Comparison with Git](../getting-started/comparison-with-git.md) - Why change identity matters
 

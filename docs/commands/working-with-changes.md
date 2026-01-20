@@ -65,6 +65,22 @@ Show differences between the working copy and recorded state.
 atomic diff src/
 ```
 
+### [`atomic status`](./status.md)
+
+Show a summary of working copy status.
+
+**Use when:**
+- Getting a quick overview of what's changed
+- Checking which files are modified, added, or deleted
+- Finding untracked files
+- Scripting and CI/CD integration
+
+**Quick example:**
+```bash
+atomic status
+atomic status -s -u  # Short format with untracked files
+```
+
 ### [`atomic log`](./log.md)
 
 Display the history of changes in a stack.
@@ -88,7 +104,10 @@ atomic log --limit 10 --attribution
 # Make changes to your files
 vim src/main.rs
 
-# Review what changed
+# Quick status check
+atomic status
+
+# Review what changed in detail
 atomic diff
 
 # Record the changes
@@ -125,7 +144,10 @@ atomic record docs/ -m "Update documentation"
 ### Reviewing and Undoing Changes
 
 ```bash
-# Review current changes
+# Quick status overview
+atomic status
+
+# Review current changes in detail
 atomic diff --files
 
 # Record if satisfied

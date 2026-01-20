@@ -1,9 +1,13 @@
 ---
-sidebar_position: 5
+sidebar_position: 2
 title: Virtual Working Copies
+status: Enterprise Only
 ---
 
 # Virtual Working Copies
+
+**Status**: 🔍 Investigating  
+**Proposed**: December 2025 
 
 ## Overview
 

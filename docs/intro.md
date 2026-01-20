@@ -12,9 +12,9 @@ Welcome to the Atomic documentation! Atomic is a **mathematically sound distribu
 
 Atomic is a distributed version control system (VCS) designed for the modern era of software development—where AI agents, distributed teams, and complex workflows are the norm, not the exception.
 
-Like Git or Pijul, Atomic tracks changes in your files, allows you to revert them, and helps you merge work with your collaborators. But Atomic goes far beyond traditional version control systems with four revolutionary innovations:
+Like Pijul, Atomic tracks changes in your files, allows you to revert them, and helps you merge work with your collaborators. But Atomic goes far beyond traditional version control systems with three revolutionary innovations:
 
-### 🚀 Four Core Innovations
+### 🚀  Three Core Innovations
 
 #### 1. Hybrid Patch/Snapshot Architecture
 Atomic combines **patch-level semantic precision** during development with **snapshot-like scalability** through mathematical tag consolidation. This hybrid model reduces dependency complexity by **96%** while maintaining full semantic accuracy.
@@ -39,14 +39,6 @@ A unified **node-based dependency graph** where both changes and tags are first-
 - No merge conflicts—ever
 - Consistent semantics across all operations
 
-#### 4. Embedded Workflow State Management
-**Compile-time verified workflows** stored directly in change metadata. No external tools needed—workflow state travels with your code across all repositories.
-
-- Type-safe Rust workflow definitions
-- Embedded approval history
-- Cryptographically signed state transitions
-- Works offline and distributed
-
 ## Why Choose Atomic?
 
 ### Traditional VCS Limitations
@@ -60,7 +52,6 @@ A unified **node-based dependency graph** where both changes and tags are first-
 - ✅ O(n) complexity with tag consolidation
 - ✅ Mathematical conflict resolution (zero merge conflicts)
 - ✅ Cryptographic AI attestation built-in
-- ✅ Workflows embedded in change metadata
 - ✅ Semantic patch operations
 
 > **⚠️ Important for Git Users**: Atomic stacks are **NOT** like Git branches! Stacks share the same working copy—only the patch history is isolated. When you switch stacks, untracked files remain in your workspace. See [Stacks Documentation](./commands/stacks#️-critical-difference-stacks-are-not-git-branches) for details.
@@ -78,9 +69,6 @@ A unified **node-based dependency graph** where both changes and tags are first-
 
 ### AI-Scale Development
 Coordinate dozens of AI agents simultaneously without merge conflicts or complexity explosion. Mathematical guarantees ensure consistent results.
-
-### Enterprise Workflows
-Built-in workflow state management with cryptographic audit trails for compliance. Type-safe approval flows verified at compile time.
 
 ### Hotfix Automation
 Apply the same security patch across multiple versions automatically. Mathematical correctness guarantees semantic identity.
@@ -102,7 +90,7 @@ Ready to experience the future of version control? Start with our Getting Starte
 
 ```bash
 # Install Atomic (from source)
-git clone https://github.com/castingclouds/atomic.git
+git clone https://github.com/atomicdotdev/atomic.git
 cd atomic
 cargo install --path atomic
 
@@ -147,7 +135,7 @@ See our [Migration Guide](./getting-started/migrating-from-git) for a complete w
 
 ## Community & Support
 
-- **GitHub**: [github.com/atomic-vcs/atomic](https://github.com/atomic-vcs/atomic)
+- **GitHub**: [github.com/atomicdotdev/atomic](https://github.com/atomicdotdev/atomic)
 - **Discord**: Join our community chat
 - **Issues**: Report bugs or request features
 - **Discussions**: Ask questions and share ideas
