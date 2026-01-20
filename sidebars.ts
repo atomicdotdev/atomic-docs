@@ -21,6 +21,11 @@ const sidebars: SidebarsConfig = {
       value: '<div class="sidebar-section-label">CONCEPTS</div>',
       defaultStyle: true,
     },
+    {
+      type: "doc",
+      id: "concepts/the-lego-story",
+      label: "🧱 The Lego Story",
+    },
     "concepts/change-identity",
     "concepts/hunks-edit-replacement",
     {

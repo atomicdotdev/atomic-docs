@@ -12,6 +12,10 @@ Welcome to the Atomic documentation! Atomic is a **mathematically sound distribu
 
 Atomic is a distributed version control system (VCS) designed for the modern era of software development—where AI agents, distributed teams, and complex workflows are the norm, not the exception.
 
+:::tip New to Version Control Concepts?
+If you want to understand *why* Atomic works differently from Git, start with **[The Lego Story](/concepts/the-lego-story)** — a visual explanation of how Atomic thinks about your code using a simple Lego analogy. It takes 5 minutes and will change how you think about version control.
+:::
+
 Like Pijul, Atomic tracks changes in your files, allows you to revert them, and helps you merge work with your collaborators. But Atomic goes far beyond traditional version control systems with three revolutionary innovations:
 
 ### 🚀  Three Core Innovations
@@ -31,12 +35,12 @@ The first VCS with built-in **Merkle-tree-based cryptographic signatures** for A
 - Confidence scores and attribution preservation
 - Full audit trail across distributed operations
 
-#### 3. Node-Based DAG
-A unified **node-based dependency graph** where both changes and tags are first-class citizens with mathematical guarantees of commutativity and associativity.
+#### 3. Graph-Based Semantic Tracking
+A unified **node-based dependency graph** where each change knows its context—what comes before and after—rather than relying on snapshot comparisons.
 
-- Universal operations work on any node type
-- Mathematically proven correctness
-- No merge conflicts—ever
+- **Smart connections**: Each change records its neighbors, not just content ([learn more](/concepts/the-lego-story))
+- Mathematically proven correctness with commutativity guarantees
+- Structural conflict detection instead of text-munging guesswork
 - Consistent semantics across all operations
 
 ## Why Choose Atomic?
@@ -50,9 +54,10 @@ A unified **node-based dependency graph** where both changes and tags are first-
 
 ### Atomic Solutions
 - ✅ O(n) complexity with tag consolidation
-- ✅ Mathematical conflict resolution (zero merge conflicts)
+- ✅ Graph-based structural conflicts (not text-diff guesswork)
+- ✅ Commutative operations (order doesn't matter)
 - ✅ Cryptographic AI attestation built-in
-- ✅ Semantic patch operations
+- ✅ Semantic patch operations with context awareness
 
 > **⚠️ Important for Git Users**: Atomic stacks are **NOT** like Git branches! Stacks share the same working copy—only the patch history is isolated. When you switch stacks, untracked files remain in your workspace. See [Stacks Documentation](./commands/stacks#️-critical-difference-stacks-are-not-git-branches) for details.
 
