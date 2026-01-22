@@ -21,9 +21,9 @@ keywords: [atomic, performance, optimization, btree, scalability, enterprise]
 
 | Repository Size | Before Optimization | After Optimization |
 |-----------------|---------------------|-------------------|
-| 1,000 changes   | 230ms               | <50ms             |
-| 10,000 changes  | ~2 seconds          | <50ms             |
-| 100,000 changes | ~20 seconds         | <50ms             |
+| 1,000 changes   | 230ms               | &lt;50ms             |
+| 10,000 changes  | ~2 seconds          | &lt;50ms             |
+| 100,000 changes | ~20 seconds         | &lt;50ms             |
 
 ---
 
@@ -142,9 +142,9 @@ Operations that used to require a coffee break now happen instantly. Your flow s
 
 | Operation | Before | After |
 |-----------|--------|-------|
-| Recording a change | 2-20 seconds | <50ms |
-| Pushing to remote | 5-30 seconds | <1 second |
-| Checking file status | 1-5 seconds | <50ms |
+| Recording a change | 2-20 seconds | &lt;50ms |
+| Pushing to remote | 5-30 seconds | &lt;1 second |
+| Checking file status | 1-5 seconds | &lt;50ms |
 
 ### For Enterprise Teams
 
@@ -428,9 +428,9 @@ Measured on a repository with varying change counts:
 
 | Changes | Graph Traversal (Before) | Graph Traversal (After) | Remote Sync |
 |---------|--------------------------|-------------------------|-------------|
-| 1,000   | 230ms                    | 45ms                    | <10ms       |
-| 10,000  | 2.1s                     | 47ms                    | <15ms       |
-| 100,000 | 21.3s                    | 48ms                    | <20ms       |
+| 1,000   | 230ms                    | 45ms                    | &lt;10ms       |
+| 10,000  | 2.1s                     | 47ms                    | &lt;15ms       |
+| 100,000 | 21.3s                    | 48ms                    | &lt;20ms       |
 
 Key observations:
 - **Graph traversal scales with file size**, not repository size

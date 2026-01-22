@@ -64,7 +64,7 @@ Rather than simply creating X files with Y changes, we need to simulate **real-w
 
 ## ✅ Implemented Optimization: Dual-Index Architecture
 
-**Status**: ✅ Implemented (January 2025)
+**Status**: ✅ Implemented (January 2026)
 
 Based on the benchmarking analysis, we implemented a **dual-index B-tree architecture** that achieves consistent sub-50ms performance regardless of repository size.
 
@@ -89,9 +89,9 @@ We maintain two coordinated B-tree indexes:
 
 | Repository Size | Before Optimization | After Optimization | Improvement |
 |-----------------|---------------------|-------------------|-------------|
-| 1,000 changes   | 230ms               | <50ms             | 5×          |
-| 10,000 changes  | ~2 seconds          | <50ms             | 40×         |
-| 100,000 changes | ~20 seconds         | <50ms             | 400×        |
+| 1,000 changes   | 230ms               | &lt;50ms             | 5×          |
+| 10,000 changes  | ~2 seconds          | &lt;50ms             | 40×         |
+| 100,000 changes | ~20 seconds         | &lt;50ms             | 400×        |
 
 **Key Achievement**: Performance is now **constant** regardless of repository size—operations consistently complete in under 50 milliseconds.
 
