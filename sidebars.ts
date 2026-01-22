@@ -29,6 +29,11 @@ const sidebars: SidebarsConfig = {
     "concepts/change-identity",
     "concepts/hunks-edit-replacement",
     {
+      type: "doc",
+      id: "concepts/performance-at-scale",
+      label: "⚡ Performance at Scale",
+    },
+    {
       type: "html",
       value: '<div class="sidebar-section-label">PROPOSALS</div>',
       defaultStyle: true,
