@@ -26,6 +26,11 @@ const sidebars: SidebarsConfig = {
       id: "concepts/the-lego-story",
       label: "🧱 The Lego Story",
     },
+    {
+      type: "doc",
+      id: "concepts/graph-model-explained",
+      label: "🔗 Graph Model & AI Attribution",
+    },
     "concepts/change-identity",
     "concepts/hunks-edit-replacement",
     {
