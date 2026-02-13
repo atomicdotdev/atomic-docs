@@ -195,33 +195,40 @@ Both strategies follow the same principle: **maintain parallel data structures o
 
 #### The Data Structures
 
-The `Channel` struct maintains two B-tree indexes for graph edges:
+Atomic's pristine database (powered by [redb](https://docs.rs/redb)) maintains two B-tree multimap tables for graph edges:
 
 ```rust
-pub struct Channel {
-    /// Original global index: Vertex → Edge
-    /// Used for cross-file operations
-    pub graph: Db<Vertex<NodeId>, SerializedEdge>,
-    
-    /// File-scoped index: (Inode, Vertex) → Edge
-    /// All edges for a file are stored contiguously
-    pub inode_graph: Db<InodeVertex, SerializedEdge>,
-    
-    // ... other fields
-}
+/// Main graph table: GraphNode → [SerializedGraphEdge] (multimap)
+pub const GRAPH: MultimapTableDefinition<&[u8; 24], &[u8; 24]>;
+
+/// File-scoped graph: (Inode, GraphNode) → [SerializedGraphEdge] (multimap)
+/// All edges for a single file are stored contiguously in B-tree order.
+pub const INODE_GRAPH: MultimapTableDefinition<&[u8; 32], &[u8; 24]>;
 ```
 
-The `InodeVertex` composite key combines file identity with vertex:
+The `InodeVertex` composite key combines file identity with graph node:
 
 ```rust
-#[repr(C)]
 pub struct InodeVertex {
     /// File identity (primary sort key)
     pub inode: Inode,
-    /// Graph vertex (secondary sort key)
-    pub vertex: Vertex<NodeId>,
+    /// Graph node (secondary sort key)
+    pub node: GraphNode<NodeId>,
 }
 ```
+
+Stacks (Atomic's equivalent of branches) are tracked separately via the `STACKS` table. Each stack is a `StackState` that records which changes have been applied and in what order:
+
+```rust
+pub struct StackState {
+    pub id: u64,            // Repository-local identifier
+    pub name: String,       // Human-readable name ("main", "feature-x")
+    pub state: Merkle,      // Cumulative hash of applied changes
+    pub change_count: u64,  // Number of changes applied
+}
+```
+
+The graph tables (`GRAPH` and `INODE_GRAPH`) are shared across all stacks — stacks are views of the same graph, not copies.
 
 #### Why This Works
 
@@ -377,23 +384,27 @@ For a repository with 100,000 changes where the last 50 need syncing:
 
 #### Write Path
 
-When recording a change, both indexes are updated atomically:
+When recording a change, both indexes are updated atomically via the `MutTxnT` trait:
 
 ```rust
-pub fn put_graph_with_rev_and_inode<T: GraphMutTxnT>(
+// From apply/insertion.rs — called for every new edge
+pub fn add_edge_with_reverse<T: MutTxnT>(
     txn: &mut T,
-    graph: &mut T::Graph,
-    inode: Inode,
-    vertex: &Vertex<NodeId>,
-    edge: &SerializedEdge,
-) -> Result<(), TxnErr<T::GraphError>> {
-    // Update global index
-    txn.put_graph(graph, vertex, edge)?;
-    
-    // Update file-scoped index
-    let inode_key = InodeVertex::new(inode, *vertex);
-    txn.put_inode_graph(graph, inode, &inode_key, edge)?;
-    
+    inode: Option<Inode>,
+    flag: EdgeFlags,
+    source: GraphNode<NodeId>,
+    target: GraphNode<NodeId>,
+    introduced_by: NodeId,
+) -> Result<(), LocalApplyError> {
+    // Create edge and add to GRAPH table
+    let edge = SerializedGraphEdge::new(flag, target.start_pos(), introduced_by);
+    txn.put_graph(source, &edge)?;
+
+    // If we know the file, also add to INODE_GRAPH table
+    if let Some(inode) = inode {
+        txn.put_inode_graph(inode, source, &edge)?;
+    }
+
     Ok(())
 }
 ```
@@ -403,20 +414,18 @@ pub fn put_graph_with_rev_and_inode<T: GraphMutTxnT>(
 Operations choose the appropriate index based on context:
 
 ```rust
-// File-local operation: use inode_graph
-fn iter_file_edges(txn: &T, graph: &T::Graph, inode: Inode) 
-    -> Result<impl Iterator<Item = Edge>, Error> 
+// File-local operation: use INODE_GRAPH for O(m) traversal
+fn iter_file_edges(txn: &T, inode: Inode, node: GraphNode<NodeId>)
+    -> Result<InodeEdgeIter, Error>
 {
-    let start = InodeVertex::min_for_inode(inode);
-    let end = InodeVertex::max_for_inode(inode);
-    txn.iter_inode_graph_range(graph, start, end)
+    txn.init_inode_adj(inode, node, EdgeFlags::empty(), EdgeFlags::all())
 }
 
-// Cross-file operation: use global graph
-fn find_edge_across_files(txn: &T, graph: &T::Graph, vertex: &Vertex) 
-    -> Result<Option<Edge>, Error> 
+// Cross-file operation: use GRAPH for global lookup
+fn find_edge_across_files(txn: &T, node: GraphNode<NodeId>)
+    -> Result<Option<SerializedGraphEdge>, Error>
 {
-    txn.get_graph(graph, vertex, None)
+    txn.get_graph(node, None)
 }
 ```
 
@@ -442,9 +451,11 @@ Key observations:
 ### References
 
 - [The Lego Story](/concepts/the-lego-story) — Understanding Atomic's graph model
+- [Dual-Layer Diff & Semantic Merge](/concepts/dual-layer-diff) — How the graph and semantic layers work together
 - [Performance Benchmarking Strategy](/proposals/performance-benchmarking-strategy) — Detailed benchmark methodology
-- Source: `atomic-core/src/pristine/inode_vertex.rs` — Two-level B-tree implementation
-- Source: `atomic-remote/src/lib.rs` — Remote caching and dichotomy algorithm
+- Source: `atomic-core/src/pristine/inode_graph.rs` — `InodeVertex`, `InodeGraphOps` trait, dual B-tree implementation
+- Source: `atomic-core/src/pristine/tables.rs` — `GRAPH` and `INODE_GRAPH` table definitions
+- Source: `atomic-core/src/pristine/traits.rs` — `StackState`, `GraphTxnT`, `MutTxnT` traits
 
 ---
 
