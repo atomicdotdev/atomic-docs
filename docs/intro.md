@@ -64,7 +64,7 @@ A unified **node-based dependency graph** where each change knows its context—
 ## Key Features
 
 - **Mathematically Sound**: Built on the theory of asynchronous work with formal correctness guarantees
-- **Lightning Fast**: Optimized Sanakirja database backend with copy-on-write B-trees
+- **Lightning Fast**: Optimized redb database backend with copy-on-write B-trees
 - **Distributed**: No central authority required—every repository is complete and autonomous
 - **AI-Scale**: Coordinate 100+ concurrent AI agents without conflicts
 - **Cryptographically Secure**: Merkle trees ensure integrity, signatures provide verification

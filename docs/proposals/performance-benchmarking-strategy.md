@@ -100,8 +100,8 @@ We maintain two coordinated B-tree indexes:
 See the full technical documentation: [Performance at Scale](/concepts/performance-at-scale)
 
 Source code:
-- `libatomic/src/pristine/inode_vertex.rs` — Composite key and file-scoped operations
-- `libatomic/src/pristine/sanakirja.rs` — Channel struct with dual indexes
+- `atomic-core/src/pristine/inode_vertex.rs` — Composite key and file-scoped operations
+- `atomic-core/src/pristine/txn/write.rs` — Channel struct with dual indexes
 - `atomic-remote/src/lib.rs` — Remote caching with dichotomy search
 
 ---
@@ -125,7 +125,7 @@ Source code:
 - Database size vs. logical data size
 - I/O throughput (MB/s)
 
-**Why this matters**: Tests Sanakirja's copy-on-write overhead, which can be 2-5× for small writes.
+**Why this matters**: Tests redb's copy-on-write overhead, which can be 2-5× for small writes.
 
 ### Scenario 3: Query Performance Stress Test
 
@@ -210,7 +210,7 @@ Source code:
 Create a benchmark harness that generates synthetic but realistic load:
 
 ```rust
-// libatomic/tests/benchmarks/large_repo.rs
+// atomic-core/tests/benchmarks/large_repo.rs
 
 pub struct BenchmarkRepo {
     files: Vec<FileSpec>,
@@ -466,7 +466,7 @@ let handles: Vec<_> = (0..100).map(|dev_id| {
 
 ## Next Steps
 
-1. **Create benchmark harness** in `libatomic/tests/benchmarks/`
+1. **Create benchmark harness** in `atomic-core/tests/benchmarks/`
 2. **Implement Scenario 1** (Context Calculation Stress Test)
 3. **Run baseline measurements** on current implementation
 4. **Identify bottlenecks** from actual data

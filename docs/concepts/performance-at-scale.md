@@ -443,7 +443,7 @@ Key observations:
 
 - [The Lego Story](/concepts/the-lego-story) — Understanding Atomic's graph model
 - [Performance Benchmarking Strategy](/proposals/performance-benchmarking-strategy) — Detailed benchmark methodology
-- Source: `libatomic/src/pristine/inode_vertex.rs` — Two-level B-tree implementation
+- Source: `atomic-core/src/pristine/inode_vertex.rs` — Two-level B-tree implementation
 - Source: `atomic-remote/src/lib.rs` — Remote caching and dichotomy algorithm
 
 ---

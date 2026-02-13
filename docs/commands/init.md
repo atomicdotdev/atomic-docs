@@ -96,7 +96,7 @@ After running `atomic init`, your directory will contain:
 
 ```
 .atomic/
-├── pristine/          # Sanakirja database for repository state
+├── pristine/          # redb database for repository state
 ├── config.toml        # Repository-specific configuration
 └── changes/           # Directory for change files (created on first record)
 

@@ -14,7 +14,7 @@ We are introducing a portfolio-level **discussion** model that treats planning a
 
 ## Architecture Summary
 
-1. **Persistence** – All conversation data lives in the `atomic-ui` control-plane database under a dedicated schema (for example `agentic_agile`). Tables include `conversation_stacks`, `conversation_records`, `conversation_tags`, `conversation_threads`, and `conversation_messages`, each keyed by tenant, portfolio, and project. The pristine Sanakirja store remains untouched.
+1. **Persistence** – All conversation data lives in the `atomic-ui` control-plane database under a dedicated schema (for example `agentic_agile`). Tables include `conversation_stacks`, `conversation_records`, `conversation_tags`, `conversation_threads`, and `conversation_messages`, each keyed by tenant, portfolio, and project. The pristine redb store remains untouched.
 2. **Transport** – `atomic-api` exposes both REST and WebSocket interfaces for discussions. WebSockets broadcast record/tag updates and thread messages using channel names derived from tenant/portfolio/project identifiers. REST endpoints support querying history, diffing records, and tagging.
 3. **Workflow integration** – `atomic-workflows` subscribes to the same WebSocket channels to apply its type-safe DSL transitions. Workflow outcomes are published back as conversation actions and tagged records. Human approval gates stay in place through the DSL.
 4. **Agent tooling** – A forked `atomic-opencode` (OpenCode-based) terminal agent connects via the APIs above. It reads discussion context, proposes new records, posts summaries, and links Atomic patch hashes once code lands. Agents operate with the same vocabulary and protocols as humans.

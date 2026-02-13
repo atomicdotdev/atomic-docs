@@ -1,6 +1,6 @@
 # Command Documentation Status
 
-This document tracks the progress of documenting Atomic VCS commands from the `libatomic` source code.
+This document tracks the progress of documenting Atomic VCS commands from the `atomic-core` source code.
 
 ## Documentation Progress
 
@@ -52,7 +52,7 @@ These commands need complete documentation from source code:
 ### Primary Source Locations
 
 - **Command Definitions**: `atomic/atomic/src/commands/*.rs`
-- **Core Library**: `atomic/libatomic/src/*.rs`
+- **Core Library**: `atomic/atomic-core/src/*.rs`
 - **Command Structure**: `atomic/atomic/src/commands/mod.rs`
 
 ### Key Files for Each Command

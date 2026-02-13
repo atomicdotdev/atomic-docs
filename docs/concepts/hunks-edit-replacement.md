@@ -96,7 +96,7 @@ Then applying `E` produces a valid new DAG state.
 3. With the constraint that `E_del.line_new = E_add.line_new`
 
 **Proof**: 
-From `libatomic/src/diff/replace.rs:85-109`, we see that a Replacement is created when:
+From `atomic-core/src/diff/replace.rs:85-109`, we see that a Replacement is created when:
 ```rust
 if old_len > 0 {
     match self.actions.pop() {
@@ -123,7 +123,7 @@ This proves that Replacements are created precisely when two Edits would occur a
 - Both operations target the same position because they occur in the same transformed file state
 
 **Proof of Corollary 2.1**:
-From `libatomic/src/diff/replace.rs:110-119`, when creating an Edit hunk:
+From `atomic-core/src/diff/replace.rs:110-119`, when creating an Edit hunk:
 ```rust
 self.actions.push(Hunk::Edit {
     local: LocalByte {
@@ -149,7 +149,7 @@ For Replacements, the same `local.line` value is used for both the deletion and 
 2. Mapping this to a Position `P = (change_id, byte_offset)` in the DAG
 3. This Position becomes part of the up_context set
 
-From `libatomic/src/diff/replace.rs:123-193`, the `get_up_context` function:
+From `atomic-core/src/diff/replace.rs:123-193`, the `get_up_context` function:
 - Finds the vertex containing the byte position in the old file state
 - Returns the Position that marks where the new content should appear **after** in the ordering
 
@@ -160,7 +160,7 @@ From `libatomic/src/diff/replace.rs:123-193`, the `get_up_context` function:
 2. Mapping this to a Position `P` in the DAG  
 3. This Position becomes part of the down_context set, marking where the new content should appear **before** in the ordering
 
-From `libatomic/src/diff/replace.rs:238-315`, the `get_down_context` function computes positions that the new vertex must appear before.
+From `atomic-core/src/diff/replace.rs:238-315`, the `get_down_context` function computes positions that the new vertex must appear before.
 
 ### 3.3 The Replacement Position Invariant
 
@@ -207,7 +207,7 @@ From the Replacement creation logic, when `local.line == from_new + 1` for both 
 
 ### 5.1 Edit Hunk Creation
 
-From `libatomic/src/diff/replace.rs:110-119`:
+From `atomic-core/src/diff/replace.rs:110-119`:
 ```rust
 self.actions.push(Hunk::Edit {
     local: LocalByte {
@@ -225,7 +225,7 @@ self.actions.push(Hunk::Edit {
 
 ### 5.2 Replacement Hunk Creation
 
-From `libatomic/src/diff/replace.rs:85-97`:
+From `atomic-core/src/diff/replace.rs:85-97`:
 ```rust
 if old_len > 0 {
     match self.actions.pop() {
@@ -253,7 +253,7 @@ This proves that Replacements are created precisely when two operations target t
 
 ### 5.3 Position Serialization
 
-From `libatomic/src/change/printable.rs:471-493`:
+From `atomic-core/src/change/printable.rs:471-493`:
 ```rust
 Replace {
     path,
@@ -537,8 +537,8 @@ All operations maintain DAG consistency and produce the expected final file stat
 
 ## References
 
-- `libatomic/src/diff/replace.rs` - Replacement creation and position calculation
-- `libatomic/src/change/printable.rs` - Hunk serialization format
-- `libatomic/src/change/parse.rs` - Hunk parsing logic
-- `libatomic/src/pristine/vertex.rs` - Vertex and Position definitions
-- `libatomic/src/apply/vertex.rs` - DAG application logic with context validation
+- `atomic-core/src/diff/replace.rs` - Replacement creation and position calculation
+- `atomic-core/src/change/printable.rs` - Hunk serialization format
+- `atomic-core/src/change/parse.rs` - Hunk parsing logic
+- `atomic-core/src/pristine/vertex.rs` - Vertex and Position definitions
+- `atomic-core/src/apply/vertex.rs` - DAG application logic with context validation

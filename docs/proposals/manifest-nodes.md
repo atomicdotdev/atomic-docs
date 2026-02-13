@@ -274,7 +274,7 @@ Manifest M2 [Change D]  ← New manifest from change
 ### Phase 1: Add Manifest NodeType
 
 ```rust
-// libatomic/src/pristine/mod.rs
+// atomic-core/src/pristine/mod.rs
 pub enum NodeType {
     Change = 0,
     Tag = 1,
@@ -296,12 +296,12 @@ impl NodeType {
 ### Phase 2: Manifest Storage
 
 ```rust
-// libatomic/src/pristine/manifest.rs
+// atomic-core/src/pristine/manifest.rs
 pub struct Manifest {
     // ... fields ...
 }
 
-// Store in Sanakirja database
+// Store in redb database
 #[table("manifests")]
 pub struct ManifestTable {
     manifest_hash: Hash,
@@ -386,7 +386,7 @@ atomic manifest apply <manifest-hash>
 
 ## Next Steps
 
-1. **Prototype**: Implement basic Manifest node type in `libatomic`
+1. **Prototype**: Implement basic Manifest node type in `atomic-core`
 2. **Benchmark**: Measure query performance improvement
 3. **Evaluate**: Assess storage overhead vs. performance gain
 4. **Design**: Finalize manifest creation/update strategy
