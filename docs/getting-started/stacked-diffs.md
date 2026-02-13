@@ -467,7 +467,7 @@ atomic stack switch feature-clean
 ## Next Steps
 
 - Read [AI Agent Workflows](ai-agent-workflows.md) for agent-based stacked changes
-- See [Stacks Command Reference](../commands/stacks.md) for all stack operations
+- See [Stacks Command Reference](../commands/stack.md) for all stack operations
 - Learn about [Change Identity](../concepts/change-identity) for deeper understanding
 
 ## Summary

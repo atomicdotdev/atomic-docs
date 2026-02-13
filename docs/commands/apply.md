@@ -113,7 +113,6 @@ atomic apply ABCDEF...
 ## See Also
 
 - [`atomic record`](./record.md) - Record new changes
-- [`atomic unrecord`](./unrecord.md) - Remove changes
 - [`atomic pull`](./pull.md) - Pull and apply changes from remotes
 - [`atomic change`](./change.md) - Inspect change files
 

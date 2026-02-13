@@ -1,350 +1,162 @@
 ---
-sidebar_position: 2
+sidebar_position: 3
 title: Working with Changes
 ---
 
 # Working with Changes
 
-Commands for recording, viewing, and managing changes in your Atomic repository. These are the core commands you'll use daily to track your work and understand repository history.
+The core workflow in Atomic — track files, record changes, review diffs, and navigate history.
 
-## Commands in this Category
+## Commands
 
-### [`atomic record`](./record.md)
+| Command | Description |
+|---------|-------------|
+| [`add`](add.md) | Add files to be tracked |
+| [`remove`](remove.md) | Remove files from tracking (alias: `rm`) |
+| [`move`](move.md) | Move or rename tracked files (alias: `mv`) |
+| [`status`](status.md) | Show modified, added, deleted, and untracked files |
+| [`diff`](diff.md) | Show differences between working copy and last recorded state |
+| [`record`](record.md) | Create a new change from tracked file modifications |
+| [`revise`](revise.md) | Modify a previously recorded change in-place |
+| [`log`](log.md) | Display the history of changes on the current stack |
+| [`change`](change.md) | Inspect details of a specific change by hash or sequence number |
+| [`apply`](apply.md) | Apply changes from another stack or change file |
 
-Record changes from the working copy as a new change in the repository.
+## The Record Workflow
 
-**Use when:**
-- Saving your work to the repository
-- Creating checkpoints in development
-- Recording AI-assisted contributions with attribution
+Atomic's workflow is similar to Git but uses different terminology:
 
-**Quick example:**
+| Git | Atomic | Description |
+|-----|--------|-------------|
+| `git add` | `atomic add` | Track a file |
+| `git status` | `atomic status` | See what changed |
+| `git diff` | `atomic diff` | Review differences |
+| `git commit` | `atomic record` | Create a change |
+| `git commit --amend` | `atomic revise` | Modify the last change |
+| `git log` | `atomic log` | View history |
+| `git show` | `atomic change` | Inspect a specific change |
+
+The key difference: Atomic records **changes** (patches), not snapshots. A change is a set of composable graph operations that can be applied, unapplied, and reordered.
+
+## Typical Workflow
+
 ```bash
-atomic record -m "Add user authentication"
-```
+# 1. Track files
+atomic add src/main.rs src/lib.rs
 
-### [`atomic apply`](./apply.md)
+# 2. Make edits to your files
 
-Apply a change to a stack from a change file.
-
-**Use when:**
-- Applying changes from other repositories
-- Cherry-picking specific changes
-- Integrating patches received via other means
-
-**Quick example:**
-```bash
-atomic apply ABCD1234...
-```
-
-### [`atomic unrecord`](./unrecord.md)
-
-Remove changes from a stack's history.
-
-**Use when:**
-- Correcting mistakes before pushing
-- Removing unwanted changes
-- Cleaning up experimental work
-
-**Quick example:**
-```bash
-atomic unrecord --reset
-```
-
-### [`atomic diff`](./diff.md)
-
-Show differences between the working copy and recorded state.
-
-**Use when:**
-- Reviewing changes before recording
-- Understanding what you've modified
-- Checking specific file changes
-
-**Quick example:**
-```bash
-atomic diff src/
-```
-
-### [`atomic status`](./status.md)
-
-Show a summary of working copy status.
-
-**Use when:**
-- Getting a quick overview of what's changed
-- Checking which files are modified, added, or deleted
-- Finding untracked files
-- Scripting and CI/CD integration
-
-**Quick example:**
-```bash
+# 3. Review what changed
 atomic status
-atomic status -s -u  # Short format with untracked files
-```
-
-### [`atomic log`](./log.md)
-
-Display the history of changes in a stack.
-
-**Use when:**
-- Viewing repository history
-- Finding specific changes
-- Generating reports or audits
-- Tracking AI contributions
-
-**Quick example:**
-```bash
-atomic log --limit 10 --attribution
-```
-
-## Common Workflows
-
-### Basic Recording Workflow
-
-```bash
-# Make changes to your files
-vim src/main.rs
-
-# Quick status check
-atomic status
-
-# Review what changed in detail
 atomic diff
 
-# Record the changes
-atomic record -m "Add new feature"
+# 4. Record the change
+atomic record -m "Add authentication module"
 
-# View history
-atomic log --limit 5
+# 5. View history
+atomic log
 ```
 
-### Recording AI-Assisted Changes
+## Recording Changes
+
+The `record` command creates a new change from all tracked file modifications:
 
 ```bash
-# Record with AI attribution
-atomic record -m "AI generated feature" \
-  --ai-assisted \
-  --ai-provider cursor \
-  --ai-model gpt-4 \
-  --ai-confidence 0.95
+# Record with a message
+atomic record -m "Fix null pointer in config parser"
 
-# View AI contributions
-atomic log --ai-only --attribution
+# Record all changes (including newly created files)
+atomic record --all -m "Initial project setup"
+
+# Record with a specific diff algorithm
+atomic record --algorithm patience -m "Refactor auth module"
 ```
 
-### Selective Recording
+Each recorded change includes:
+- **Graph operations** — The low-level vertex/edge modifications
+- **Semantic layer** — Line-level and token-level operations for display
+- **Metadata** — Author, timestamp, message, dependencies
+- **Provenance** — AI model and cost data (if recorded by an agent)
+
+## Revising Changes
+
+Unlike Git where `--amend` only works on HEAD, Atomic can revise any change in the stack:
 
 ```bash
-# Record only specific files
-atomic record src/auth.rs src/middleware.rs -m "Update auth"
+# Revise the most recent change
+atomic revise -m "Better commit message"
 
-# Record specific directory
-atomic record docs/ -m "Update documentation"
+# Revise only the message (no content changes)
+atomic revise --reword -m "Fix typo in auth module"
+
+# Revise a previous change
+atomic revise @~1
 ```
 
-### Reviewing and Undoing Changes
+Subsequent changes are automatically re-applied on top. See [revise](revise.md) for details.
+
+## Reviewing Changes
+
+### Status
 
 ```bash
-# Quick status overview
+# See all changes
 atomic status
 
-# Review current changes in detail
-atomic diff --files
-
-# Record if satisfied
-atomic record -m "Implement feature"
-
-# Or unrecord if you change your mind
-atomic unrecord
+# Short format
+atomic status --short
 ```
 
-### Applying Changes from Others
+### Diff
 
 ```bash
-# Apply a specific change
-atomic apply MNYNGT2V...
+# Diff all tracked files
+atomic diff
 
-# Apply with dependencies
-atomic apply --deps-only ABCD1234...
+# Diff a specific file
+atomic diff src/main.rs
+
+# Show only statistics
+atomic diff --stat
+
+# Use patience diff algorithm
+atomic diff --algorithm patience
 ```
 
-## Key Concepts
-
-### Changes vs Commits
-
-**Atomic changes** are semantic patches that represent operations:
-- Represent the *meaning* of your edits
-- Can be applied in any order (commutative)
-- Cryptographically identified by content hash
-- Enable conflict-free merging
-
-Unlike Git commits (snapshots), Atomic changes are **operations**.
-
-### Working Copy vs Pristine
-
-- **Working Copy**: Your actual files that you edit
-- **Pristine**: The database representation of recorded state
-- **Recording**: Computes diff and creates a change patch
-
-### Change Dependencies
-
-Atomic automatically computes dependencies:
-- Changes that modify the same code
-- Operations on files created by earlier changes
-- Semantic dependencies in the patch theory
-
-These form a **directed acyclic graph (DAG)** ensuring consistency.
-
-### Change Hashes
-
-Each change has a unique 53-character Base32 hash:
-```
-MNYNGT2VGEQZX4QA43FWBDVYQY7CGXN4J2CGE5FDFIHOWQFKFIJQC
-```
-
-These hashes are:
-- Content-addressable (derived from change content)
-- Cryptographically secure
-- Globally unique across all repositories
-
-## Recording Best Practices
-
-### Change Messages
-
-✅ **Good change messages:**
-```bash
-atomic record -m "Add JWT authentication middleware"
-atomic record -m "Fix memory leak in connection pool"
-atomic record -m "Update API documentation for v2 endpoints"
-```
-
-❌ **Poor change messages:**
-```bash
-atomic record -m "fix"
-atomic record -m "updates"
-atomic record -m "wip"
-```
-
-### When to Record
-
-**Good times to record:**
-- After completing a logical unit of work
-- Before switching tasks
-- After passing tests
-- Before taking a break
-- When AI completes a suggestion
-
-**Avoid:**
-- Recording broken code (unless explicitly marked WIP)
-- Mixing unrelated changes
-- Recording without reviewing with `diff`
-
-### Atomic Changes
-
-Keep changes **atomic** (focused on one thing):
-
-✅ **Good:**
-```bash
-# One change per feature
-atomic record -m "Add user authentication"
-atomic record -m "Add user profile page"
-```
-
-❌ **Bad:**
-```bash
-# Too many unrelated things
-atomic record -m "Add auth, fix bugs, update docs, refactor DB"
-```
-
-## AI Attribution Best Practices
-
-### When to Mark AI-Assisted
-
-Mark changes as AI-assisted when:
-- AI generated the entire change
-- AI suggested code you modified
-- You collaborated with AI on the implementation
-- AI refactored your code
-
-### Tracking Different AI Contributions
+### History
 
 ```bash
-# AI generated everything
-atomic record -m "Generate API client" \
-  --ai-assisted \
-  --ai-suggestion-type complete \
-  --ai-confidence 0.95
+# View change log
+atomic log
 
-# You modified AI suggestions
-atomic record -m "Add caching layer" \
-  --ai-assisted \
-  --ai-suggestion-type partial \
-  --ai-confidence 0.75
+# View a specific change
+atomic change ABC12345
 
-# Collaborative development
-atomic record -m "Implement algorithm" \
-  --ai-assisted \
-  --ai-suggestion-type collaborative \
-  --ai-confidence 0.85
+# View the most recent change
+atomic change
 ```
 
-## Performance Tips
+## Applying Changes
 
-### Recording
-- Small changes (&lt; 10 files): &lt; 100ms
-- Medium changes (10-100 files): &lt; 1 second
-- Large changes (1000+ files): &lt; 10 seconds
-
-### Viewing History
-- Use `--limit` for large repositories
-- Filter with `--path` for specific files
-- Use `--hash-only` for scripting
-
-### Diffing
-- Specify paths to diff specific files
-- Use `--patience` for better refactoring diffs
-- Consider `--unified` for more/less context
-
-## Troubleshooting
-
-### Nothing to Record
+The `apply` command moves changes between stacks or applies change files:
 
 ```bash
-atomic diff  # Shows no changes
+# Apply a single change by hash
+atomic apply ABC12345
+
+# Apply changes from another stack
+atomic apply from-stack feature --to-stack main
+
+# Cherry-pick specific changes
+atomic apply pick ABC123 DEF456 --to-stack main
+
+# Preview what would be applied
+atomic apply preview feature --to-stack main
 ```
-
-**Solution**: Make sure files are tracked with `atomic add`
-
-### Unrecorded Changes Warning
-
-```
-Warning: Unrecorded changes in working copy
-```
-
-**Solution**: Record or reset changes before switching operations
-
-### Large Diff Performance
-
-If `diff` is slow on large changes:
-
-```bash
-# Diff specific paths
-atomic diff src/specific-module/
-
-# Use hash-only for quick check
-atomic log --hash-only --limit 1
-```
-
-## Next Steps
-
-After mastering change management:
-
-1. [Learn about stacks](./stack.md) - Branch management
-2. [Explore tagging](./tag.md) - Consolidating dependencies
-3. [Share your work](./push.md) - Collaborate with remotes
-4. [Track AI contributions](./attribution.md) - Detailed attribution
 
 ## See Also
 
-- [Repository Management](./repository-management.md) - Setting up repositories
-- [Remote Operations](./remote-operations.md) - Push and pull changes
-- [Identity & Attribution](./identity-attribution.md) - Track contributions
+- [Repository Management](repository-management.md) — Creating and managing repos
+- [Stack](stack.md) — Managing stacks (views of the graph)
+- [Stash](stash.md) — Temporarily saving uncommitted changes
+- [Agent](agent.md) — AI agent turn-level recording

@@ -6,7 +6,7 @@ const config: Config = {
   title: "Atomic",
   tagline:
     "Mathematically sound distributed version control for AI-scale development",
-  favicon: "img/Lime-Atomic-Logomark.png",
+  favicon: "img/atomic-favicon.png",
 
   future: {
     v4: true,
@@ -45,7 +45,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: "img/Lime-Atomic-Logomark.png",
+    image: "img/atomic-logo.png",
     colorMode: {
       defaultMode: "dark",
       disableSwitch: false,
@@ -54,9 +54,10 @@ const config: Config = {
     navbar: {
       title: "",
       logo: {
-        alt: "Atomic Logo",
-        src: "img/Lime-Atomic-Logomark.png",
-        srcDark: "img/Lime-Atomic-Logomark.png",
+        alt: "Atomic",
+        src: "img/atomic-logo-horizontal-white.png",
+        srcDark: "img/atomic-logo-horizontal-white.png",
+        style: { height: "50px" },
       },
       items: [
         {
@@ -78,7 +79,7 @@ const config: Config = {
       ],
     },
     footer: {
-      style: "dark",
+      style: "light",
       links: [
         {
           title: "Documentation",
@@ -158,7 +159,14 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
-      additionalLanguages: ["rust", "toml", "bash", "json"],
+      additionalLanguages: ["rust", "toml", "bash", "json", "typescript"],
+      magicComments: [
+        {
+          className: "theme-code-block-highlighted-line",
+          line: "highlight-next-line",
+          block: { start: "highlight-start", end: "highlight-end" },
+        },
+      ],
     },
     algolia: {
       appId: "YOUR_APP_ID",

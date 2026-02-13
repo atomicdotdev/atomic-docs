@@ -416,7 +416,7 @@ atomic diff  # Shows remaining modifications
 ## See Also
 
 - [`atomic diff`](./diff.md) - Preview changes before resetting
-- [`atomic unrecord`](./unrecord.md) - Remove recorded changes
+- [`atomic revise`](./revise.md) - Revise a recorded change
 - [`atomic record`](./record.md) - Record changes before resetting
 - [`atomic stack`](./stack.md) - Stack management
 - [`atomic apply`](./apply.md) - Apply specific changes

@@ -356,11 +356,9 @@ default_provider = "cursor"
 ## See Also
 
 - [`atomic diff`](./diff.md) - Preview changes before recording
-- [`atomic unrecord`](./unrecord.md) - Remove recorded changes
 - [`atomic apply`](./apply.md) - Apply changes from other sources
 - [`atomic log`](./log.md) - View recorded changes
 - [`atomic add`](./add.md) - Start tracking new files
-- [`atomic attribution`](./attribution.md) - View AI attribution details
 
 ## Related Concepts
 

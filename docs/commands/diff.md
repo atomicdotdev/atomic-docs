@@ -79,6 +79,31 @@ Use the Patience diff algorithm instead of the default Myers algorithm. Can prod
 atomic diff --patience
 ```
 
+### `--short`
+
+Short output format showing file paths with status indicators. This is a convenience alias for `--name-status`, commonly used for scripting and integration with other tools.
+
+```bash
+atomic diff --short
+```
+
+Output format:
+- `M path/to/file` - Modified
+- `A path/to/file` - Added (tracked)
+- `D path/to/file` - Deleted
+- `U path/to/file` - Untracked (with `--untracked`)
+
+### `--untracked`
+
+Include untracked files in the output. By default, only tracked files are shown. Use this flag to also include files that haven't been added to tracking.
+
+```bash
+# Show all changes including untracked files
+atomic diff --short --untracked
+```
+
+Untracked files are shown with status `U` in short/name-status format.
+
 ### `[PATHS]...`
 
 Optional paths to limit diff output. Only show differences in specified files or directories.
@@ -120,6 +145,12 @@ atomic diff --color never
 
 # JSON output for parsing
 atomic diff --json
+
+# Short format for scripting
+atomic diff --short
+
+# Include untracked files
+atomic diff --short --untracked
 ```
 
 ### Using Different Algorithms
@@ -172,6 +203,7 @@ M  src/main.rs          # Modified
 A  src/new_file.rs      # Added
 D  src/old_file.rs      # Deleted
 R  src/renamed.rs       # Renamed
+U  src/untracked.rs     # Untracked (with --untracked flag)
 ```
 
 ### Diff Sections

@@ -489,7 +489,7 @@ PAGER="" atomic log
 - [`atomic record`](./record.md) - Record new changes
 - [`atomic change`](./change.md) - Inspect individual changes
 - [`atomic diff`](./diff.md) - Show differences
-- [`atomic attribution`](./attribution.md) - View AI attribution details
+- [`atomic agent`](./agent.md) - AI agent integration and provenance
 - [`atomic stack`](./stack.md) - Manage stacks
 
 ## Related Concepts

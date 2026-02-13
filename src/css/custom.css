@@ -1,61 +1,99 @@
 /**
  * Atomic VCS Documentation
- * Brand-compliant design matching atomic-platform
+ * Bauhaus-inspired design system — aligned with the-hive
+ *
+ * 80s midcentury modern. Clean lines. No ornament.
+ * Typography and line do the work.
  *
  * Brand Colors:
- * - Lime (Primary): #92cc00
- * - Purple (Secondary): #6232b6
- * - Pink (Accent): #cc2675
+ * - Fuschia (Primary): #fe0173
+ * - Grass (Accent):    #e5ff3e
+ * - Poison (Success):  #51fc0c
+ * - Ferrari (Danger):  #ff2b00
+ * - Honey (Warning):   #f59e0b
+ *
+ * Surfaces:
+ * - Black:   #0a0923
+ * - Surface: #1e1b4b
+ * - Overlay: #252359
+ * - Inset:   #0f0d2e
  */
 
 /* ============================================
-   FONTS
+   FONTS — Space Grotesk (display), DM Sans (body), JetBrains Mono (code)
    ============================================ */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 /* ============================================
-   ROOT VARIABLES - LIGHT THEME
+   ROOT VARIABLES — LIGHT THEME
    ============================================ */
 :root {
-    /* Brand Colors - Lime */
-    --color-lime-50: #f4ffe6;
-    --color-lime-100: #e6ffc9;
-    --color-lime-200: #cdff99;
-    --color-lime-300: #b4ff4d;
-    --color-lime-400: #92cc00;
-    --color-lime-500: #6d9900;
-    --color-lime-600: #496600;
-    --color-lime-700: #243300;
+    /* ── Brand: Retro Pink Pop (Fuschia) ────────────────────────── */
+    --color-pink-50: #ffe6f1;
+    --color-pink-100: #ffcce3;
+    --color-pink-200: #ffb3d5;
+    --color-pink-300: #ff99c7;
+    --color-pink-400: #ff80b9;
+    --color-pink-500: #fe67ab;
+    --color-pink-600: #fe4d9d;
+    --color-pink-700: #fe348f;
+    --color-pink-800: #fe1a81;
+    --color-pink-900: #fe0173;
+    --color-pink-950: #7f013a;
 
-    /* Brand Colors - Purple */
-    --color-purple-50: #faf5ff;
-    --color-purple-100: #f3e8ff;
-    --color-purple-200: #e9d5ff;
-    --color-purple-300: #d8b4fe;
-    --color-purple-400: #6232b6;
-    --color-purple-500: #4a2689;
-    --color-purple-600: #31195b;
-    --color-purple-700: #190d2e;
-    --color-purple-electric: #a855f7;
+    /* ── Brand: Stadium Grass (Accent) ──────────────────────────── */
+    --color-grass-50: #fcffec;
+    --color-grass-100: #faffd8;
+    --color-grass-200: #f7ffc5;
+    --color-grass-300: #f2ff9f;
+    --color-grass-400: #edff78;
+    --color-grass-500: #e5ff3e;
+    --color-grass-600: #b8cc32;
+    --color-grass-700: #73801f;
 
-    /* Brand Colors - Pink */
-    --color-pink-50: #fdf2f8;
-    --color-pink-100: #fce7f3;
-    --color-pink-200: #fbcfe8;
-    --color-pink-300: #f9a8d4;
-    --color-pink-400: #cc2675;
-    --color-pink-500: #991c58;
-    --color-pink-600: #66133a;
-    --color-pink-700: #33091d;
-    --color-pink-fuschia: #f472b6;
+    /* ── Brand: Poisonous Green (Success) ───────────────────────── */
+    --color-poison-50: #eeffe7;
+    --color-poison-100: #dcfece;
+    --color-poison-400: #a8fe86;
+    --color-poison-500: #51fc0c;
+    --color-poison-900: #297e06;
 
-    /* Neutral Colors */
-    --color-cool-gray: #9ca3af;
-    --color-ice-white: #f0f9ff;
-    --color-jet-black: #0a0a0a;
+    /* ── Brand: Ferrari Red (Danger) ────────────────────────────── */
+    --color-red-50: #ffeae6;
+    --color-red-400: #ff9580;
+    --color-red-500: #ff2b00;
+    --color-red-900: #801600;
 
-    /* Slate Colors for backgrounds */
+    /* ── Brand: Honey Gold (Warning) ────────────────────────────── */
+    --color-honey-50: #fffbeb;
+    --color-honey-200: #fde68a;
+    --color-honey-400: #fbbf24;
+    --color-honey-500: #f59e0b;
+    --color-honey-700: #b45309;
+
+    /* ── Deep Navy Surfaces ─────────────────────────────────────── */
+    --color-bg: #0a0923;
+    --color-bg-raised: #1e1b4b;
+    --color-bg-overlay: #252359;
+    --color-bg-inset: #0f0d2e;
+    --color-surface: #1e1b4b;
+    --color-surface-hover: #252359;
+    --color-surface-light: #312e81;
+
+    /* ── Text ───────────────────────────────────────────────────── */
+    --color-text: #f5f7fa;
+    --color-text-secondary: #94a3b8;
+    --color-text-tertiary: #64748b;
+    --color-text-inverse: #0a0923;
+
+    /* ── Borders ────────────────────────────────────────────────── */
+    --color-border: #312e81;
+    --color-border-subtle: #1e1b4b;
+    --color-border-strong: #4338ca;
+
+    /* ── Slate (for light theme surfaces) ───────────────────────── */
     --color-slate-50: #f8fafc;
     --color-slate-100: #f1f5f9;
     --color-slate-200: #e2e8f0;
@@ -68,109 +106,118 @@
     --color-slate-900: #0f172a;
     --color-slate-950: #020617;
 
-    /* Primary Colors - Using Lime */
-    --ifm-color-primary: var(--color-lime-400);
-    --ifm-color-primary-dark: var(--color-lime-500);
-    --ifm-color-primary-darker: var(--color-lime-600);
-    --ifm-color-primary-darkest: var(--color-lime-700);
-    --ifm-color-primary-light: var(--color-lime-300);
-    --ifm-color-primary-lighter: var(--color-lime-200);
-    --ifm-color-primary-lightest: var(--color-lime-100);
+    /* ── Docusaurus Primary — Fuschia ───────────────────────────── */
+    --ifm-color-primary: #c9015b;
+    --ifm-color-primary-dark: #b10150;
+    --ifm-color-primary-darker: #a1014a;
+    --ifm-color-primary-darkest: #7f013a;
+    --ifm-color-primary-light: #e10166;
+    --ifm-color-primary-lighter: #f10170;
+    --ifm-color-primary-lightest: #fe0173;
 
-    /* Backgrounds */
+    /* ── Backgrounds ────────────────────────────────────────────── */
     --ifm-background-color: #ffffff;
     --ifm-background-surface-color: var(--color-slate-50);
 
-    /* Font Settings */
+    /* ── Font Settings ──────────────────────────────────────────── */
     --ifm-font-family-base:
-        "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+        "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
         "Helvetica Neue", sans-serif;
+    --ifm-heading-font-family:
+        "Space Grotesk", "DM Sans", system-ui, sans-serif;
     --ifm-font-family-monospace:
         "JetBrains Mono", "SF Mono", Monaco, Consolas, "Courier New", monospace;
-    --ifm-font-size-base: 16px;
-    --ifm-line-height-base: 1.65;
+    --ifm-font-size-base: 15px;
+    --ifm-line-height-base: 1.6;
     --ifm-global-spacing: 1.5rem;
 
-    /* Typography Scale */
+    /* ── Typography Scale ───────────────────────────────────────── */
     --ifm-h1-font-size: 2.5rem;
-    --ifm-h2-font-size: 2rem;
+    --ifm-h2-font-size: 1.875rem;
     --ifm-h3-font-size: 1.5rem;
     --ifm-h4-font-size: 1.25rem;
-    --ifm-h5-font-size: 1.125rem;
-    --ifm-h6-font-size: 1rem;
-    --ifm-heading-font-weight: 700;
+    --ifm-h5-font-size: 1.0625rem;
+    --ifm-h6-font-size: 0.9375rem;
+    --ifm-heading-font-weight: 600;
 
-    /* Code */
-    --ifm-code-font-size: 0.875em;
+    /* ── Code ───────────────────────────────────────────────────── */
+    --ifm-code-font-size: 0.8125em;
     --ifm-code-background: var(--color-slate-100);
-    --ifm-code-color: var(--color-slate-800);
-    --ifm-code-border-radius: 6px;
-    --ifm-code-padding-vertical: 0.2em;
-    --ifm-code-padding-horizontal: 0.4em;
+    --ifm-code-color: var(--color-pink-950);
+    --ifm-code-border-radius: 2px;
+    --ifm-code-padding-vertical: 0.15em;
+    --ifm-code-padding-horizontal: 0.35em;
 
-    /* Navbar */
+    /* ── Navbar ──────────────────────────────────────────────────── */
     --ifm-navbar-height: 64px;
     --ifm-navbar-background-color: #ffffff;
-    --ifm-navbar-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.1);
+    --ifm-navbar-shadow: none;
 
-    /* Sidebar */
+    /* ── Sidebar ─────────────────────────────────────────────────── */
     --ifm-menu-color: var(--color-slate-700);
-    --ifm-menu-color-active: var(--ifm-color-primary);
+    --ifm-menu-color-active: var(--color-pink-900);
     --ifm-menu-color-background-hover: transparent;
     --ifm-menu-color-background-active: transparent;
 
-    /* Links */
-    --ifm-link-color: var(--color-lime-500);
-    --ifm-link-hover-color: var(--color-lime-600);
+    /* ── Links ───────────────────────────────────────────────────── */
+    --ifm-link-color: var(--color-pink-900);
+    --ifm-link-hover-color: var(--color-pink-950);
     --ifm-link-decoration: none;
 
-    /* Borders */
+    /* ── Borders ─────────────────────────────────────────────────── */
     --ifm-toc-border-color: var(--color-slate-200);
     --ifm-hr-background-color: var(--color-slate-200);
 
-    /* Spacing */
+    /* ── Spacing ─────────────────────────────────────────────────── */
     --doc-sidebar-width: 280px;
+
+    /* ── Global border radius — geometric, not bubbly ────────────── */
+    --ifm-global-radius: 2px;
+    --ifm-button-border-radius: 0px;
+    --ifm-card-border-radius: 0px;
+    --ifm-pill-border-radius: 2px;
+    --ifm-alert-border-radius: 0px;
 }
 
 /* ============================================
-   DARK THEME
+   DARK THEME — Deep indigo-navy from the-hive
    ============================================ */
 [data-theme="dark"] {
-    /* Primary Colors - Lime works great on dark */
-    --ifm-color-primary: var(--color-lime-400);
-    --ifm-color-primary-dark: var(--color-lime-300);
-    --ifm-color-primary-darker: var(--color-lime-200);
-    --ifm-color-primary-darkest: var(--color-lime-100);
-    --ifm-color-primary-light: var(--color-lime-500);
-    --ifm-color-primary-lighter: var(--color-lime-600);
-    --ifm-color-primary-lightest: var(--color-lime-700);
+    /* ── Primary — Fuschia on dark ───────────────────────────────── */
+    --ifm-color-primary: #fe0173;
+    --ifm-color-primary-dark: #fe1a81;
+    --ifm-color-primary-darker: #fe348f;
+    --ifm-color-primary-darkest: #ff80b9;
+    --ifm-color-primary-light: #c9015b;
+    --ifm-color-primary-lighter: #a1014a;
+    --ifm-color-primary-lightest: #7f013a;
 
-    /* Dark backgrounds matching atomic-platform */
-    --ifm-background-color: var(--color-slate-950);
-    --ifm-background-surface-color: var(--color-slate-900);
+    /* ── Backgrounds — Deep navy from the-hive ───────────────────── */
+    --ifm-background-color: var(--color-bg);
+    --ifm-background-surface-color: var(--color-bg-raised);
 
-    /* Code in dark mode */
-    --ifm-code-background: var(--color-slate-800);
-    --ifm-code-color: var(--color-slate-200);
+    /* ── Code ───────────────────────────────────────────────────── */
+    --ifm-code-background: var(--color-bg-inset);
+    --ifm-code-color: var(--color-pink-400);
 
-    /* Navbar */
-    --ifm-navbar-background-color: var(--color-slate-950);
-    --ifm-navbar-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    /* ── Navbar ──────────────────────────────────────────────────── */
+    --ifm-navbar-background-color: var(--color-bg);
+    --ifm-navbar-shadow: none;
 
-    /* Menu colors */
-    --ifm-menu-color: var(--color-slate-400);
-    --ifm-menu-color-active: var(--color-lime-400);
+    /* ── Menu ───────────────────────────────────────────────────── */
+    --ifm-menu-color: var(--color-slate-300);
+    --ifm-menu-color-active: var(--color-pink-900);
 
-    /* Links */
-    --ifm-link-color: var(--color-lime-400);
-    --ifm-link-hover-color: var(--color-lime-300);
+    /* ── Links ───────────────────────────────────────────────────── */
+    --ifm-link-color: var(--color-pink-900);
+    --ifm-link-hover-color: var(--color-pink-600);
 
-    /* Borders */
-    --ifm-toc-border-color: var(--color-slate-700);
-    --ifm-hr-background-color: var(--color-slate-700);
+    /* ── Borders ─────────────────────────────────────────────────── */
+    --ifm-toc-border-color: var(--color-border);
+    --ifm-hr-background-color: var(--color-border);
 
-    /* Footer */
-    --ifm-footer-background-color: var(--color-slate-950);
+    /* ── Footer ──────────────────────────────────────────────────── */
+    --ifm-footer-background-color: var(--color-bg);
 }
 
 /* ============================================
@@ -179,23 +226,38 @@
 * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 html {
+    font-feature-settings:
+        "rlig" 1,
+        "calt" 1,
+        "ss01" 1;
     scroll-behavior: smooth;
-    font-feature-settings: "rlig" 1, "calt" 1;
 }
 
 body {
     font-family: var(--ifm-font-family-base);
 }
 
+/* ── Selection — fuschia, not blue ──────────────────────────────── */
+::selection {
+    background-color: rgba(254, 1, 115, 0.25);
+    color: inherit;
+}
+
 /* ============================================
-   TYPOGRAPHY
+   TYPOGRAPHY — Space Grotesk headings, tight tracking
    ============================================ */
-h1, h2, h3, h4, h5, h6 {
-    font-family: var(--ifm-font-family-base);
-    font-weight: var(--ifm-heading-font-weight);
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--ifm-heading-font-family);
+    font-weight: 600;
     letter-spacing: -0.02em;
     color: var(--color-slate-900);
 }
@@ -206,130 +268,138 @@ h1, h2, h3, h4, h5, h6 {
 [data-theme="dark"] h4,
 [data-theme="dark"] h5,
 [data-theme="dark"] h6 {
-    color: var(--color-slate-100);
+    color: var(--color-text);
 }
 
 h1 {
-    font-size: var(--ifm-h1-font-size);
-    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.025em;
 }
 
 h2 {
-    font-size: var(--ifm-h2-font-size);
-    line-height: 1.3;
-    margin-top: 2rem;
+    letter-spacing: -0.02em;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-slate-200);
+}
+
+[data-theme="dark"] h2 {
+    border-bottom-color: var(--color-border);
 }
 
 h3 {
-    font-size: var(--ifm-h3-font-size);
-    line-height: 1.4;
-    margin-top: 1.5rem;
+    letter-spacing: -0.015em;
 }
 
 h4 {
-    font-size: var(--ifm-h4-font-size);
-    line-height: 1.4;
-    margin-top: 1.25rem;
+    letter-spacing: -0.01em;
 }
 
+/* Page title */
 article > header h1 {
-    font-size: 2.75rem;
-    font-weight: 800;
+    font-size: 2.5rem;
+    line-height: 1.08;
     letter-spacing: -0.03em;
+    font-weight: 700;
 }
 
 .markdown p {
-    line-height: 1.75;
-    margin-bottom: 1.25rem;
+    line-height: 1.65;
+    color: var(--color-slate-700);
+}
+
+[data-theme="dark"] .markdown p {
+    color: var(--color-text-secondary);
 }
 
 /* ============================================
-   NAVBAR
+   NAVBAR — Thin rule bottom, geometric, no shadow
    ============================================ */
 .navbar {
-    box-shadow: var(--ifm-navbar-shadow);
-    backdrop-filter: blur(8px);
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid transparent;
+    border-bottom: 1px solid var(--color-slate-200);
+    box-shadow: none;
+    backdrop-filter: none;
+    padding: 0 1.5rem;
 }
 
 [data-theme="dark"] .navbar {
-    border-bottom-color: var(--color-slate-800);
+    border-bottom-color: var(--color-border);
 }
 
 .navbar__inner {
-    max-width: 1400px;
+    max-width: 1280px;
     margin: 0 auto;
+    padding: 0;
 }
 
 .navbar__brand {
-    margin-right: 1rem;
+    margin-right: 1.5rem;
 }
 
 .navbar__logo {
-    height: 32px;
+    height: 50px;
 }
 
 .navbar__title {
-    font-weight: 700;
-    font-size: 1.25rem;
-    letter-spacing: -0.02em;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .navbar__link {
+    font-family: "DM Sans", system-ui, sans-serif;
+    font-size: 0.875rem;
     font-weight: 500;
-    font-size: 0.9rem;
     color: var(--color-slate-600);
     transition: color 0.15s ease;
 }
 
 [data-theme="dark"] .navbar__link {
-    color: var(--color-slate-400);
+    color: var(--color-text-tertiary);
 }
 
 .navbar__link:hover {
-    color: var(--color-lime-500);
+    color: var(--color-slate-900);
 }
 
 [data-theme="dark"] .navbar__link:hover {
-    color: var(--color-lime-400);
+    color: var(--color-text);
 }
 
 .navbar__link--active {
-    color: var(--color-lime-500);
+    color: var(--color-pink-900);
     font-weight: 600;
 }
 
 [data-theme="dark"] .navbar__link--active {
-    color: var(--color-lime-400);
+    color: var(--color-pink-900);
 }
 
 /* ============================================
-   SIDEBAR
+   SIDEBAR — Clean left rail, fuschia active
    ============================================ */
 .theme-doc-sidebar-container {
     border-right: 1px solid var(--color-slate-200);
-    background: var(--ifm-background-color);
-    --doc-sidebar-width: 280px;
+    background: transparent;
 }
 
 [data-theme="dark"] .theme-doc-sidebar-container {
-    border-right-color: var(--color-slate-800);
-    background: var(--color-slate-950);
+    border-right-color: var(--color-border);
+    background: transparent;
 }
 
 aside[class*="docSidebarContainer"] {
-    padding-top: 1rem;
+    --doc-sidebar-width: 280px;
 }
 
 .menu {
-    font-weight: 400;
-    padding: 0.75rem 0.5rem;
+    padding: 1rem 0.75rem;
+    font-size: 0.9375rem;
 }
 
 .menu__list {
-    padding-left: 0;
-    transition: height 0.2s ease;
+    transition: none;
 }
 
 .menu__list-item {
@@ -337,289 +407,330 @@ aside[class*="docSidebarContainer"] {
 }
 
 .menu__link {
-    font-size: 0.9rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    color: var(--ifm-menu-color);
-    transition: all 0.15s ease;
-    display: flex;
-    align-items: center;
+    font-family: "DM Sans", system-ui, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 450;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0;
+    color: var(--color-slate-700);
+    transition: color 0.15s ease;
+}
+
+[data-theme="dark"] .menu__link {
+    color: var(--color-slate-300);
 }
 
 .menu__link:hover {
-    background: var(--color-slate-100);
     color: var(--color-slate-900);
+    background: var(--color-slate-50);
 }
 
 [data-theme="dark"] .menu__link:hover {
-    background: var(--color-slate-800);
-    color: var(--color-slate-100);
+    color: var(--color-text);
+    background: var(--color-bg-overlay);
 }
 
 .menu__link--active {
-    background: var(--color-lime-50);
-    color: var(--color-lime-600);
+    color: var(--color-pink-900);
     font-weight: 600;
+    background: rgba(254, 1, 115, 0.06);
+    border-left: 2px solid var(--color-pink-900);
+    padding-left: calc(0.75rem - 2px);
 }
 
 [data-theme="dark"] .menu__link--active {
-    background: rgba(146, 204, 0, 0.1);
-    color: var(--color-lime-400);
+    color: var(--color-pink-400);
+    background: rgba(254, 1, 115, 0.08);
 }
 
-/* Sidebar Section Labels */
+/* ── Section labels — uppercase, Bauhaus ─────────────────────────── */
 .sidebar-section-label {
-    font-size: 0.7rem;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-size: 0.6875rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-slate-500);
-    padding: 1.5rem 0.75rem 0.5rem;
-    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem 0.25rem;
+    margin-top: 0.75rem;
 }
 
-/* Collapsible menu items */
+[data-theme="dark"] .sidebar-section-label {
+    color: var(--color-slate-400);
+}
+
+/* Collapsible category headers */
 .menu__list-item-collapsible > .menu__link {
     font-weight: 600;
+    font-size: 0.875rem;
     color: var(--color-slate-800);
 }
 
 [data-theme="dark"] .menu__list-item-collapsible > .menu__link {
-    color: var(--color-slate-200);
+    color: var(--color-text);
 }
 
 .menu__caret {
-    transition: transform 0.2s ease;
+    transition: transform 0.15s ease;
 }
 
+/* Nested items — left rule instead of indentation dots */
 .menu__list-item-collapsible .menu__list .menu__link {
-    padding-left: 1.5rem;
+    padding-left: 1.25rem;
     font-size: 0.875rem;
-    position: relative;
+    font-weight: 450;
 }
 
 .menu__list-item-collapsible .menu__list .menu__link::before {
     content: "";
     position: absolute;
     left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--color-slate-400);
-    transition: background 0.15s ease;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--color-slate-200);
+}
+
+[data-theme="dark"]
+    .menu__list-item-collapsible
+    .menu__list
+    .menu__link::before {
+    background: var(--color-border);
 }
 
 .menu__list-item-collapsible .menu__list .menu__link--active::before {
-    background: var(--color-lime-500);
-}
-
-[data-theme="dark"] .menu__list-item-collapsible .menu__list .menu__link--active::before {
-    background: var(--color-lime-400);
+    background: var(--color-pink-900);
+    width: 2px;
 }
 
 /* ============================================
-   MAIN CONTENT
+   MAIN CONTENT AREA
    ============================================ */
 .main-wrapper {
-    background: var(--ifm-background-color);
+    background: transparent;
 }
 
 .docMainContainer {
-    max-width: 100%;
+    max-width: 1280px;
 }
 
 article {
-    max-width: 800px;
-    padding: 2rem 2.5rem;
+    max-width: 48rem;
+    padding: 2rem 0;
 }
 
 .theme-doc-markdown {
-    font-size: 1rem;
+    font-size: 0.9375rem;
 }
 
 /* ============================================
-   TABLE OF CONTENTS
+   TABLE OF CONTENTS — Right rail
    ============================================ */
 .theme-doc-toc-desktop {
-    padding-left: 1.5rem;
+    border-left: 1px solid var(--color-slate-200);
+}
+
+[data-theme="dark"] .theme-doc-toc-desktop {
+    border-left-color: var(--color-border);
 }
 
 .table-of-contents {
-    font-size: 0.8rem;
-    border-left: 1px solid var(--ifm-toc-border-color);
+    font-size: 0.8125rem;
+    padding: 0.75rem 0;
 }
 
 .table-of-contents__link {
-    display: block;
-    padding: 0.35rem 0.75rem;
+    font-family: "DM Sans", system-ui, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 400;
     color: var(--color-slate-500);
-    transition: all 0.15s ease;
-    border-left: 2px solid transparent;
-    margin-left: -1px;
+    transition: color 0.15s ease;
+    display: block;
+    padding: 0.25rem 0;
 }
 
 .table-of-contents__link:hover {
-    color: var(--color-slate-700);
-    text-decoration: none;
+    color: var(--color-slate-900);
 }
 
 [data-theme="dark"] .table-of-contents__link:hover {
-    color: var(--color-slate-300);
+    color: var(--color-text);
 }
 
 .table-of-contents__link--active {
-    color: var(--color-lime-600);
-    border-left-color: var(--color-lime-500);
-    font-weight: 500;
+    color: var(--color-pink-900);
+    font-weight: 600;
+    border-left: 2px solid var(--color-pink-900);
+    padding-left: 0.75rem;
+    margin-left: -0.75rem;
 }
 
 [data-theme="dark"] .table-of-contents__link--active {
-    color: var(--color-lime-400);
-    border-left-color: var(--color-lime-400);
+    color: var(--color-pink-900);
 }
 
 .table-of-contents__link code {
-    font-size: 0.75rem;
-    padding: 0.1em 0.3em;
+    font-family: var(--ifm-font-family-monospace);
+    font-size: 0.6875rem;
     background: var(--color-slate-100);
-    border-radius: 3px;
+    padding: 0.1em 0.3em;
+    border-radius: 2px;
 }
 
 [data-theme="dark"] .table-of-contents__link code {
-    background: var(--color-slate-700);
+    background: var(--color-bg-overlay);
 }
 
 .table-of-contents ul {
-    padding-left: 0;
-    list-style: none;
+    padding-left: 0.75rem;
+    border-left: 1px solid var(--color-slate-200);
+}
+
+[data-theme="dark"] .table-of-contents ul {
+    border-left-color: var(--color-border);
 }
 
 /* ============================================
-   CODE BLOCKS
+   CODE — JetBrains Mono, minimal styling
    ============================================ */
 code {
     font-family: var(--ifm-font-family-monospace);
     font-size: var(--ifm-code-font-size);
-    padding: var(--ifm-code-padding-vertical) var(--ifm-code-padding-horizontal);
     background: var(--ifm-code-background);
     color: var(--ifm-code-color);
-    border-radius: var(--ifm-code-border-radius);
+    padding: var(--ifm-code-padding-vertical) var(--ifm-code-padding-horizontal);
     border: 1px solid var(--color-slate-200);
+    border-radius: 2px;
+    font-variant-ligatures: none;
 }
 
 [data-theme="dark"] code {
-    border-color: var(--color-slate-700);
+    border-color: var(--color-border-subtle);
 }
 
 pre {
-    border-radius: 8px;
     border: 1px solid var(--color-slate-200);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border-radius: 0;
+    background: var(--color-slate-50);
 }
 
 [data-theme="dark"] pre {
-    border-color: var(--color-slate-700);
-    background: var(--color-slate-900) !important;
+    border-color: var(--color-border);
+    background: var(--color-bg-inset);
 }
 
 pre code {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     line-height: 1.6;
-    padding: 1rem;
-    display: block;
-    background: transparent;
+    padding: 0;
+    background: none;
     border: none;
+    color: inherit;
 }
 
 .prism-code {
-    background: var(--color-slate-50) !important;
+    border-radius: 0;
 }
 
 [data-theme="dark"] .prism-code {
-    background: var(--color-slate-900) !important;
+    background: var(--color-bg-inset) !important;
 }
 
-/* Code block title */
+/* Code block title bar */
 .codeBlockTitle {
-    font-family: var(--ifm-font-family-monospace);
-    font-size: 0.75rem;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-size: 0.6875rem;
     font-weight: 600;
-    color: var(--color-slate-500);
-    background: var(--color-slate-100);
-    border-bottom: 1px solid var(--color-slate-200);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     padding: 0.5rem 1rem;
-    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid var(--color-slate-200);
+    background: var(--color-slate-100);
+    border-radius: 0;
 }
 
 [data-theme="dark"] .codeBlockTitle {
-    background: var(--color-slate-800);
-    border-color: var(--color-slate-700);
-    color: var(--color-slate-400);
+    background: var(--color-bg-raised);
+    border-bottom-color: var(--color-border);
+    color: var(--color-text-secondary);
 }
 
 /* ============================================
-   LINKS
+   LINKS — Fuschia, not lime
    ============================================ */
 .markdown a {
-    color: var(--ifm-link-color);
+    color: var(--color-pink-900);
     text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
     border-bottom: 1px solid transparent;
-    transition: all 0.15s ease;
 }
 
 .markdown a:hover {
-    color: var(--ifm-link-hover-color);
-    border-bottom-color: currentColor;
+    color: var(--color-pink-700);
+    border-bottom-color: var(--color-pink-700);
 }
 
 /* ============================================
-   TABLES
+   TABLES — Geometric, thin rules, no rounded corners
    ============================================ */
+/* Force tables to fill their container, including Docusaurus scroll wrapper */
+div[class*="tableContainer"],
+div[class*="mdxTableContainer"] {
+    overflow-x: auto;
+}
+
+div[class*="tableContainer"] table,
+div[class*="mdxTableContainer"] table,
+.markdown table,
 table {
-    display: table;
-    width: 100%;
     border-collapse: collapse;
-    margin: 1.5rem 0;
-    font-size: 0.9rem;
+    width: 100%;
+    min-width: 100%;
+    display: table;
+    table-layout: auto;
+    font-size: 0.875rem;
     border: 1px solid var(--color-slate-200);
-    border-radius: 8px;
+    border-radius: 0;
     overflow: hidden;
 }
 
 [data-theme="dark"] table {
-    border-color: var(--color-slate-700);
+    border-color: var(--color-border);
 }
 
 table thead {
-    background: var(--color-slate-50);
+    border-bottom: 2px solid var(--color-slate-300);
 }
 
 [data-theme="dark"] table thead {
-    background: var(--color-slate-800);
+    border-bottom-color: var(--color-border-strong);
 }
 
 table thead th {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-size: 0.6875rem;
     font-weight: 600;
-    text-align: left;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-slate-500);
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--color-slate-200);
-    color: var(--color-slate-700);
+    text-align: left;
+    background: var(--color-slate-50);
 }
 
 [data-theme="dark"] table thead th {
-    border-color: var(--color-slate-700);
-    color: var(--color-slate-300);
+    color: var(--color-text-tertiary);
+    background: var(--color-bg-raised);
 }
 
 table tbody td {
-    padding: 0.75rem 1rem;
+    padding: 0.625rem 1rem;
     border-bottom: 1px solid var(--color-slate-100);
 }
 
 [data-theme="dark"] table tbody td {
-    border-color: var(--color-slate-800);
+    border-bottom-color: var(--color-border-subtle);
 }
 
 table tbody tr:last-child td {
@@ -631,169 +742,163 @@ table tbody tr:hover {
 }
 
 [data-theme="dark"] table tbody tr:hover {
-    background: var(--color-slate-800);
+    background: var(--color-surface-hover);
 }
 
 /* ============================================
-   ADMONITIONS
+   ADMONITIONS — Left-border accent, no rounded corners
    ============================================ */
 .admonition {
-    border-radius: 8px;
-    border: 1px solid;
-    margin: 1.5rem 0;
+    border-radius: 0;
+    border: 1px solid var(--color-slate-200);
+    border-left: 3px solid;
     padding: 1rem 1.25rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    margin: 1.5rem 0;
+    background: var(--color-slate-50);
+}
+
+[data-theme="dark"] .admonition {
+    border-color: var(--color-border);
+    background: var(--color-bg-raised);
 }
 
 .admonition-heading {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-size: 0.8125rem;
     font-weight: 600;
+    letter-spacing: 0.01em;
     margin-bottom: 0.5rem;
 }
 
 .admonition-icon {
-    width: 1.25rem;
-    height: 1.25rem;
+    margin-right: 0.5rem;
 }
 
 .admonition.admonition-note {
-    background: var(--color-slate-50);
-    border-color: var(--color-slate-300);
+    border-left-color: var(--color-pink-900);
 }
 
 [data-theme="dark"] .admonition.admonition-note {
-    background: var(--color-slate-800);
-    border-color: var(--color-slate-600);
+    border-left-color: var(--color-pink-900);
 }
 
 .admonition.admonition-tip {
-    background: var(--color-lime-50);
-    border-color: var(--color-lime-300);
+    border-left-color: var(--color-poison-500);
 }
 
 [data-theme="dark"] .admonition.admonition-tip {
-    background: rgba(146, 204, 0, 0.1);
-    border-color: var(--color-lime-600);
+    border-left-color: var(--color-poison-500);
 }
 
 .admonition.admonition-info {
-    background: var(--color-purple-50);
-    border-color: var(--color-purple-300);
+    border-left-color: var(--color-grass-500);
 }
 
 [data-theme="dark"] .admonition.admonition-info {
-    background: rgba(98, 50, 182, 0.1);
-    border-color: var(--color-purple-500);
+    border-left-color: var(--color-grass-500);
 }
 
 .admonition.admonition-warning {
-    background: #fffbeb;
-    border-color: #fcd34d;
+    border-left-color: var(--color-honey-500);
 }
 
 [data-theme="dark"] .admonition.admonition-warning {
-    background: rgba(252, 211, 77, 0.1);
-    border-color: #b45309;
+    border-left-color: var(--color-honey-500);
 }
 
 .admonition.admonition-danger {
-    background: var(--color-pink-50);
-    border-color: var(--color-pink-300);
+    border-left-color: var(--color-red-500);
 }
 
 [data-theme="dark"] .admonition.admonition-danger {
-    background: rgba(204, 38, 117, 0.1);
-    border-color: var(--color-pink-500);
+    border-left-color: var(--color-red-500);
 }
 
 /* ============================================
-   BLOCKQUOTES
+   BLOCKQUOTES — Thin left rule, fuschia
    ============================================ */
 blockquote {
-    border-left: 4px solid var(--color-lime-400);
-    background: var(--color-slate-50);
+    border-left: 2px solid var(--color-pink-900);
+    padding: 0.5rem 1.25rem;
     margin: 1.5rem 0;
-    padding: 1rem 1.5rem;
     color: var(--color-slate-600);
-    font-style: italic;
+    background: transparent;
+    font-style: normal;
 }
 
 [data-theme="dark"] blockquote {
-    background: var(--color-slate-800);
-    color: var(--color-slate-400);
+    color: var(--color-text-secondary);
+    border-left-color: var(--color-pink-900);
 }
 
 /* ============================================
-   PAGINATION
+   PAGINATION — Geometric, thin border
    ============================================ */
 .pagination-nav {
     margin-top: 3rem;
-    padding-top: 2rem;
+    padding-top: 1.5rem;
     border-top: 1px solid var(--color-slate-200);
 }
 
 [data-theme="dark"] .pagination-nav {
-    border-color: var(--color-slate-700);
+    border-top-color: var(--color-border);
 }
 
 .pagination-nav__link {
     border: 1px solid var(--color-slate-200);
-    border-radius: 8px;
+    border-radius: 0;
     padding: 1rem 1.25rem;
-    transition: all 0.15s ease;
+    transition: border-color 0.15s ease;
 }
 
 [data-theme="dark"] .pagination-nav__link {
-    border-color: var(--color-slate-700);
+    border-color: var(--color-border);
 }
 
 .pagination-nav__link:hover {
-    border-color: var(--color-lime-400);
-    background: var(--color-lime-50);
-    text-decoration: none;
+    border-color: var(--color-pink-900);
+    background: transparent;
 }
 
 [data-theme="dark"] .pagination-nav__link:hover {
-    background: rgba(146, 204, 0, 0.1);
+    border-color: var(--color-pink-900);
 }
 
 .pagination-nav__label {
+    font-family: "Space Grotesk", system-ui, sans-serif;
     font-weight: 600;
-    font-size: 1rem;
-    color: var(--color-slate-800);
-    display: block;
-    margin-top: 0.25rem;
+    font-size: 0.9375rem;
+    letter-spacing: -0.01em;
+    color: var(--color-slate-900);
 }
 
 [data-theme="dark"] .pagination-nav__label {
-    color: var(--color-slate-200);
+    color: var(--color-text);
 }
 
 .pagination-nav__sublabel {
-    font-size: 0.8rem;
-    color: var(--color-slate-500);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    color: var(--color-text-tertiary);
 }
 
 /* ============================================
    BREADCRUMBS
    ============================================ */
 .breadcrumbs {
-    font-size: 0.85rem;
-    margin-bottom: 1.5rem;
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
 }
 
 .breadcrumbs__link {
-    color: var(--color-slate-500);
+    color: var(--color-text-tertiary);
     transition: color 0.15s ease;
 }
 
 .breadcrumbs__link:hover {
-    color: var(--color-lime-500);
-    text-decoration: none;
+    color: var(--color-pink-900);
 }
 
 .breadcrumbs__item--active .breadcrumbs__link {
@@ -802,48 +907,57 @@ blockquote {
 }
 
 [data-theme="dark"] .breadcrumbs__item--active .breadcrumbs__link {
-    color: var(--color-slate-300);
+    color: var(--color-text);
 }
 
 /* ============================================
-   FOOTER
+   FOOTER — Clean, thin top rule, uppercase labels
    ============================================ */
 .footer {
-    background: var(--color-slate-900);
-    border-top: 1px solid var(--color-slate-800);
-    padding: 3rem 0;
+    border-top: 1px solid var(--color-slate-200);
+    padding: 3rem 0 2rem;
+    background: var(--color-slate-50);
 }
 
 [data-theme="dark"] .footer {
-    background: var(--color-slate-950);
-    border-color: var(--color-slate-800);
+    border-top-color: var(--color-border);
+    background: var(--color-bg);
 }
 
 .footer__title {
-    font-weight: 700;
-    font-size: 0.9rem;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-slate-100);
+    color: var(--color-text-tertiary);
     margin-bottom: 1rem;
 }
 
 .footer__link-item {
-    color: var(--color-slate-400);
-    transition: color 0.15s ease;
+    font-size: 0.8125rem;
+    color: var(--color-slate-600);
+}
+
+[data-theme="dark"] .footer__link-item {
+    color: var(--color-text-secondary);
 }
 
 .footer__link-item:hover {
-    color: var(--color-lime-400);
-    text-decoration: none;
+    color: var(--color-pink-900);
 }
 
 .footer__copyright {
-    color: var(--color-slate-500);
-    font-size: 0.85rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.6875rem;
+    color: var(--color-text-tertiary);
     margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--color-slate-800);
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-slate-200);
+}
+
+[data-theme="dark"] .footer__copyright {
+    border-top-color: var(--color-border);
 }
 
 /* ============================================
@@ -851,94 +965,105 @@ blockquote {
    ============================================ */
 .markdown ul,
 .markdown ol {
-    padding-left: 1.5rem;
+    padding-left: 1.25rem;
     margin: 1rem 0;
+    line-height: 1.65;
 }
 
 .markdown li {
-    margin: 0.5rem 0;
-    line-height: 1.7;
+    margin: 0.375rem 0;
+    padding-left: 0.25rem;
 }
 
 .markdown li > p {
-    margin-bottom: 0.5rem;
+    margin: 0;
 }
 
 /* ============================================
-   HORIZONTAL RULE
+   HORIZONTAL RULES — Thin, geometric
    ============================================ */
 hr {
     border: none;
-    height: 1px;
-    background: var(--color-slate-200);
+    border-top: 1px solid var(--color-slate-200);
     margin: 2rem 0;
 }
 
 [data-theme="dark"] hr {
-    background: var(--color-slate-700);
+    border-top-color: var(--color-border);
 }
 
 /* ============================================
-   BADGES
+   BADGES — Geometric, no pill shape
    ============================================ */
 .badge {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-size: 0.6875rem;
     font-weight: 600;
-    border-radius: 4px;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
+    padding: 0.2em 0.6em;
+    border-radius: 0;
+    border: 1px solid;
 }
 
 .badge--primary {
-    background: var(--color-lime-100);
-    color: var(--color-lime-700);
+    background: rgba(254, 1, 115, 0.08);
+    color: var(--color-pink-900);
+    border-color: var(--color-pink-900);
 }
 
 [data-theme="dark"] .badge--primary {
-    background: rgba(146, 204, 0, 0.2);
-    color: var(--color-lime-400);
+    background: rgba(254, 1, 115, 0.12);
+    color: var(--color-pink-600);
+    border-color: rgba(254, 1, 115, 0.3);
 }
 
 .badge--secondary {
-    background: var(--color-purple-100);
-    color: var(--color-purple-600);
+    background: var(--color-slate-100);
+    color: var(--color-slate-600);
+    border-color: var(--color-slate-300);
 }
 
 [data-theme="dark"] .badge--secondary {
-    background: rgba(98, 50, 182, 0.2);
-    color: var(--color-purple-electric);
+    background: var(--color-bg-overlay);
+    color: var(--color-text-secondary);
+    border-color: var(--color-border);
 }
 
 .badge--success {
-    background: #dcfce7;
-    color: #166534;
+    background: rgba(81, 252, 12, 0.06);
+    color: var(--color-poison-900);
+    border-color: var(--color-poison-500);
 }
 
 [data-theme="dark"] .badge--success {
-    background: rgba(34, 197, 94, 0.2);
-    color: #4ade80;
+    background: rgba(81, 252, 12, 0.1);
+    color: var(--color-poison-400);
+    border-color: rgba(81, 252, 12, 0.3);
 }
 
 .badge--warning {
-    background: #fef3c7;
-    color: #92400e;
+    background: rgba(245, 158, 11, 0.06);
+    color: var(--color-honey-700);
+    border-color: var(--color-honey-400);
 }
 
 [data-theme="dark"] .badge--warning {
-    background: rgba(245, 158, 11, 0.2);
-    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--color-honey-400);
+    border-color: rgba(245, 158, 11, 0.3);
 }
 
 .badge--danger {
-    background: var(--color-pink-100);
-    color: var(--color-pink-600);
+    background: rgba(255, 43, 0, 0.06);
+    color: var(--color-red-900);
+    border-color: var(--color-red-500);
 }
 
 [data-theme="dark"] .badge--danger {
-    background: rgba(204, 38, 117, 0.2);
-    color: var(--color-pink-fuschia);
+    background: rgba(255, 43, 0, 0.1);
+    color: var(--color-red-400);
+    border-color: rgba(255, 43, 0, 0.3);
 }
 
 /* ============================================
@@ -964,15 +1089,15 @@ hr {
 
 @media (max-width: 768px) {
     .navbar__inner {
-        padding: 0 1rem;
+        padding: 0 0.75rem;
     }
 
     .navbar__logo {
-        height: 28px;
+        height: 40px;
     }
 
     article {
-        padding: 1rem;
+        padding: 1rem 0.75rem;
     }
 
     article > header h1 {
@@ -981,73 +1106,238 @@ hr {
 }
 
 /* ============================================
-   ACCESSIBILITY
+   FOCUS — Fuschia ring, geometric, no glow
    ============================================ */
 :focus-visible {
-    outline: 2px solid var(--color-lime-400);
+    outline: 2px solid var(--color-pink-900);
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 0;
 }
 
 /* ============================================
-   UTILITIES
+   UTILITY CLASSES
    ============================================ */
 .text-center {
     text-align: center;
 }
 
-.text-gradient-lime {
-    background: linear-gradient(to right, var(--color-lime-400), var(--color-lime-600));
+/* Fuschia gradient text */
+.text-gradient-pink {
+    background: linear-gradient(135deg, #fe0173 0%, #ff80b9 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
-.text-gradient-purple {
-    background: linear-gradient(to right, var(--color-purple-400), var(--color-purple-600));
+/* Grass gradient text */
+.text-gradient-grass {
+    background: linear-gradient(135deg, #e5ff3e 0%, #51fc0c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Neon gradient — pink to grass */
+.text-gradient-neon {
+    background: linear-gradient(135deg, #fe0173 0%, #e5ff3e 50%, #51fc0c 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 .mt-4 {
-    margin-top: 2rem;
+    margin-top: 1rem;
 }
-
 .mb-4 {
-    margin-bottom: 2rem;
-}
-
-/* Hide back to top button */
-.theme-back-to-top-button {
-    display: none;
+    margin-bottom: 1rem;
 }
 
 /* ============================================
-   SEARCH
+   BACK TO TOP — Fuschia accent
+   ============================================ */
+.theme-back-to-top-button {
+    border-radius: 0;
+    background: var(--color-pink-900);
+}
+
+/* ============================================
+   SEARCH — Geometric, fuschia focus
    ============================================ */
 .DocSearch-Button {
-    border-radius: 8px !important;
-    background: var(--color-slate-100) !important;
-    border: 1px solid var(--color-slate-200) !important;
+    border-radius: 0 !important;
+    border: 1px solid var(--color-slate-300) !important;
+    background: transparent !important;
 }
 
 [data-theme="dark"] .DocSearch-Button {
-    background: var(--color-slate-800) !important;
-    border-color: var(--color-slate-700) !important;
+    border-color: var(--color-border) !important;
+    background: transparent !important;
 }
 
 .DocSearch-Button:hover {
-    border-color: var(--color-lime-400) !important;
+    border-color: var(--color-pink-900) !important;
     box-shadow: none !important;
 }
 
 .DocSearch-Button-Key {
-    background: var(--color-slate-200) !important;
-    border-radius: 4px !important;
+    border-radius: 0 !important;
+    border: 1px solid var(--color-slate-300) !important;
     box-shadow: none !important;
 }
 
 [data-theme="dark"] .DocSearch-Button-Key {
-    background: var(--color-slate-700) !important;
+    border-color: var(--color-border) !important;
+}
+
+/* ============================================
+   TABS — Geometric, fuschia active
+   ============================================ */
+.tabs__item {
+    font-family: "DM Sans", system-ui, sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border-radius: 0;
+    padding: 0.5rem 1rem;
+    border-bottom: 2px solid transparent;
+    transition:
+        color 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.tabs__item--active {
+    color: var(--color-pink-900);
+    border-bottom-color: var(--color-pink-900);
+}
+
+.tabs__item:hover {
+    color: var(--color-pink-700);
+}
+
+/* ============================================
+   DETAILS / COLLAPSIBLE — No rounded corners
+   ============================================ */
+details {
+    border: 1px solid var(--color-slate-200);
+    border-radius: 0;
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+}
+
+[data-theme="dark"] details {
+    border-color: var(--color-border);
+}
+
+details summary {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    color: var(--color-slate-700);
+}
+
+[data-theme="dark"] details summary {
+    color: var(--color-text);
+}
+
+details summary:hover {
+    color: var(--color-pink-900);
+}
+
+/* ============================================
+   DOCUSAURUS CARDS & BUTTONS — Geometric
+   ============================================ */
+.card {
+    border-radius: 0 !important;
+    border: 1px solid var(--color-slate-200);
+}
+
+[data-theme="dark"] .card {
+    border-color: var(--color-border);
+    background: var(--color-bg-raised);
+}
+
+.button {
+    border-radius: 0;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.button--primary {
+    background: var(--color-pink-900);
+    border-color: var(--color-pink-900);
+}
+
+.button--primary:hover {
+    background: var(--color-pink-950);
+    border-color: var(--color-pink-950);
+}
+
+/* ============================================
+   SCROLLBAR — Thin, functional
+   ============================================ */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--color-border-strong);
+}
+
+/* ============================================
+   PRINT
+   ============================================ */
+@media print {
+    body {
+        background: white;
+        color: black;
+    }
+
+    .navbar,
+    .footer,
+    .theme-doc-sidebar-container,
+    .theme-doc-toc-desktop,
+    .pagination-nav {
+        display: none;
+    }
+
+    table {
+        border: 1px solid #ccc;
+    }
+
+    code {
+        border: 1px solid #ddd;
+    }
+
+    a {
+        color: black;
+        text-decoration: underline;
+    }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }

@@ -700,8 +700,6 @@ display_name = "Alice Smith"
 ## See Also
 
 - [`atomic record`](./record.md) - Record changes with identity
-- [`atomic credit`](./credit.md) - View contribution credits
-- [`atomic attribution`](./attribution.md) - View AI and author attribution
 
 ## Related Concepts
 

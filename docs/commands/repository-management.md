@@ -1,169 +1,88 @@
 ---
-sidebar_position: 1
+sidebar_position: 2
 title: Repository Management
 ---
 
 # Repository Management
 
-Repository management commands handle the creation, initialization, and structure of Atomic repositories. These are the foundational commands you'll use to start working with Atomic VCS.
+Commands for creating, cloning, and managing Atomic repositories.
 
-## Commands in this Category
+## Commands
 
-### [`atomic init`](./init.md)
+| Command | Description |
+|---------|-------------|
+| [`init`](init.md) | Initialize a new Atomic repository |
+| [`clone`](clone.md) | Clone an existing repository from a remote |
+| [`reset`](reset.md) | Reset working copy to the last recorded state |
+| [`split`](split.md) | Create a new stack from an existing one |
 
-Initialize a new Atomic repository in the current or specified directory.
+## Creating a Repository
 
-**Use when:**
-- Starting a new project with Atomic
-- Converting a directory into an Atomic repository
-- Creating a repository with specific project type templates
+### From scratch
 
-**Quick example:**
 ```bash
+# Initialize in the current directory
+atomic init
+
+# Initialize with a custom stack name
+atomic init --stack main
+
+# Initialize with project-specific ignore patterns
 atomic init --kind rust
 ```
 
-### [`atomic clone`](./clone.md)
+This creates the `.atomic/` directory structure:
 
-Clone an existing Atomic repository from a remote location.
-
-**Use when:**
-- Getting a copy of a remote repository
-- Starting work on an existing project
-- Creating local copies for development
-
-**Quick example:**
-```bash
-atomic clone ssh://user@example.com/repo
+```
+.atomic/
+├── pristine/          # Graph database (redb)
+├── changes/           # Content-addressed change files
+├── config.toml        # Repository configuration
+├── current_stack      # Active stack name
+└── working_copy_id    # Working copy state
 ```
 
-### [`atomic split`](./split.md)
-
-Create a split of a stack with advanced options.
-
-**Use when:**
-- Creating experimental branches with specific settings
-- Splitting from a particular state
-- Advanced stack management scenarios
-
-**Quick example:**
-```bash
-atomic split experimental --stack main
-```
-
-## Common Workflows
-
-### Starting a New Project
+### From a remote
 
 ```bash
-# Initialize repository
-atomic init myproject --kind rust
+# Clone a repository
+atomic clone https://api.atomic.dev/acme/platform/core/code
 
-# Add files
-cd myproject
-atomic add .
-
-# Record first change
-atomic record -m "Initial project structure"
+# Clone into a specific directory
+atomic clone https://api.atomic.dev/acme/platform/core/code myproject
 ```
 
-### Cloning an Existing Project
+## Resetting the Working Copy
+
+The `reset` command discards uncommitted changes and restores the working copy to the last recorded state:
 
 ```bash
-# Clone from remote
-atomic clone ssh://user@host/repo
+# Discard all uncommitted changes
+atomic reset --force
 
-# Navigate into repository
-cd repo
+# Reset specific files
+atomic reset src/main.rs
 
-# Start working
-atomic record -m "My changes"
+# Preview what would be reset
+atomic reset --dry-run
 ```
 
-### Creating a Repository Split
+## Splitting Stacks
+
+The `split` command creates a new stack by forking from an existing one. All changes from the source stack are inherited by the new stack:
 
 ```bash
-# Split a stack for experiments
-atomic split experiment --stack main
+# Split from current stack
+atomic split experimental
 
-# Work on the split
-atomic stack switch experiment
-atomic record -m "Experimental changes"
+# Split and switch to the new stack
+atomic split feature-auth --switch
 ```
 
-## Key Concepts
-
-### Repository Structure
-
-When you initialize an Atomic repository, it creates:
-
-- `.atomic/` - Repository metadata and database
-- `.atomic/pristine/` - The pristine database
-- `.atomic/changes/` - Change storage
-- `.atomic/config.toml` - Repository configuration
-- `.ignore` - File patterns to ignore
-
-### Distributed Nature
-
-Every Atomic repository is **complete and independent**:
-- No central server required
-- Full history in every clone
-- Can work completely offline
-- Push/pull for synchronization when needed
-
-### Repository vs Working Copy
-
-- **Repository**: The `.atomic` directory containing all history and metadata
-- **Working Copy**: Your actual files that you edit
-- **Pristine**: The database representation of recorded state
-
-## Configuration
-
-After creating a repository, configure it in `.atomic/config.toml`:
-
-```toml
-[author]
-username = "yourname"
-display_name = "Your Name"
-
-[remote "origin"]
-ssh = "ssh://user@example.com/path/to/repo"
-```
-
-## Best Practices
-
-### Initialization
-
-- ✅ Use `--kind` for automatic ignore patterns
-- ✅ Initialize in an empty or new directory
-- ✅ Configure your identity before recording changes
-- ✅ Create a `.ignore` file for your project type
-
-### Cloning
-
-- ✅ Verify remote URL before cloning
-- ✅ Use SSH for authentication
-- ✅ Clone into appropriate directory structure
-- ✅ Check repository state after cloning
-
-### Splitting
-
-- ✅ Use descriptive split names
-- ✅ Document why you're creating a split
-- ✅ Clean up experimental splits when done
-- ✅ Consider using regular stacks instead for simpler cases
-
-## Next Steps
-
-After setting up your repository:
-
-1. [Add files to track](./add.md)
-2. [Record your first change](./record.md)
-3. [View the log](./log.md)
-4. [Set up remotes for collaboration](./push.md)
+This is equivalent to `atomic stack new <NAME> --from <SOURCE>`.
 
 ## See Also
 
-- [Working with Changes](./working-with-changes.md) - Record and manage changes
-- [Remote Operations](./remote-operations.md) - Collaborate with others
-- [File Operations](./file-operations.md) - Manage tracked files
+- [Working with Changes](working-with-changes.md) — Recording and reviewing changes
+- [Stack](stack.md) — Managing stacks
+- [Remote Operations](remote-operations.md) — Push, pull, and clone
