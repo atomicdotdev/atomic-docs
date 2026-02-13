@@ -217,7 +217,7 @@ pub struct InodeVertex {
 }
 ```
 
-Stacks (Atomic's equivalent of branches) are tracked separately via the `STACKS` table. Each stack is a `StackState` that records which changes have been applied and in what order:
+Stacks are **views** of this shared graph — not separate data structures. A `StackState` simply records which changes have been applied and in what order, like a bookmark into the graph:
 
 ```rust
 pub struct StackState {
@@ -228,7 +228,7 @@ pub struct StackState {
 }
 ```
 
-The graph tables (`GRAPH` and `INODE_GRAPH`) are shared across all stacks — stacks are views of the same graph, not copies.
+Multiple stacks all read from the same `GRAPH` and `INODE_GRAPH` tables. Creating a new stack doesn't duplicate any graph data — it just starts a new sequence of applied changes over the same underlying content.
 
 #### Why This Works
 
