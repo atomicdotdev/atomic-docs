@@ -5,68 +5,136 @@ title: stack
 
 # atomic stack
 
-Manage stacks (independent lines of development).
+Manage workspaces (independent lines of development).
 
 ## Synopsis
 
 ```bash
-atomic stack [OPTIONS]
-atomic stack new <NAME>
+atomic stack <SUBCOMMAND>
+atomic stack new <NAME> [OPTIONS]
 atomic stack switch <NAME>
-atomic stack list
+atomic stack list [--verbose]
 atomic stack delete <NAME>
-atomic stack rename <OLD> <NEW>
 ```
 
 ## Description
 
-Stacks in Atomic are independent lines of development, similar to branches in other version control systems. However, stacks have important differences:
+Stacks in Atomic are **workspaces** — views of the repository graph with their own edge storage and lifecycle. Every stack sees the shared graph, but how and where it stores its own edges depends on its **kind**:
 
-- **Patch-based**: Stacks share a common dependency graph of changes
-- **Conflict-free merging**: Changes can be applied between stacks without merge conflicts
-- **First-class citizens**: Stacks are fundamental to Atomic's architecture
-- **Independent history**: Each stack maintains its own sequence of changes
+| Workspace Kind | Edge Storage | Lifecycle | Use Case |
+|----------------|-------------|-----------|----------|
+| **Shared** | Global `GRAPH` | Permanent | dev, release, main |
+| **Local** | Per-stack `STACK_GRAPH` | Ephemeral (deletable) | feature, bug, service work |
 
-When working with stacks, you can:
-- Create new stacks for features or experiments
-- Switch between stacks to work on different tasks
-- Apply changes between stacks
-- Delete stacks when work is complete
+All workspaces see the shared graph — local workspaces are **not** isolated. They layer their own pending edges on top of the global graph via an **overlay chain**, giving full visibility into dependencies and build infrastructure while keeping their own work separate.
+
+### How It Works
+
+```
+  main  (Shared, root)
+    │
+  release  (Shared, parent=main)
+    │
+  dev  (Shared, parent=release)
+    │
+    ├── service-auth  (Local, parent=dev)
+    │     ├── feature-login   (Local, parent=service-auth)
+    │     └── feature-logout  (Local, parent=service-auth)
+    │
+    └── service-payments  (Local, parent=dev)
+          └── bug-checkout  (Local, parent=service-payments)
+```
+
+Each local workspace's **effective view** is the union of:
+1. Its own `STACK_GRAPH` edges (pending work)
+2. Its parent's effective view (recursively)
+3. The global `GRAPH` (when a shared ancestor is reached)
+
+```
+feature-login sees:
+  STACK_GRAPH[feature-login]     ← my pending edges
+  ∪ STACK_GRAPH[service-auth]    ← parent's pending edges
+  ∪ GRAPH                         ← dev's shared edges (and everything below)
+```
+
+This means a team working on `service-payments` automatically sees infrastructure changes that `service-auth` applied to `dev` — no sync, no rebase, no manual intervention.
+
+### Key Differences from Git Branches
+
+| Aspect | Git Branches | Atomic Workspaces |
+|--------|-------------|-------------------|
+| Data Model | Pointer to a commit | Ordered sequence of changes + overlay chain |
+| Storage | Duplicates history | Shared graph + per-workspace edge layer |
+| Visibility | Only sees own branch | Sees global graph + parent chain via overlay |
+| Merging | 3-way merge with conflicts | Apply changes with automatic dependency closure |
+| Cleanup | Manual `git branch -D` + orphaned objects | Cascade delete `STACK_GRAPH` → zero orphans |
+| Monorepo | Painful cross-branch dependencies | Automatic via overlay chain |
 
 ## Subcommands
 
-### `stack new` - Create a New Stack
-
-Create a new stack branching from the current stack's state.
+### `stack new` — Create a New Workspace
 
 #### Synopsis
 
 ```bash
-atomic stack new <NAME>
+atomic stack new <NAME> [OPTIONS]
 ```
 
 #### Arguments
 
-**`<NAME>`**
+**`<NAME>`** — Name for the new workspace.
 
-Name for the new stack. Should be descriptive (e.g., `feature/auth`, `bugfix/issue-123`).
+#### Options
+
+| Option | Description |
+|--------|-------------|
+| `--local`, `-i` | Create a local workspace (edges in `STACK_GRAPH`, deletable) |
+| `--parent <STACK>` | Set the parent workspace (defaults to current) |
+| `--from <STACK>` | Fork from an existing workspace (copies change log) |
+| `--empty` | Create with no history (orphan workspace) |
+| `--switch`, `-s` | Switch to the new workspace after creation |
 
 #### Examples
 
 ```bash
-# Create a feature stack
-atomic stack new feature/user-auth
+# Create a local feature workspace (most common)
+atomic stack new feature-auth --local
 
-# Create a bugfix stack
-atomic stack new bugfix/security-fix
+# Create a local workspace with explicit parent
+atomic stack new feature-login --local --parent service-auth
 
-# Create an experimental stack
-atomic stack new experiment/new-algorithm
+# Create a shared workspace (permanent, like a release branch)
+atomic stack new release-2.0
+
+# Fork from an existing workspace (copies change history)
+atomic stack new hotfix --from release-1.0
+
+# Create and switch in one command
+atomic stack new feature-api --local --switch
 ```
 
-### `stack switch` - Switch to a Different Stack
+#### Workspace Kinds
 
-Switch your working copy to a different stack.
+**Without `--local`** (default): Creates a **shared** workspace. Edges are written to the global `GRAPH` table and are permanent. Use for long-lived integration points like `dev`, `release`, `main`.
+
+**With `--local`**: Creates a **local** workspace. Edges are written to the per-stack `STACK_GRAPH` table and are cascade-deleted when the workspace is removed. Use for features, bugs, experiments, and service-level work.
+
+#### Parent Chain
+
+The `--parent` option sets where this workspace sits in the overlay hierarchy. When you're working in a local workspace, graph traversal reads edges from your `STACK_GRAPH`, then your parent's, then your grandparent's, all the way up to the shared graph.
+
+```bash
+# Stacked local workspaces for team-level organization
+atomic stack new service-auth --local --parent dev
+atomic stack new feature-login --local --parent service-auth
+atomic stack new feature-oauth --local --parent service-auth
+
+# feature-login sees: its own edges + service-auth edges + dev edges
+# feature-oauth sees: its own edges + service-auth edges + dev edges
+# service-auth sees:  its own edges + dev edges
+```
+
+### `stack switch` — Switch to a Different Workspace
 
 #### Synopsis
 
@@ -76,26 +144,27 @@ atomic stack switch <NAME>
 
 #### Arguments
 
-**`<NAME>`**
-
-Name of the stack to switch to. Must be an existing stack.
+**`<NAME>`** — Name of the workspace to switch to.
 
 #### Examples
 
 ```bash
-# Switch to main stack
+# Switch to main
 atomic stack switch main
 
-# Switch to feature branch
-atomic stack switch feature/user-auth
+# Switch to a feature workspace
+atomic stack switch feature-auth
 
-# Switch back to previous work
-atomic stack switch bugfix/issue-123
+# Switch to a service workspace
+atomic stack switch service-auth
 ```
 
-### `stack list` - List All Stacks
+When you switch workspaces:
+1. The working copy is updated to match the workspace's state
+2. Uncommitted changes remain in your working copy
+3. The new workspace becomes current
 
-Display all stacks in the repository.
+### `stack list` — List All Workspaces
 
 #### Synopsis
 
@@ -105,38 +174,32 @@ atomic stack list [OPTIONS]
 
 #### Options
 
-**`--current`**
-
-Show only the current stack.
-
-```bash
-atomic stack list --current
-```
+| Option | Description |
+|--------|-------------|
+| `--verbose`, `-v` | Show kind, parent, change count, and state hash |
 
 #### Examples
 
 ```bash
-# List all stacks
-atomic stack list
-
-# Show current stack
-atomic stack list --current
+# Simple list (current workspace marked with *)
+$ atomic stack list
+* dev
+  feature-auth
+  release-1.0
+  service-auth
 ```
 
-#### Output
-
+```bash
+# Verbose list showing the workspace model
+$ atomic stack list --verbose
+* dev            [shared]  (12 changes)  state: 2AAAAAAAA...
+  feature-auth   [local]   (3 changes)   state: XYZABCDEF...  parent: dev
+  release-1.0    [shared]  (8 changes)   state: QRSTUVWXY...  parent: main
+  service-auth   [local]   (15 changes)  state: 123456789...  parent: dev
+  feature-login  [local]   (2 changes)   state: ABCDEFGHI...  parent: service-auth
 ```
-* main
-  feature/user-auth
-  feature/new-ui
-  bugfix/issue-123
-```
 
-The `*` indicates the current stack.
-
-### `stack delete` - Delete a Stack
-
-Remove a stack from the repository.
+### `stack delete` — Delete a Workspace
 
 #### Synopsis
 
@@ -146,339 +209,204 @@ atomic stack delete <NAME>
 
 #### Arguments
 
-**`<NAME>`**
+**`<NAME>`** — Name of the workspace to delete.
 
-Name of the stack to delete. Cannot delete the current stack.
+#### Rules
 
-#### Examples
-
-```bash
-# Delete a merged feature stack
-atomic stack delete feature/completed
-
-# Delete an experimental stack
-atomic stack delete experiment/failed-approach
-```
-
-**Warning**: This permanently removes the stack. The changes remain in the repository but the stack reference is deleted.
-
-### `stack rename` - Rename a Stack
-
-Rename an existing stack.
-
-#### Synopsis
-
-```bash
-atomic stack rename <OLD> <NEW>
-```
-
-#### Arguments
-
-**`<OLD>`**
-
-Current name of the stack.
-
-**`<NEW>`**
-
-New name for the stack.
+- **Shared workspaces cannot be deleted** — they own global graph edges that other workspaces depend on.
+- **Workspaces with children cannot be deleted** — delete or reparent children first.
+- **The current workspace cannot be deleted** — switch to a different workspace first.
+- **Local workspaces cascade-delete** all their `STACK_GRAPH` edges. Zero orphans remain.
 
 #### Examples
 
 ```bash
-# Rename a stack
-atomic stack rename feature/old-name feature/new-name
+# Delete an abandoned feature workspace
+atomic stack delete feature-old
+# ✓ Deleted workspace: feature-old (removed 42 edges)
 
-# Rename main to master (or vice versa)
-atomic stack rename main master
+# Delete a workspace whose changes were already applied to dev
+atomic stack delete feature-auth
+# ✓ Deleted workspace: feature-auth (removed 18 edges)
+# Note: Changes applied to dev remain in the global graph.
 ```
 
-## Options
+#### What Happens to Applied Changes?
 
-### `--repository <PATH>`
+When you apply changes from a local workspace to a shared workspace (like `dev`), those changes' edges are written to the global `GRAPH`. If you then delete the local workspace:
 
-Specify the repository path.
+- Edges in `STACK_GRAPH` (pending/unapplied work) → **deleted**
+- Edges in `GRAPH` (already applied to a shared workspace) → **preserved**
+
+This is the clean lifecycle:
 
 ```bash
-atomic stack list --repository /path/to/repo
+# Create and work
+atomic stack new feature --local
+atomic record -m "add login"
+atomic record -m "add logout"
+atomic record -m "add session mgmt"
+
+# Apply some changes to dev
+atomic apply <login-hash> --to dev
+atomic apply <session-hash> --to dev
+
+# Abandon the rest and clean up
+atomic stack delete feature
+# ✓ "logout" edges removed (never applied anywhere)
+# ✓ "login" and "session" edges preserved in dev's global graph
 ```
 
-## Stack Cascade: Push Changes to Children (Future Feature)
+## Workspace Types in Practice
 
-**The Killer Feature:** Atomic will support cascading changes from a parent stack to all child stacks automatically - something impossible in Git-based workflows.
+### Short-Lived Feature Work
 
 ```bash
-# Security patch on main
-atomic stack switch main
-atomic record security.patch -m "Fix CVE-2024-1234"
-
-# Push to ALL child stacks automatically
-atomic stack cascade
-
-# Output:
-#   Applying DWHTQ6K to child stacks...
-#   ✓ feature-auth (3 changes, no conflicts)
-#   ✓ api-redesign (5 changes, no conflicts)
-#   ⚠ frontend-refactor (2 changes, conflict in ui.jsx)
-#   ✓ db-backend (1 change, no conflicts)
-#   
-#   3/4 stacks updated successfully
-#   1 stack requires manual resolution
+# Create a local workspace for a quick bug fix
+atomic stack new bugfix-123 --local --switch
+atomic record -m "Fix null pointer in auth"
+atomic apply <hash> --to dev
+atomic stack switch dev
+atomic stack delete bugfix-123
 ```
 
-### Use Cases
+### Long-Lived Service Work (Monorepo)
 
-**Security Patches**: Push critical fixes to all feature stacks instantly
 ```bash
-atomic stack switch main
-atomic record -m "Security fix"
-atomic stack cascade  # All teams get it immediately
+# Team A: service-level workspace that lives for months
+atomic stack new service-auth --local --parent dev
+
+# Individual features stacked on the service workspace
+atomic stack new feature-oauth --local --parent service-auth --switch
+atomic record -m "Add OAuth provider"
+atomic record -m "Add token refresh"
+
+# Apply shared infrastructure to dev (visible to all teams)
+atomic apply <oauth-provider-hash> --to dev
+
+# Team B sees it immediately via their overlay chain
+# (service-payments is also parented on dev)
 ```
 
-**Monorepo Infrastructure Updates**: Propagate shared config changes
-```bash
-atomic stack switch infrastructure
-atomic record build.config -m "Update to Node 20"
-atomic stack cascade  # All projects updated
-```
-
-**Selective Propagation**: Choose which stacks to update
-```bash
-atomic stack cascade --to feature-auth --to feature-payments
-atomic stack cascade --interactive  # Menu-driven selection
-```
-
-### Why This is Revolutionary
-
-**Git/GitHub**: No equivalent - must manually checkout each branch, merge/rebase, resolve conflicts, push
-
-**Graphite**: Has "restack" but only for linear stacks with complex rebasing
-
-**Atomic**: 
-- ✅ Native cascade from parent to all children
-- ✅ Works with tree of stacks (not just linear)
-- ✅ Semantic merge (fewer conflicts)
-- ✅ Forward-only (no rebasing)
-- ✅ Perfect for monorepos
-
-### Planned Command Options
+### Release Management
 
 ```bash
-atomic stack cascade [OPTIONS]
+# Create a shared release workspace
+atomic stack new release-2.0 --parent main
 
---dry-run              # Show what would be applied
---to <stack>           # Only cascade to specific stack
---to-all               # Cascade to all descendant stacks (default)
---interactive          # Choose which stacks to update
---auto-resolve         # Auto-resolve simple conflicts
---stop-on-conflict     # Stop at first conflict (vs continue)
-```
-
-## Complete Examples
-
-### Feature Branch Workflow
-
-```bash
-# Start from main
-atomic stack switch main
-
-# Create feature branch
-atomic stack new feature/add-logging
-
-# Work on feature
-atomic add src/logging.rs
-atomic record -m "Add logging module"
-atomic record -m "Add log configuration"
-
-# Switch back to main
-atomic stack switch main
-
-# Apply changes from feature branch
-atomic pull . --from-stack feature/add-logging
-
-# Clean up
-atomic stack delete feature/add-logging
-```
-
-### Parallel Development
-
-```bash
-# Create multiple feature stacks
-atomic stack new feature/api-v2
-atomic stack new feature/new-ui
-atomic stack new bugfix/memory-leak
-
-# Work on each independently
-atomic stack switch feature/api-v2
-atomic record -m "Start API v2"
-
-atomic stack switch feature/new-ui
-atomic record -m "Design new UI"
-
-atomic stack switch bugfix/memory-leak
-atomic record -m "Fix memory leak"
-
-# List all work in progress
-atomic stack list
-```
-
-### Release Branch Strategy
-
-```bash
-# Create release branch from main
-atomic stack switch main
-atomic stack new release/v1.0
-
-# Apply only necessary changes
-atomic apply CHANGE1...
-atomic apply CHANGE2...
+# Cherry-pick specific changes
+atomic apply <feature-hash> --to release-2.0
+atomic apply <bugfix-hash> --to release-2.0
 
 # Tag the release
-atomic tag create v1.0.0 -m "Release 1.0"
-
-# Keep release branch for maintenance
-atomic stack switch main
+atomic tag create v2.0.0 --stack release-2.0 -m "Release 2.0"
 ```
+
+## Applying Changes Between Workspaces
+
+When you apply a change to another workspace, Atomic automatically resolves the **full dependency closure** — it's not a cherry-pick of a single change, it pulls everything that change needs to be correct:
+
+```bash
+# feature has changes: C1, C2, C3, C4, C5
+# C5 depends on C1 → C2 → C3
+
+atomic apply C5 --to dev
+# Atomic computes: deps(C5) = {C1, C2, C3}
+# dev already has: {C1}
+# Missing: {C2, C3, C5} → applied in dependency order
+```
+
+This ensures the target workspace is always in a mathematically consistent state. You never get a "missing dependency" error after applying.
+
+```bash
+# Apply all missing changes from one workspace to another
+atomic apply --from feature --to dev
+
+# Preview what would be applied (dry run)
+atomic apply --from feature --to dev --dry-run
+
+# Apply specific changes with their dependencies
+atomic apply <hash1> <hash2> --to dev
+```
+
+## Comparing Workspaces
+
+```bash
+# See which changes are in feature but not in dev
+atomic apply --from feature --to dev --dry-run
+
+# See the change-level diff between two workspaces
+# (which changes exist in one but not the other)
+```
+
+## Stashes Are Local Workspaces
+
+The `atomic stash` command creates short-lived local workspaces under the hood. A stash is simply a local workspace with:
+- Auto-generated name (`stash/0`, `stash/1`, etc.)
+- Push/pop UX semantics
+- No explicit parent (orphan)
+
+See [`atomic stash`](./stash.md) for the stash-specific commands.
 
 ## Stack Properties
 
-Each stack maintains:
+Each workspace maintains:
 
-- **Change sequence**: Ordered list of applied changes
-- **State hash**: Cryptographic identifier of current state
-- **Tag references**: Tags created in this stack
-- **Configuration**: Stack-specific settings
+| Property | Description |
+|----------|-------------|
+| **Name** | Human-readable identifier |
+| **Kind** | `Shared` or `Local` |
+| **Parent** | The workspace this one is based on (`None` for root) |
+| **Change sequence** | Ordered list of applied changes |
+| **Merkle state** | Cryptographic hash of the change sequence |
+| **Change count** | Number of changes applied |
 
-## Default Stack
+## Default Workspace
 
-When you initialize a repository, a default stack is created (usually "main"):
+When you initialize a repository, a default shared workspace is created:
 
 ```bash
 atomic init
-# Creates "main" stack by default
+# Creates "dev" workspace (shared, root)
 
-# Or specify custom name
-atomic init --stack develop
-```
-
-## Current Stack
-
-The current stack determines:
-- Which changes are visible in the working copy
-- Where new changes are recorded
-- Which history `atomic log` displays
-
-Check the current stack:
-
-```bash
-atomic stack list --current
-# or
-atomic stack
-```
-
-## Switching Stacks
-
-When you switch stacks:
-
-1. Working copy is updated to match the stack's state
-2. Uncommitted changes must be recorded or discarded first
-3. The new stack becomes current
-4. `.atomic/config.toml` is updated
-
-```bash
-# This will fail if you have uncommitted changes
-atomic stack switch other-branch
-# Error: uncommitted changes
-
-# Record or discard changes first
-atomic record -m "Work in progress"
-# or
-atomic reset
-
-# Now switch succeeds
-atomic stack switch other-branch
-```
-
-## Sharing Changes Between Stacks
-
-Apply changes from one stack to another:
-
-```bash
-# Switch to target stack
-atomic stack switch main
-
-# Pull changes from feature stack
-atomic pull . --from-stack feature/new-feature
-
-# Or apply specific changes
-atomic apply HASH1... HASH2...
-```
-
-## Stack Naming Conventions
-
-Good stack naming practices:
-
-- **Feature branches**: `feature/description` or `feature/issue-number`
-- **Bug fixes**: `bugfix/description` or `fix/issue-number`
-- **Releases**: `release/version` or `release/v1.0`
-- **Experiments**: `experiment/description`
-- **Personal work**: `user/feature` or `yourname/work`
-
-Examples:
-```bash
-atomic stack new feature/user-authentication
-atomic stack new bugfix/issue-456
-atomic stack new release/v2.0
-atomic stack new experiment/new-algorithm
-atomic stack new alice/refactoring
+# Or specify a custom name
+atomic init --stack main
 ```
 
 ## Performance
 
-Stack operations are fast:
+Workspace operations are fast:
 
-- **Create**: &lt; 10ms (just metadata)
-- **Switch**: 100ms - 5s (depending on working copy size)
-- **List**: &lt; 10ms
-- **Delete**: &lt; 10ms
-
-## Notes
-
-- **No Merge Commits**: Stacks don't create merge commits when sharing changes
-- **Conflict-Free**: Atomic's patch theory ensures conflict-free merging
-- **Independent**: Stacks are independent; deleting one doesn't affect others
-- **Remote Sync**: Stacks can be pushed/pulled to/from remotes
-- **Case Sensitive**: Stack names are case-sensitive
+| Operation | Time | Notes |
+|-----------|------|-------|
+| Create | < 10ms | Just metadata |
+| Switch | 100ms–5s | Depends on working copy size |
+| List | < 10ms | Scans STACKS table |
+| Delete (local) | < 50ms | Cascade prefix scan on STACK_GRAPH |
+| Delete (shared) | Blocked | Shared workspaces are permanent |
+| Overlay traversal | O(edges × chain depth) | Chain depth is typically 1–3 |
 
 ## Configuration
 
-Relevant configuration options:
-
 ```toml
-# In .atomic/config.toml
+# .atomic/config.toml
 
-# Default stack
 [repository]
-default_stack = "main"
+default_stack = "dev"
 
-# Stack-specific settings
 [stack.main]
 protected = true  # Prevent accidental deletion
 
-[stack.develop]
-auto_tag = true  # Auto-tag periodically
+[stack.release]
+protected = true
 ```
 
 ## See Also
 
-- [`atomic record`](./record.md) - Record changes in current stack
-- [`atomic log`](./log.md) - View stack history
-- [`atomic pull`](./pull.md) - Pull changes between stacks
-- [`atomic split`](./split.md) - Split a stack with advanced options
-- [`atomic tag`](./tag.md) - Tag stack states
-
-## Related Concepts
-
-- **Stacks** - Independent lines of development
-- **Changes** - Atomic units of modification
-- **Branches** - Git equivalent (but conflict-free in Atomic)
-- **Working Copy** - Files reflecting current stack state
+- [`atomic record`](./record.md) — Record changes in current workspace
+- [`atomic apply`](./apply.md) — Apply changes between workspaces
+- [`atomic stash`](./stash.md) — Temporarily save uncommitted changes
+- [`atomic log`](./log.md) — View workspace history
+- [`atomic diff`](./diff.md) — Compare working copy with recorded state
+- [`atomic tag`](./tag.md) — Tag workspace states
+- [The Graph Model](../concepts/graph-model-explained.md) — How vertices and edges work
