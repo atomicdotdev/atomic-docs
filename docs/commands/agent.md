@@ -5,7 +5,7 @@ title: agent
 
 # atomic agent
 
-Manage AI agent integration for turn-level recording.
+Manage AI agent integration for automatic turn-level recording with full provenance.
 
 ## Synopsis
 
@@ -15,7 +15,7 @@ atomic agent <SUBCOMMAND>
 
 ## Description
 
-The `agent` command manages integration with AI coding agents — Claude Code, Gemini CLI, Codex, and OpenCode. When enabled, every agent turn is automatically recorded as an Atomic change with full provenance: model, provider, tokens, cost, session ID, and turn number.
+The `agent` command manages integration with AI coding agents — Claude Code, Gemini CLI, and OpenCode. When enabled, every agent turn is automatically recorded as an Atomic change with full provenance, and every session produces a provenance graph (causal decision DAG) and an attestation (session-level audit node).
 
 No daemon required. Each hook invocation is a standalone process that opens the repo, does its work, and exits.
 
@@ -127,7 +127,9 @@ When `--save` is used:
 
 ### `attest`
 
-List and inspect attestations — graph-level audit nodes capturing AI cost, token usage, and model breakdown.
+List and inspect attestations — graph-level audit nodes capturing AI cost, token usage, model breakdown, and code change statistics.
+
+Attestations are created automatically at session end. They aggregate data from the provenance entries embedded in each covered change: model name, token counts (input, output, cache read/write), cost in USD, and lines added/removed from the CRDT semantic layer.
 
 ```bash
 # List all attestations
@@ -147,26 +149,83 @@ atomic agent attest --verbose
 
 | Option | Description |
 |--------|-------------|
-| `--hash <PREFIX>` | Show details for a specific attestation |
-| `--stack <NAME>` | Filter attestations by stack |
-| `--verbose`, `-v` | Show model breakdown and per-change details |
+| `--hash <PREFIX>` | Show details for a specific attestation (supports prefix matching) |
+| `--stack <NAME>` | Filter attestations covering changes in this stack |
+| `--verbose`, `-v` | Show per-model token breakdown and per-change details |
+
+**Example output:**
+
+```
+$ atomic agent attest
+
+  XMJZ3IPF OpenCode · claude-sonnet-4-5 · 12.4k tokens · 3m 42s · 2 changes
+  R3KQP7YN Claude Code · claude-sonnet-4-5 · 8.1k tokens · 1m 15s · 1 change
+
+──────────────────────────────────────────
+Total: $0.27 · 3 changes covered · 20.5k tokens
+```
+
+**Detail view:**
+
+```
+$ atomic agent attest --hash XMJZ3IPF
+
+Attestation XMJZ3IPF
+
+Agent:     OpenCode
+Session:   agent-ses_3781fc7a6ffet5c6r1ILy1BEbv
+Changes:   2 changes
+Wall time: 3m 42s
+Cost:      $0.15
+Tokens:    12.4k
+Code:      +116 -8
+
+Model Breakdown:
+  claude-sonnet-4-5: 3.2k in / 9.2k out · $0.15
+
+Changes Covered (2):
+  ABC12345
+  DEF67890
+
+Coverage:
+  dev                  ████████████░░░░░░░░ 2/5 (40%)
+```
 
 ## How It Works
 
 ```
-You prompt Claude Code → agent modifies files → Atomic records the turn
-                                                  │
-                                                  ├── ChangeHeader: "Turn 3: Fix the auth bug"
-                                                  ├── Provenance: anthropic/claude-sonnet-4, tokens, cost
-                                                  ├── SessionEnvelope: turn #3, timing, files
-                                                  └── Transcript: conversation (unhashed, redactable)
+You prompt the agent → agent reads, edits, tests → Atomic records the turn
+                                                      │
+                                                      ├── Change: "Turn 3: Fix the auth bug"
+                                                      ├── Provenance: anthropic/claude-sonnet-4-5, session, turn
+                                                      ├── Envelope: timing, files touched, model info
+                                                      ├── Provenance Graph: goal → explorations → commitment → verification
+                                                      └── Transcript: conversation (unhashed, redactable)
 ```
 
-The recording workflow on each turn end:
+### On Each Turn End
 
 1. **Status** — ask the repository what changed since the last recorded state
 2. **Add** — track any new files the agent created
 3. **Record** — create an Atomic change with AI provenance metadata
+4. **Provenance** — append a PatchProposal node, convert the accumulated graph to a content-addressed `ProvenanceGraph`, and save it to the repository
+
+### On Session End
+
+5. **Attestation** — aggregate model/cost/token data from all covered changes and create a session-level audit node
+6. **Stack restore** — switch back to the user's original stack
+
+### Provenance Graph Pipeline
+
+Throughout the session, the **ProvenanceAccumulator** builds a causal decision DAG:
+
+- **`user-prompt`** → appends a **Goal** node (the user's intent)
+- **`after-tool`** → appends a classified tool node (**Exploration**, **Commitment**, **Verification**, or **Execution**) with causal edges inferred from context
+- **`stop`** → appends a **PatchProposal** node, converts to `ProvenanceGraph`, saves to `.atomic/changes/`
+
+The accumulator is persisted to `.atomic/sessions/{session_id}/graph.json` between hook invocations (each hook is a separate process). Writes are atomic (temp file + rename) to prevent corruption.
+
+Provenance graphs are pushed to remotes alongside changes and rendered in the web UI.
 
 ## Agent Identity
 
@@ -206,8 +265,35 @@ atomic agent enable --agent claude-code
 atomic log
 atomic agent status --verbose
 
+# Inspect attestations
+atomic agent attest
+
 # Generate reasoning summary
 atomic agent explain <session-id> --all --save
+```
+
+### Review agent work before promoting
+
+```bash
+# See what the agent changed on its isolated stack
+atomic log --stack agent-ses_3781fc...
+
+# Apply specific changes to your stack
+atomic apply <change-hash> --to dev
+
+# Clean up the agent stack
+atomic stack delete agent-ses_3781fc...
+```
+
+### Push agent data to remote
+
+```bash
+$ atomic push origin
+
+# Changes, attestations, and provenance graphs are uploaded automatically:
+#   ✓ Pushed 2 changes
+#   ✓ XMJZ3IPF attestation ($0.15, 2 covered)
+#   ✓ ABC12345 provenance (7 nodes, 1 change)
 ```
 
 ### Rewind an agent turn
@@ -222,6 +308,9 @@ atomic revise
 
 ## See Also
 
+- [Provenance Graphs](/agents/provenance) — How agent reasoning is captured as causal DAGs
+- [Attestations](/agents/attestations) — Session-level audit and cost tracking
+- [AI Agent Workflows](/getting-started/ai-agent-workflows) — Getting started guide
 - [record](record.md) — How changes are recorded
 - [identity](identity.md) — Managing user identities
 - [log](log.md) — Viewing change history

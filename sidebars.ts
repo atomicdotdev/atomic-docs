@@ -18,6 +18,26 @@ const sidebars: SidebarsConfig = {
     "getting-started/ai-agent-workflows",
     {
       type: "html",
+      value: '<div class="sidebar-section-label">AGENTS</div>',
+      defaultStyle: true,
+    },
+    {
+      type: "doc",
+      id: "agents/overview",
+      label: "Overview",
+    },
+    {
+      type: "doc",
+      id: "agents/provenance",
+      label: "Provenance Graphs",
+    },
+    {
+      type: "doc",
+      id: "agents/attestations",
+      label: "Attestations",
+    },
+    {
+      type: "html",
       value: '<div class="sidebar-section-label">CONCEPTS</div>',
       defaultStyle: true,
     },
