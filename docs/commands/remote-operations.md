@@ -33,7 +33,7 @@ atomic pull
 
 Unlike Git which transfers commits and refs, Atomic syncs **changes** and **Merkle states**:
 
-1. **Compare states** — Your local stack's Merkle state is compared with the remote's
+1. **Compare states** — Your local view's Merkle state is compared with the remote's
 2. **Find missing changes** — Changes present locally but not remotely (or vice versa)
 3. **Transfer changes** — Only the missing changes are uploaded or downloaded
 4. **Apply** — Downloaded changes are applied to the local graph

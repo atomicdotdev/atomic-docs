@@ -5,7 +5,7 @@ title: revise
 
 # atomic revise
 
-Revise a change in-place without losing its position in the stack.
+Revise a change in-place without losing its position in the view.
 
 ## Synopsis
 
@@ -15,7 +15,7 @@ atomic revise [<REF>] [OPTIONS]
 
 ## Description
 
-The `revise` command modifies a previously recorded change. Unlike Git's `commit --amend` which only works on HEAD, Atomic can revise any change in the stack. The change keeps its position — subsequent changes are automatically re-applied on top.
+The `revise` command modifies a previously recorded change. Unlike Git's `commit --amend` which only works on HEAD, Atomic can revise any change in the view. The change keeps its position — subsequent changes are automatically re-applied on top.
 
 This is useful for fixing typos, updating commit messages, or making corrections to recent changes without rewriting history.
 
@@ -97,7 +97,7 @@ atomic revise @~1 --dry-run
 
 | Aspect | Git | Atomic |
 |--------|-----|--------|
-| What can be amended | Only HEAD (`--amend`) | Any change in the stack |
+| What can be amended | Only HEAD (`--amend`) | Any change in the view |
 | History rewriting | Rewrites commit SHAs | Preserves graph structure |
 | Rebasing needed | Yes, for non-HEAD changes | No, changes re-apply automatically |
 | Conflicts | Possible during rebase | Only if changes aren't independent |

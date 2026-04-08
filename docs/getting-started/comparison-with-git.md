@@ -79,11 +79,11 @@ git cherry-pick B  # Result: state₁'
 git cherry-pick A  # Result: state₂' (potentially different!)
 
 # Atomic: Order doesn't matter
-atomic apply ABC
-atomic apply DEF
+atomic insert ABC
+atomic insert DEF
 # Same result as:
-atomic apply DEF
-atomic apply ABC
+atomic insert DEF
+atomic insert ABC
 ```
 
 **Why this matters**:
@@ -91,14 +91,14 @@ atomic apply ABC
 - ✅ No "merge commits" needed
 - ✅ Same changes = same result everywhere
 
-### 3. Branches vs Stacks
+### 3. Branches vs Views
 
-| Feature | Git Branches | Atomic Stacks |
+| Feature | Git Branches | Atomic Views |
 |---------|-------------|---------------|
 | **Model** | Pointers to commits | Named sequences of changes |
-| **Working copy** | Separate per branch | Shared across stacks |
+| **Working copy** | Separate per branch | Shared across views |
 | **Switching** | Changes entire filesystem | Applies/unapplies changes |
-| **Untracked files** | Removed when switching | Persist across stacks |
+| **Untracked files** | Removed when switching | Persist across views |
 | **Rebasing** | Required for updates | Not needed |
 | **Independence** | Must choose merge or rebase | Commutative by design |
 
@@ -112,17 +112,17 @@ ls  # Output: Files from feature-a
 git checkout feature-b
 ls  # Output: Different files (feature-b)
 
-# Atomic: Switching stacks keeps working copy
-atomic stack switch feature-a
+# Atomic: Switching views keeps working copy
+atomic view switch feature-a
 ls  # Output: Current files
 
-atomic stack switch feature-b
+atomic view switch feature-b
 ls  # Output: Same files + changes applied/unapplied
 ```
 
 **Why this matters**:
-- ✅ Faster stack switching (no filesystem churn)
-- ✅ Unrecorded work persists across stacks
+- ✅ Faster view switching (no filesystem churn)
+- ✅ Unrecorded work persists across views
 - ⚠️ Must be aware of working copy state
 
 ### 4. Rebasing
@@ -133,7 +133,7 @@ ls  # Output: Same files + changes applied/unapplied
 | **Changes commit hashes?** | Yes | N/A |
 | **Required for stacked changes?** | Yes | No |
 | **Conflict resolution** | During rebase | During apply |
-| **Interactive mode** | `git rebase -i` | `atomic unrecord` + `atomic apply` |
+| **Interactive mode** | `git rebase -i` | `atomic unrecord` + `atomic insert` |
 
 **Example:**
 
@@ -144,7 +144,7 @@ git rebase main  # Required to get main's updates
 # Commit hashes change, conflicts possible
 
 # Atomic: Updates happen automatically
-atomic stack switch feature-stack
+atomic view switch feature
 atomic pull  # Gets updates from main
 # Change hashes stay same, dependencies handled automatically
 ```
@@ -172,7 +172,7 @@ git commit --amend  # Changes commit hash
 git rebase -i HEAD~3  # Rewrites 3 commits
 
 # Atomic: Create new versions
-atomic unrecord ABC  # Remove from stack
+atomic unrecord ABC  # Remove from view
 atomic record -m "Updated version"  # New change ABC'
 # Old change ABC still exists in store
 ```
@@ -188,7 +188,7 @@ atomic record -m "Updated version"  # New change ABC'
 |---------|-----|--------|
 | **Push/Pull model** | Branch-based | Change-based |
 | **Force push** | Sometimes required | Rarely needed |
-| **Conflict detection** | During push | During apply |
+| **Conflict detection** | During push | During insert |
 | **Selective sync** | Branch or commit range | Individual changes |
 | **Deduplication** | Local only | Global (same hash = same change) |
 
@@ -200,7 +200,7 @@ git push origin feature-branch
 
 # Atomic: Push changes
 atomic push ABC DEF GHI  # Push specific changes
-atomic push --stack feature-work  # Or push entire stack
+atomic push --stack feature-work  # Or push entire view
 ```
 
 **Why this matters**:
@@ -224,13 +224,13 @@ git checkout main
 git merge feature
 
 # Atomic
-atomic stack new feature
+atomic view create feature
 # Edit files
 atomic record . -m "Message"
 atomic push
 # Code review
-atomic stack switch main
-atomic apply <change-hash>
+atomic view switch main
+atomic insert <change-hash>
 ```
 
 ### Stacked Changes Workflow
@@ -249,7 +249,7 @@ git checkout feature-2
 git rebase feature-1  # Required!
 
 # Atomic (no rebasing)
-atomic stack new feature
+atomic view create feature
 atomic record -m "Step 1"  # Change ABC
 atomic record -m "Step 2"  # Change DEF (depends on ABC)
 
@@ -281,8 +281,8 @@ git revert abc123      # Creates new commit
 git reset --hard HEAD~1  # Removes from history
 
 # Atomic
-atomic unrecord ABC    # Removes from stack
-atomic apply ABC       # Reapply later if needed
+atomic unrecord ABC    # Removes from view
+atomic insert ABC      # Reinsert later if needed
 # Original change always in store
 ```
 
@@ -379,16 +379,16 @@ atomic log  # Atomic changes
 
 # Gradually adopt Atomic workflows
 atomic record -m "New work"
-atomic stack new feature
+atomic view create feature
 ```
 
 ### Key Differences to Remember
 
-1. **Stacks share working copy** (not like Git branches)
-2. **Changes are immutable** (unrecord removes from stack, not from store)
+1. **Views share working copy** (not like Git branches)
+2. **Changes are immutable** (unrecord removes from view, not from store)
 3. **No rebasing needed** (dependency handling is automatic)
 4. **Hashes mean different things** (content only, not metadata)
-5. **Conflict resolution is different** (during apply, not merge)
+5. **Conflict resolution is different** (during insert, not merge)
 
 ## Learning Curve
 
@@ -396,12 +396,12 @@ atomic stack new feature
 - Recording changes (`atomic record` ≈ `git commit`)
 - Viewing history (`atomic log` ≈ `git log`)
 - Remote repositories (`atomic push/pull` ≈ `git push/pull`)
-- Branching (`atomic stack` ≈ `git branch`)
+- Branching (`atomic view` ≈ `git branch`)
 
 ### New Concepts to Learn
 - **Change identity** vs commit identity
 - **Commutative merges** vs three-way merges
-- **Stacks vs branches** (shared working copy)
+- **Views vs branches** (shared working copy)
 - **Dependency graphs** vs commit DAGs
 - **Unrecord vs revert/reset** (different semantics)
 
@@ -427,11 +427,11 @@ atomic stack new feature
 ### ❌ "Atomic is just Git with a different UI"
 **False**. Atomic uses fundamentally different data structures (patches vs trees) and merge semantics (commutative vs three-way).
 
-### ❌ "Atomic stacks are like Git branches"
-**False**. Stacks share the same working copy and changes maintain identity across stacks.
+### ❌ "Atomic views are like Git branches"
+**False**. Views share the same working copy and changes maintain identity across views.
 
 ### ❌ "You can't rewrite history in Atomic"
-**Partially true**. You can't rewrite changes (they're immutable), but you can create new versions and remove old ones from stacks.
+**Partially true**. You can't rewrite changes (they're immutable), but you can create new versions and remove old ones from views.
 
 ### ❌ "Atomic requires learning everything from scratch"
 **False**. Many concepts map directly from Git. Core differences are around merge semantics and change identity.
@@ -447,7 +447,7 @@ atomic stack new feature
 | **Identity** | Commit (snapshot + metadata) | Change (patch content) |
 | **Merge** | Three-way (order-dependent) | Commutative (order-independent) |
 | **Branching** | Separate working copies | Shared working copy |
-| **Rebasing** | Required for stacks | Not needed |
+| **Rebasing** | Required for stacked changes | Not needed |
 | **History** | Rewritable DAG | Immutable dependency graph |
 | **Best For** | Traditional workflows | Stacked changes, AI agents |
 

@@ -23,10 +23,10 @@ Every command listed here corresponds to a real subcommand in the `atomic` CLI b
 | [`diff`](diff.md) | Show differences in the working copy |
 | [`log`](log.md) | Show change history |
 | [`change`](change.md) | Inspect a specific change |
-| [`apply`](apply.md) | Apply changes to a stack |
+| [`insert`](insert.md) | Insert changes into a view |
 | [`reset`](reset.md) | Reset working copy to last recorded state |
-| [`split`](split.md) | Create a new stack from an existing one |
-| [`stack`](stack.md) | Manage stacks (new, switch, list, delete) |
+| [`split`](split.md) | Create a new view from an existing one |
+| [`view`](view.md) | Manage views (create, switch, list, delete) |
 | [`stash`](stash.md) | Temporarily save uncommitted changes |
 | [`tag`](tag.md) | Manage tags (create, list, show, delete) |
 | [`push`](push.md) | Push changes to a remote |
@@ -57,7 +57,7 @@ atomic log                        # View history
 - **[`diff`](diff.md)** — Show differences between working copy and last recorded state
 - **[`record`](record.md)** — Create a new change from tracked file modifications
 - **[`revise`](revise.md)** — Modify a previously recorded change in-place
-- **[`log`](log.md)** — Display the history of changes on the current stack
+- **[`log`](log.md)** — Display the history of changes on the current view
 - **[`change`](change.md)** — Inspect details of a specific change by hash or sequence number
 
 ### Repository Management
@@ -73,21 +73,21 @@ atomic reset --force              # Discard uncommitted changes
 - **[`init`](init.md)** — Initialize a new Atomic repository
 - **[`clone`](clone.md)** — Clone an existing repository from a remote
 - **[`reset`](reset.md)** — Reset the working copy to the last recorded state
-- **[`split`](split.md)** — Create a new stack from an existing one
+- **[`split`](split.md)** — Create a new view from an existing one
 
-### Stacks
+### Views
 
-Stacks are Atomic's equivalent of branches — but they're views of the same graph, not forks:
+Views are Atomic's equivalent of branches — but they're filtered perspectives on the same graph, not forks:
 
 ```bash
-atomic stack new feature-auth     # Create a stack
-atomic stack switch feature-auth  # Switch to it
-atomic stack list                 # List all stacks
-atomic stack delete old-feature   # Delete a stack
+atomic view create feature-auth   # Create a view
+atomic view switch feature-auth   # Switch to it
+atomic view list                  # List all views
+atomic view delete old-feature    # Delete a view
 ```
 
-- **[`stack`](stack.md)** — Create, switch, list, and delete stacks
-- **[`stash`](stash.md)** — Temporarily save uncommitted changes to an orphan stack
+- **[`view`](view.md)** — Create, switch, list, and delete views
+- **[`stash`](stash.md)** — Temporarily save uncommitted changes to an orphan view
 
 ### Remote Operations
 
@@ -100,7 +100,7 @@ atomic pull                       # Pull changes from default remote
 ```
 
 - **[`push`](push.md)** — Upload local changes to a remote
-- **[`pull`](pull.md)** — Download and apply changes from a remote
+- **[`pull`](pull.md)** — Download and insert changes from a remote
 - **[`clone`](clone.md)** — Create a new local repository from a remote
 - **[`remote`](remote.md)** — Add, remove, list, and configure named remotes
 
@@ -165,8 +165,8 @@ atomic add src/main.rs
 # 3. Record
 atomic record -m "Initial commit"
 
-# 4. Create a stack for a feature
-atomic stack new feature-auth --switch
+# 4. Create a view for a feature
+atomic view create feature-auth --switch
 
 # 5. Make changes, record, review
 atomic status
@@ -205,6 +205,6 @@ atomic --help
 
 # Help for a specific command
 atomic record --help
-atomic stack --help
+atomic view --help
 atomic agent enable --help
 ```

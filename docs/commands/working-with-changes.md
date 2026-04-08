@@ -18,9 +18,9 @@ The core workflow in Atomic — track files, record changes, review diffs, and n
 | [`diff`](diff.md) | Show differences between working copy and last recorded state |
 | [`record`](record.md) | Create a new change from tracked file modifications |
 | [`revise`](revise.md) | Modify a previously recorded change in-place |
-| [`log`](log.md) | Display the history of changes on the current stack |
+| [`log`](log.md) | Display the history of changes on the current view |
 | [`change`](change.md) | Inspect details of a specific change by hash or sequence number |
-| [`apply`](apply.md) | Apply changes from another stack or change file |
+| [`insert`](insert.md) | Insert changes from another view or change file |
 
 ## The Record Workflow
 
@@ -80,7 +80,7 @@ Each recorded change includes:
 
 ## Revising Changes
 
-Unlike Git where `--amend` only works on HEAD, Atomic can revise any change in the stack:
+Unlike Git where `--amend` only works on HEAD, Atomic can revise any change in the view:
 
 ```bash
 # Revise the most recent change
@@ -136,27 +136,27 @@ atomic change ABC12345
 atomic change
 ```
 
-## Applying Changes
+## Inserting Changes
 
-The `apply` command moves changes between stacks or applies change files:
+The `insert` command moves changes between views or inserts change files:
 
 ```bash
-# Apply a single change by hash
-atomic apply ABC12345
+# Insert a single change by hash
+atomic insert ABC12345
 
-# Apply changes from another stack
-atomic apply from-stack feature --to-stack main
+# Insert changes from another view
+atomic insert from-stack feature --to-stack main
 
 # Cherry-pick specific changes
-atomic apply pick ABC123 DEF456 --to-stack main
+atomic insert pick ABC123 DEF456 --to-stack main
 
-# Preview what would be applied
-atomic apply preview feature --to-stack main
+# Preview what would be inserted
+atomic insert preview feature --to-stack main
 ```
 
 ## See Also
 
 - [Repository Management](repository-management.md) — Creating and managing repos
-- [Stack](stack.md) — Managing stacks (views of the graph)
+- [View](view.md) — Managing views
 - [Stash](stash.md) — Temporarily saving uncommitted changes
 - [Agent](agent.md) — AI agent turn-level recording

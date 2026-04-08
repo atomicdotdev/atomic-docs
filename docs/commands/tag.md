@@ -34,7 +34,7 @@ In traditional patch-based systems, dependencies grow quadratically (O(n²)) bec
 
 When you create a tag, Atomic:
 
-1. Captures the current stack state as a Merkle tree hash
+1. Captures the current view state as a Merkle tree hash
 2. Creates a tag file consolidating all dependencies up to that point
 3. Adds the tag as a node in the dependency graph
 4. Future changes depend on the tag, not individual changes
@@ -77,7 +77,7 @@ atomic tag create v1.0.0 --author "Release Team <team@example.com>"
 
 **`--stack <STACK>`**
 
-Tag a specific stack instead of the current stack.
+Tag a specific view instead of the current view.
 
 ```bash
 atomic tag create v1.0.0 --stack main
@@ -150,13 +150,13 @@ atomic tag create --patch -m "Security fixes"
 # Incremental consolidation for hotfixes
 atomic tag create v1.0.1 --since v1.0.0 -m "Critical bugfix"
 
-# Tag a specific stack
+# Tag a specific view
 atomic tag create release-1.0 --stack release -m "Production release"
 ```
 
 ### `tag list` - List Tags
 
-Display all tags in a stack.
+Display all tags in a view.
 
 #### Synopsis
 
@@ -168,7 +168,7 @@ atomic tag list [OPTIONS]
 
 **`--stack <STACK>`**
 
-List tags from a specific stack.
+List tags from a specific view.
 
 ```bash
 atomic tag list --stack main
@@ -185,10 +185,10 @@ atomic tag list --attribution
 #### Examples
 
 ```bash
-# List tags in current stack
+# List tags in current view
 atomic tag list
 
-# List tags in main stack
+# List tags in main view
 atomic tag list --stack main
 
 # List with attribution info
@@ -203,9 +203,9 @@ v0.9.0  ABCDEF456...  2025-01-10  Beta release
 v0.1.0  MNOPQR789...  2025-01-01  Initial alpha
 ```
 
-### `tag checkout` - Restore Tag to New Stack
+### `tag checkout` - Restore Tag to New View
 
-Restore a tag's state into a new stack, useful for creating release branches or investigating historical states.
+Restore a tag's state into a new view, useful for creating release branches or investigating historical states.
 
 #### Synopsis
 
@@ -223,7 +223,7 @@ The tag name or state hash to checkout.
 
 **`--to-stack <STACK>`**
 
-Name for the new stack. If not specified, uses the tag's state hash as the stack name.
+Name for the new view. If not specified, uses the tag's state hash as the view name.
 
 ```bash
 atomic tag checkout v1.0.0 --to-stack release-1.0
@@ -232,13 +232,13 @@ atomic tag checkout v1.0.0 --to-stack release-1.0
 #### Examples
 
 ```bash
-# Checkout tag to new stack
+# Checkout tag to new view
 atomic tag checkout v1.0.0 --to-stack hotfix-branch
 
 # Checkout using state hash
 atomic tag checkout XYZABC123... --to-stack investigation
 
-# Checkout with auto-generated stack name
+# Checkout with auto-generated view name
 atomic tag checkout v1.0.0
 ```
 
@@ -272,7 +272,7 @@ atomic tag reset XYZABC123...
 
 ### `tag delete` - Delete a Tag
 
-Remove a tag from a stack. If the tag isn't referenced in any other stack, the tag file is also deleted.
+Remove a tag from a view. If the tag isn't referenced in any other view, the tag file is also deleted.
 
 #### Synopsis
 
@@ -290,7 +290,7 @@ The tag name or state hash to delete.
 
 **`--stack <STACK>`**
 
-Delete the tag from a specific stack instead of the current stack.
+Delete the tag from a specific view instead of the current view.
 
 ```bash
 atomic tag delete v0.9.0-beta --stack develop
@@ -299,10 +299,10 @@ atomic tag delete v0.9.0-beta --stack develop
 #### Examples
 
 ```bash
-# Delete tag from current stack
+# Delete tag from current view
 atomic tag delete v0.9.0-beta
 
-# Delete from specific stack
+# Delete from specific view
 atomic tag delete v1.0.0-rc --stack release
 ```
 
@@ -343,11 +343,11 @@ atomic record -m "Add feature X"
 atomic record -m "Add feature Y"
 
 # Critical bug found in production (v1.0.0)
-# Checkout v1.0.0 to hotfix branch
+# Checkout v1.0.0 to hotfix view
 atomic tag checkout v1.0.0 --to-stack hotfix-1.0.1
 
-# Switch to hotfix branch and fix bug
-atomic stack switch hotfix-1.0.1
+# Switch to hotfix view and fix bug
+atomic view switch hotfix-1.0.1
 atomic record -m "Fix critical security bug"
 
 # Create incremental hotfix tag
@@ -355,7 +355,7 @@ atomic tag create v1.0.1 --since v1.0.0 -m "Security hotfix"
 
 # Now you can push v1.0.1 to production
 # and also merge the fix back to main
-atomic stack switch main
+atomic view switch main
 atomic pull . --from-stack hotfix-1.0.1
 ```
 
@@ -368,7 +368,7 @@ atomic tag checkout v2.0.0 --to-stack support-2.x
 atomic tag checkout v3.0.0 --to-stack support-3.x
 
 # Apply fix to v2.x branch
-atomic stack switch support-2.x
+atomic view switch support-2.x
 atomic record -m "Backport security fix"
 atomic tag create v2.0.5 --since v2.0.4 -m "Security update"
 
@@ -509,7 +509,7 @@ Example: Repository with 1,000 changes
 - **Immutable**: Tags are immutable once created
 - **Cryptographically Signed**: Can be signed with identity keys
 - **Pushable**: Tags can be pushed/pulled independently
-- **Stack-Specific**: Tags are per-stack but can be shared
+- **View-Specific**: Tags are per-view but can be shared
 - **First-Class Nodes**: Tags are graph nodes, not just metadata
 - **Mathematical Guarantees**: Consolidation maintains semantic equivalence
 
@@ -537,7 +537,7 @@ name_pattern = "v{version}"
 - [`atomic log`](./log.md) - View history including tags
 - [`atomic push`](./push.md) - Push tags to remotes
 - [`atomic pull`](./pull.md) - Pull tags from remotes
-- [`atomic stack`](./stack.md) - Manage stacks
+- [`atomic view`](./view.md) - Manage views
 
 ## Related Concepts
 

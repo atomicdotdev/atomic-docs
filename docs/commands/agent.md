@@ -138,7 +138,7 @@ atomic agent attest
 # Show details for a specific attestation
 atomic agent attest --hash XMJZ3IPF
 
-# Show attestations for a stack
+# Show attestations for a view
 atomic agent attest --stack dev
 
 # Verbose output with model breakdown
@@ -150,7 +150,7 @@ atomic agent attest --verbose
 | Option | Description |
 |--------|-------------|
 | `--hash <PREFIX>` | Show details for a specific attestation (supports prefix matching) |
-| `--stack <NAME>` | Filter attestations covering changes in this stack |
+| `--stack <NAME>` | Filter attestations covering changes in this view |
 | `--verbose`, `-v` | Show per-model token breakdown and per-change details |
 
 **Example output:**
@@ -213,7 +213,7 @@ You prompt the agent → agent reads, edits, tests → Atomic records the turn
 ### On Session End
 
 5. **Attestation** — aggregate model/cost/token data from all covered changes and create a session-level audit node
-6. **Stack restore** — switch back to the user's original stack
+6. **View restore** — switch back to the user's original view
 
 ### Provenance Graph Pipeline
 
@@ -275,14 +275,14 @@ atomic agent explain <session-id> --all --save
 ### Review agent work before promoting
 
 ```bash
-# See what the agent changed on its isolated stack
+# See what the agent changed on its isolated view
 atomic log --stack agent-ses_3781fc...
 
-# Apply specific changes to your stack
-atomic apply <change-hash> --to dev
+# Insert specific changes into your view
+atomic insert <change-hash> --to dev
 
-# Clean up the agent stack
-atomic stack delete agent-ses_3781fc...
+# Clean up the agent view
+atomic view delete agent-ses_3781fc...
 ```
 
 ### Push agent data to remote

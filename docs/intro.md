@@ -59,7 +59,7 @@ A unified **node-based dependency graph** where each change knows its context—
 - ✅ Cryptographic AI attestation built-in
 - ✅ Semantic patch operations with context awareness
 
-> **⚠️ Important for Git Users**: Atomic stacks are **NOT** like Git branches! Stacks share the same working copy—only the patch history is isolated. When you switch stacks, untracked files remain in your workspace. See [Stacks Documentation](./commands/stack) for details.
+> **⚠️ Important for Git Users**: Atomic views are **NOT** like Git branches! Views share the same working copy—only the patch history is isolated. When you switch views, untracked files remain in your workspace. See [Views Documentation](./commands/view) for details.
 
 ## Key Features
 
@@ -127,7 +127,7 @@ atomic log
 atomic record -m "First change with Atomic"
 ```
 
-> **⚠️ Key Difference**: Atomic stacks share the same working copy (unlike Git branches). Read about [how stacks work](./commands/stack) before switching between them.
+> **⚠️ Key Difference**: Atomic views share the same working copy (unlike Git branches). Read about [how views work](./commands/view) before switching between them.
 
 See our [Migration Guide](./getting-started/migrating-from-git) for a complete walkthrough.
 

@@ -15,9 +15,9 @@ atomic stash [SUBCOMMAND]
 
 ## Description
 
-The `stash` command saves your uncommitted working copy changes to a temporary orphan stack, then restores the working copy to a clean state. This is useful when you need to switch stacks but have changes that belong elsewhere, or when you need a clean working copy for a different task.
+The `stash` command saves your uncommitted working copy changes to a temporary orphan view, then restores the working copy to a clean state. This is useful when you need to switch views but have changes that belong elsewhere, or when you need a clean working copy for a different task.
 
-Stashes are stored as lightweight orphan stacks under the `stash/` namespace. They persist until explicitly dropped or popped.
+Stashes are stored as lightweight orphan views under the `stash/` namespace. They persist until explicitly dropped or popped.
 
 ## Subcommands
 
@@ -67,7 +67,7 @@ atomic stash apply
 atomic stash apply stash@{1}
 ```
 
-This is useful when you want to apply the same changes to multiple stacks.
+This is useful when you want to apply the same changes to multiple views.
 
 ### `list`
 
@@ -87,7 +87,7 @@ stash@{2}: On main — (3 days ago)
 
 Each entry shows:
 - The stash index
-- The source stack
+- The source view
 - The stash message (if provided)
 - How long ago it was created
 
@@ -132,45 +132,45 @@ atomic stash show --diff
 
 ## How It Works
 
-Under the hood, stashes are implemented as orphan stacks:
+Under the hood, stashes are implemented as orphan views:
 
-1. **Save** — Creates a temporary stack named `stash/auto_{timestamp}` (or `stash/{source}_{timestamp}_{message}`), records all working copy changes to it, then reverts the working copy.
+1. **Save** — Creates a temporary view named `stash/auto_{timestamp}` (or `stash/{source}_{timestamp}_{message}`), records all working copy changes to it, then reverts the working copy.
 
-2. **Pop/Apply** — Switches to the stash stack, reads the recorded changes, applies them to the current working copy, and (for `pop`) deletes the stash stack.
+2. **Pop/Apply** — Switches to the stash view, reads the recorded changes, applies them to the current working copy, and (for `pop`) deletes the stash view.
 
-3. **Drop** — Deletes the orphan stack and its recorded changes.
+3. **Drop** — Deletes the orphan view and its recorded changes.
 
-Because stashes are just stacks, they participate in the normal Atomic graph — they're content-addressed, use the same change format, and can even be pushed to remotes if needed.
+Because stashes are just views, they participate in the normal Atomic graph — they're content-addressed, use the same change format, and can even be pushed to remotes if needed.
 
 ## Examples
 
-### Save changes before switching stacks
+### Save changes before switching views
 
 ```bash
 # You're working on feature-auth but need to fix a bug on main
 atomic stash -m "WIP: auth middleware"
-atomic stack switch main
+atomic view switch main
 
 # Fix the bug
 atomic record -m "Fix null pointer in config parser"
 
 # Go back and restore your work
-atomic stack switch feature-auth
+atomic view switch feature-auth
 atomic stash pop
 ```
 
-### Apply the same changes to multiple stacks
+### Apply the same changes to multiple views
 
 ```bash
 # Stash the changes
 atomic stash -m "shared config update"
 
-# Apply to first stack
-atomic stack switch staging
+# Apply to first view
+atomic view switch staging
 atomic stash apply
 
-# Apply to second stack
-atomic stack switch production
+# Apply to second view
+atomic view switch production
 atomic stash apply
 
 # Clean up the stash
@@ -191,15 +191,15 @@ atomic stash drop --all
 
 | Aspect | Git | Atomic |
 |--------|-----|--------|
-| Storage | Special ref outside branch model | Orphan stack (same graph model) |
-| Identity | Index-based only (`stash@{0}`) | Index-based, with source stack and message |
+| Storage | Special ref outside branch model | Orphan view (same graph model) |
+| Identity | Index-based only (`stash@{0}`) | Index-based, with source view and message |
 | Conflicts on pop | Possible, stash kept | Possible, stash kept |
-| Push to remote | Not possible | Possible (it's just a stack) |
+| Push to remote | Not possible | Possible (it's just a view) |
 | Untracked files | Requires `--include-untracked` | Requires `--include-untracked` |
 
 ## See Also
 
-- [stack](stack.md) — Managing stacks
+- [view](view.md) — Managing views
 - [record](record.md) — Recording changes
 - [reset](reset.md) — Discarding working copy changes
 - [status](status.md) — Viewing working copy status

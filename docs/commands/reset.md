@@ -5,7 +5,7 @@ title: reset
 
 # atomic reset
 
-Reset the working copy to the last recorded state or switch stacks.
+Reset the working copy to the last recorded state or switch views.
 
 ## Synopsis
 
@@ -15,19 +15,19 @@ atomic reset [OPTIONS] [FILES]...
 
 ## Description
 
-The `reset` command restores the working copy to match the pristine state (the last recorded state in the stack). This is useful for:
+The `reset` command restores the working copy to match the pristine state (the last recorded state in the view). This is useful for:
 
 - **Discarding uncommitted changes**: Remove modifications you don't want to keep
-- **Switching stacks**: Change to a different stack and update the working copy
+- **Switching views**: Change to a different view and update the working copy
 - **Restoring specific files**: Reset individual files while keeping others modified
 - **Recovering from conflicts**: Reset to a clean state after problematic changes
 
 When you reset, Atomic:
 
 1. Compares the working copy with the pristine state
-2. Restores files to match the stack state
+2. Restores files to match the view state
 3. Discards any unrecorded modifications (unless `--force` is required)
-4. Optionally switches the current stack
+4. Optionally switches the current view
 
 **Warning**: Reset discards uncommitted changes. They cannot be recovered unless recorded first.
 
@@ -60,10 +60,10 @@ atomic reset --repository /path/to/repo
 
 ### `--stack <STACK>`
 
-Reset the working copy to a specific stack and switch to that stack.
+Reset the working copy to a specific view and switch to that view.
 
 ```bash
-# Switch to main stack
+# Switch to main view
 atomic reset --stack main
 
 # Switch to feature branch
@@ -119,13 +119,13 @@ atomic reset tests/
 atomic reset Cargo.toml README.md src/lib.rs
 ```
 
-### Switch Stacks
+### Switch Views
 
 ```bash
-# Switch to main stack
+# Switch to main view
 atomic reset --stack main
 
-# Switch to feature branch and reset working copy
+# Switch to feature view and reset working copy
 atomic reset --stack feature/auth
 ```
 
@@ -161,7 +161,7 @@ atomic unrecord  # if needed
 ### Reset vs. Unrecord
 
 - **`reset`**: Discards working copy changes, doesn't affect recorded history
-- **`unrecord`**: Removes changes from stack history, preserves working copy
+- **`unrecord`**: Removes changes from view history, preserves working copy
 
 ```bash
 # Discard uncommitted changes
@@ -181,9 +181,9 @@ atomic unrecord HASH...
 atomic reset --force  # Update working copy
 ```
 
-## Stack Switching
+## View Switching
 
-When using `--stack` to switch stacks:
+When using `--stack` to switch views:
 
 ### Without Uncommitted Changes
 
@@ -193,8 +193,8 @@ atomic reset --stack feature-branch
 ```
 
 Atomic will:
-1. Switch the current stack
-2. Update working copy to match the new stack
+1. Switch the current view
+2. Update working copy to match the new view
 3. Complete without warnings
 
 ### With Uncommitted Changes
@@ -202,7 +202,7 @@ Atomic will:
 ```bash
 # Attempt to switch with changes
 atomic reset --stack main
-# Error: Cannot change stack, as there are unrecorded changes.
+# Error: Cannot change view, as there are unrecorded changes.
 ```
 
 Solution:
@@ -215,15 +215,15 @@ atomic reset --stack main
 atomic reset --force --stack main
 ```
 
-### Partial Stack Difference
+### Partial View Difference
 
-If stacks have diverged, reset updates only affected files:
+If views have diverged, reset updates only affected files:
 
 ```bash
-# Switch to stack with different files
+# Switch to view with different files
 atomic reset --stack experimental
 
-# Only files that differ between stacks are updated
+# Only files that differ between views are updated
 # Other files remain unchanged
 ```
 
@@ -282,7 +282,7 @@ Reset performance depends on:
 
 - **Working copy size**: More files = longer reset
 - **Number of files to reset**: Fewer files = faster
-- **Stack differences**: Bigger differences = more work
+- **View differences**: Bigger differences = more work
 
 Typical reset times:
 - **Small reset** (&lt; 10 files): &lt; 100ms
@@ -348,7 +348,7 @@ Warning: Conflicts detected in working copy
 ```
 
 This happens when:
-- Stack has conflicting changes
+- View has conflicting changes
 - Working copy state is complex
 
 Resolution:
@@ -368,7 +368,7 @@ atomic record -m "Resolve conflicts"
 - **Destructive**: Reset discards uncommitted changes permanently
 - **Working Copy Only**: Doesn't affect recorded history
 - **Selective**: Can reset individual files
-- **Stack Switching**: Updates working copy when changing stacks
+- **View Switching**: Updates working copy when changing views
 - **Safe by Default**: Warns before discarding changes (unless configured otherwise)
 - **Dry Run**: Preview changes without modifying files
 
@@ -410,7 +410,7 @@ atomic diff  # Shows remaining modifications
 ## Exit Codes
 
 - `0` - Success
-- `1` - Error (no stack, conflicts, etc.)
+- `1` - Error (no view, conflicts, etc.)
 - `2` - Invalid arguments
 
 ## See Also
@@ -418,13 +418,13 @@ atomic diff  # Shows remaining modifications
 - [`atomic diff`](./diff.md) - Preview changes before resetting
 - [`atomic revise`](./revise.md) - Revise a recorded change
 - [`atomic record`](./record.md) - Record changes before resetting
-- [`atomic stack`](./stack.md) - Stack management
-- [`atomic apply`](./apply.md) - Apply specific changes
+- [`atomic view`](./view.md) - View management
+- [`atomic insert`](./insert.md) - Insert specific changes
 
 ## Related Concepts
 
 - **Working Copy** - Your editable files on disk
 - **Pristine** - The recorded repository state
-- **Stacks** - Independent lines of development
+- **Views** - Independent lines of development
 - **Uncommitted Changes** - Modifications not yet recorded
 - **Destructive Operation** - Cannot be undone

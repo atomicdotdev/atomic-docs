@@ -84,7 +84,7 @@ This shows:
 Example output:
 
 ```
-On stack main
+On view main
 
 Changes to be recorded:
   New file:   README.md
@@ -341,7 +341,7 @@ Now that you understand the basics:
 
 1. Learn about collaborating with others (coming soon)
 2. Explore tag consolidation for better performance
-3. Understand stacks for managing branches
+3. Understand views for managing branches
 4. Set up workflows for team development
 
 ## Common Questions

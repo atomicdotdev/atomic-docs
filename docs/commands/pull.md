@@ -5,7 +5,7 @@ title: pull
 
 # atomic pull
 
-Pull changes from a remote repository and apply them to a local stack.
+Pull changes from a remote repository and apply them to a local view.
 
 ## Synopsis
 
@@ -15,14 +15,14 @@ atomic pull [OPTIONS] [REMOTE]
 
 ## Description
 
-The `pull` command downloads changes and tags from a remote repository and applies them to your local stack. This is the primary way to synchronize work from collaborators and integrate changes from remote sources.
+The `pull` command downloads changes and tags from a remote repository and applies them to your local view. This is the primary way to synchronize work from collaborators and integrate changes from remote sources.
 
 When you pull, Atomic:
 
 1. Connects to the remote repository
 2. Downloads the changelist to see what's new
 3. Downloads missing change files
-4. Applies changes to your local stack
+4. Applies changes to your local view
 5. Optionally updates the working copy
 6. Syncs AI attribution metadata if enabled
 
@@ -57,7 +57,7 @@ atomic pull --repository /path/to/repo
 
 ### `--to-stack <STACK>`
 
-Pull into a specific stack instead of the current stack.
+Pull into a specific view instead of the current view.
 
 ```bash
 # Pull into feature branch
@@ -66,13 +66,13 @@ atomic pull --to-stack feature/new-ui
 
 ### `--from-stack <STACK>`
 
-Pull from a specific remote stack instead of the remote's default stack.
+Pull from a specific remote view instead of the remote's default view.
 
 ```bash
 # Pull from remote develop branch
 atomic pull --from-stack develop
 
-# Pull from specific remote and stack
+# Pull from specific remote and view
 atomic pull origin --from-stack experimental
 ```
 
@@ -138,10 +138,10 @@ atomic pull --skip-attribution
 
 ### `[CHANGES]...`
 
-Pull specific changes from the local repository (not necessarily from a stack). This is for local change application.
+Pull specific changes from the local repository (not necessarily from a view). This is for local change application.
 
 ```bash
-# Apply local changes to current stack
+# Apply local changes to current view
 atomic pull . ABCD1234... EFGH5678...
 ```
 
@@ -160,16 +160,16 @@ atomic pull origin
 atomic pull upstream
 ```
 
-### Pull from Different Remote Stacks
+### Pull from Different Remote Views
 
 ```bash
-# Pull from remote's develop stack
+# Pull from remote's develop view
 atomic pull --from-stack develop
 
 # Pull remote feature into local feature
 atomic pull --from-stack feature/auth --to-stack feature/auth
 
-# Pull main into current stack
+# Pull main into current view
 atomic pull origin --from-stack main
 ```
 
@@ -196,10 +196,10 @@ atomic pull --with-attribution
 atomic pull --skip-attribution
 ```
 
-### Local Stack Pull
+### Local View Pull
 
 ```bash
-# Pull changes from another local stack
+# Pull changes from another local view
 atomic pull . --from-stack feature/completed
 
 # Apply specific local changes
@@ -245,7 +245,7 @@ Downloading changes...
 
 ### 3. Change Application
 
-Changes are applied to the local stack:
+Changes are applied to the local view:
 
 ```
 Applying changes...
@@ -257,7 +257,7 @@ Applying changes...
 
 ### 4. Working Copy Update
 
-The working copy is updated to reflect the new stack state:
+The working copy is updated to reflect the new view state:
 
 ```
 Updating working copy...
@@ -327,7 +327,7 @@ atomic pull /path/to/other/repo
 # File URL
 atomic pull file:///path/to/other/repo
 
-# Current repository (different stack)
+# Current repository (different view)
 atomic pull . --from-stack other-branch
 ```
 
@@ -437,11 +437,11 @@ atomic tag list
 
 ```bash
 # Pull latest main
-atomic stack switch main
+atomic view switch main
 atomic pull
 
 # Merge into feature branch
-atomic stack switch feature/my-work
+atomic view switch feature/my-work
 atomic pull . --from-stack main
 ```
 
@@ -549,14 +549,14 @@ atomic remote
 
 - [`atomic push`](./push.md) - Push changes to a remote
 - [`atomic clone`](./clone.md) - Clone a remote repository
-- [`atomic apply`](./apply.md) - Apply changes to stacks
-- [`atomic stack`](./stack.md) - Manage stacks
+- [`atomic insert`](./insert.md) - Insert changes into views
+- [`atomic view`](./view.md) - Manage views
 - [`atomic record`](./record.md) - Record changes after pulling
 
 ## Related Concepts
 
 - **Remotes** - Remote repository locations
-- **Stacks** - Independent lines of development
+- **Views** - Independent lines of development
 - **Changes** - Atomic units of modification
 - **Attribution** - AI contribution metadata
 - **Conflict-Free** - Mathematical guarantees of merge correctness

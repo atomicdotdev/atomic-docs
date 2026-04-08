@@ -172,7 +172,7 @@ Source code:
 - Repository: 5,000 files
 - Agents: 50 concurrent agents
 - Pattern: Each agent generates 200 changes (small, incremental)
-- Dependency pattern: Agents create independent change stacks
+- Dependency pattern: Agents create independent change views
 
 **Metrics**:
 - Total throughput (changes per second)
@@ -221,7 +221,7 @@ pub struct BenchmarkRepo {
 pub enum ChangePattern {
     Sequential,      // Each change depends on previous
     Independent,     // All changes independent
-    Stacked,         // Changes form dependency stacks
+    Stacked,         // Changes form dependency chains
     Mixed,           // Combination of patterns
 }
 
@@ -248,7 +248,7 @@ Extract realistic change patterns from actual large codebases to inform benchmar
    - Developer workflow patterns (feature development, hotfixes, refactoring)
 
 2. **Pattern library**: Build library of common patterns based on real-world analysis:
-   - Feature branch patterns (sequential, stacked changes)
+   - Feature view patterns (sequential, layered changes)
    - Hotfix patterns (independent, fast changes)
    - Refactoring patterns (many files, deep dependencies)
    - AI agent patterns (many small, independent changes)

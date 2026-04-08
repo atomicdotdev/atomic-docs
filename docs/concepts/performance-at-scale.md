@@ -217,10 +217,10 @@ pub struct InodeVertex {
 }
 ```
 
-Stacks are **views** of this shared graph — not separate data structures. A `StackState` simply records which changes have been applied and in what order, like a bookmark into the graph:
+Views are **filtered perspectives** on this shared graph — not separate data structures. A `ViewState` simply records which changes have been applied and in what order, like a bookmark into the graph:
 
 ```rust
-pub struct StackState {
+pub struct ViewState {
     pub id: u64,            // Repository-local identifier
     pub name: String,       // Human-readable name ("main", "feature-x")
     pub state: Merkle,      // Cumulative hash of applied changes
@@ -228,7 +228,7 @@ pub struct StackState {
 }
 ```
 
-Multiple stacks all read from the same `GRAPH` and `INODE_GRAPH` tables. Creating a new stack doesn't duplicate any graph data — it just starts a new sequence of applied changes over the same underlying content.
+Multiple views all read from the same `GRAPH` and `INODE_GRAPH` tables. Creating a new view doesn't duplicate any graph data — it just starts a new sequence of applied changes over the same underlying content.
 
 #### Why This Works
 
@@ -455,7 +455,7 @@ Key observations:
 - [Performance Benchmarking Strategy](/proposals/performance-benchmarking-strategy) — Detailed benchmark methodology
 - Source: `atomic-core/src/pristine/inode_graph.rs` — `InodeVertex`, `InodeGraphOps` trait, dual B-tree implementation
 - Source: `atomic-core/src/pristine/tables.rs` — `GRAPH` and `INODE_GRAPH` table definitions
-- Source: `atomic-core/src/pristine/traits.rs` — `StackState`, `GraphTxnT`, `MutTxnT` traits
+- Source: `atomic-core/src/pristine/traits.rs` — `ViewState`, `GraphTxnT`, `MutTxnT` traits
 
 ---
 

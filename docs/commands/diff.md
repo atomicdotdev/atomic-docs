@@ -15,7 +15,7 @@ atomic diff [OPTIONS] [PATHS]...
 
 ## Description
 
-The `diff` command displays the differences between your working copy (the files you're editing) and the pristine state (the last recorded state in the stack). This helps you review changes before recording them.
+The `diff` command displays the differences between your working copy (the files you're editing) and the pristine state (the last recorded state in the view). This helps you review changes before recording them.
 
 Unlike traditional VCS diff commands, Atomic computes differences based on the patch theory, showing semantic operations rather than just line-level changes. This enables:
 
@@ -36,7 +36,7 @@ atomic diff --repository /path/to/repo
 
 ### `--stack <STACK>`
 
-Show differences relative to a specific stack instead of the current stack.
+Show differences relative to a specific view instead of the current view.
 
 ```bash
 atomic diff --stack feature-branch
@@ -410,7 +410,7 @@ To see differences between recorded changes (not working copy), use:
 # Show what a specific change did
 atomic change <HASH> --diff
 
-# Compare stack states (advanced)
+# Compare view states (advanced)
 atomic log --description --files
 ```
 

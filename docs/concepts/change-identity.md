@@ -298,7 +298,7 @@ Teams can share changes knowing:
 **A**: Create a new change. The old change remains in the store.
 
 ```bash
-atomic unrecord ABC123  # Remove from stack
+atomic unrecord ABC123  # Remove from view
 atomic record src/fix.rs -m "Updated fix"  # New change: ABC124
 # ABC123 still exists in change store, can be referenced
 ```

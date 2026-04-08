@@ -15,7 +15,7 @@ atomic clone [OPTIONS] <REMOTE> [PATH]
 
 ## Description
 
-The `clone` command creates a local copy of a remote Atomic repository. It downloads all changes, tags, and stack information from the remote, setting up a complete, independent repository on your local machine.
+The `clone` command creates a local copy of a remote Atomic repository. It downloads all changes, tags, and view information from the remote, setting up a complete, independent repository on your local machine.
 
 Unlike centralized version control systems, cloned Atomic repositories are **fully autonomous**. They contain the complete history and can operate independently, with the ability to push and pull changes to/from remotes as needed.
 
@@ -25,7 +25,7 @@ When you clone a repository, Atomic:
 2. Initializes a new repository structure
 3. Downloads all changes and tags from the remote
 4. Sets up the remote configuration
-5. Checks out the working copy for the default stack
+5. Checks out the working copy for the default view
 
 ## Arguments
 
@@ -70,7 +70,7 @@ atomic clone ssh://host/path/to/myrepo.git custom-name
 
 ### `--stack <STACK>`
 
-Clone and checkout a specific stack instead of the default stack.
+Clone and checkout a specific view instead of the default view.
 
 ```bash
 atomic clone --stack develop ssh://host/repo.git
@@ -125,10 +125,10 @@ atomic clone https://github.com/user/repo.git
 atomic clone ssh://host/repo.git my-project
 ```
 
-### Clone Specific Stack
+### Clone Specific View
 
 ```bash
-# Clone and checkout the 'develop' stack
+# Clone and checkout the 'develop' view
 atomic clone --stack develop ssh://host/repo.git
 
 # Clone and checkout a feature branch
@@ -298,8 +298,8 @@ cd repo
 # Verify the clone
 atomic log --limit 5
 
-# Check current stack
-atomic stack
+# Check current view
+atomic view
 
 # Make changes and work normally
 atomic add .
@@ -348,7 +348,7 @@ ssh git@github.com  # Should show "Hi username!"
 - **No Central Authority**: Cloned repositories can work offline
 - **Remote Tracking**: The origin remote is configured automatically
 - **Working Copy**: The working copy is checked out automatically
-- **Stacks**: All stacks are cloned, but only one is checked out
+- **Views**: All views are cloned, but only one is checked out
 - **Tags**: All tags are downloaded during clone
 
 ## Configuration
@@ -384,13 +384,13 @@ timeout = 300  # seconds
 - [`atomic init`](./init.md) - Initialize a new repository
 - [`atomic pull`](./pull.md) - Pull changes from a remote
 - [`atomic push`](./push.md) - Push changes to a remote
-- [`atomic stack`](./stack.md) - Manage stacks
+- [`atomic view`](./view.md) - Manage views
 - [`atomic log`](./log.md) - View repository history
 
 ## Related Concepts
 
 - **Remotes** - Remote repository locations
-- **Stacks** - Independent lines of development
+- **Views** - Independent lines of development
 - **Working Copy** - Your editable files
 - **Lazy Clone** - On-demand change downloading
 - **Distributed VCS** - Every repository is complete and autonomous

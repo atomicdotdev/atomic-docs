@@ -69,7 +69,7 @@ Coverage:
   dev                  ████████████░░░░░░░░ 3/5 (60%)
 ```
 
-### Filter by Stack
+### Filter by View
 
 ```bash
 $ atomic agent attest --stack dev
@@ -89,7 +89,7 @@ Shows per-model token breakdown and per-change details for every attestation.
 
 When the TurnOrchestrator receives a `session-end` event and the session had at least one turn:
 
-1. **Query the agent stack history** — get all change hashes on the agent's stack
+1. **Query the agent view history** — get all change hashes on the agent's view
 2. **Check for existing attestations** — find which changes are already covered by prior attestations from the same session (for resumed sessions)
 3. **Determine new changes** — filter to changes not yet attested
 4. **Load each change** — read provenance entries (model, tokens, cost) and file operations (lines added/removed)
@@ -146,7 +146,7 @@ The server API also supports generating attestations on demand from the provenan
 POST /tenant/:id/portfolio/:id/project/:id/attestations/generate
 ```
 
-This reads the provenance entries from every change on a stack, aggregates them, and creates an attestation. This is useful when:
+This reads the provenance entries from every change on a view, aggregates them, and creates an attestation. This is useful when:
 
 - Changes were pushed before the attestation was created locally
 - You want to regenerate an attestation with updated data

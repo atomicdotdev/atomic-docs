@@ -30,9 +30,9 @@ Each agent session follows a well-defined lifecycle managed by the **TurnOrchest
 │                         Agent Session                               │
 │                                                                     │
 │  session-start                                                      │
-│    ├── Create isolated agent stack (forked from current)            │
+│    ├── Create isolated agent view (Draft, parent: current)          │
 │    ├── Initialize provenance accumulator                            │
-│    └── Switch working copy to agent stack                           │
+│    └── Switch working copy to agent view                            │
 │                                                                     │
 │  Turn 1:                                                            │
 │    ├── user-prompt  → Goal node in provenance graph                 │
@@ -48,7 +48,7 @@ Each agent session follows a well-defined lifecycle managed by the **TurnOrchest
 │                                                                     │
 │  session-end                                                        │
 │    ├── Create Attestation (enriched with model/cost/token data)     │
-│    ├── Switch back to user's original stack                         │
+│    ├── Switch back to user's original view                          │
 │    └── Clean up session state                                       │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -120,30 +120,30 @@ The `+tag` is a short hash of the session ID — every agent turn traces back to
 | Gemini CLI | `gemini+abcd <lee@atomic.dev>` |
 | OpenCode | `opencode+9876 <lee@atomic.dev>` |
 
-## Agent Isolation with Stacks
+## Agent Isolation with Views
 
-When a session starts, Atomic automatically creates an **isolated agent stack** forked from the current stack. All agent work happens on this stack:
+When a session starts, Atomic automatically creates an **isolated agent view** (Draft, parent: current view). All agent work happens on this view:
 
 ```bash
 # Before session: you're on "dev"
-# Session starts: Atomic creates "agent-ses_3781fc..." (Local, parent: dev)
-# Agent works on its isolated stack
+# Session starts: Atomic creates "agent-ses_3781fc..." (Draft, parent: dev)
+# Agent works on its isolated view
 # Session ends: Atomic switches back to "dev"
 ```
 
-Agent stacks use the [two-tier graph model](/concepts/graph-model-explained):
-- Agent edges are stored in `STACK_GRAPH` (local, ephemeral)
-- Parent stack edges are in `GRAPH` (shared, permanent)
-- The agent sees the union of both — full project context with isolated changes
+Agent views use the single canonical graph with view filters:
+- All edges are written directly to `GRAPH` (single source of truth)
+- The agent view's filter chain (agent → dev → main) determines which edges are visible
+- The agent sees the full project context plus its own isolated changes
 
-When you're done, apply changes to the parent and delete the agent stack:
+When you're done, insert changes into the parent and delete the agent view:
 
 ```bash
-# Apply specific changes from the agent stack
-atomic apply <change-hash> --to dev
+# Insert specific changes from the agent view
+atomic insert <change-hash> --to dev
 
-# Delete the agent stack — cascade-deletes its edges, zero orphans
-atomic stack delete agent-ses_3781fc...
+# Delete the agent view — removes VIEW_CHANGES entries, orphaned edges cleaned by GC
+atomic view delete agent-ses_3781fc...
 ```
 
 ## Supported Agents

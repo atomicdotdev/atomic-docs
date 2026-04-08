@@ -29,11 +29,11 @@ This installs hooks into the agent's configuration file. The hooks call back to 
 
 Use your agent as you always do. Atomic hooks fire automatically:
 
-- **Session start** → creates an isolated agent stack forked from your current stack
+- **Session start** → creates an isolated agent view forked from your current view
 - **User prompt** → records a Goal node in the provenance graph
 - **Each tool call** → records Exploration, Commitment, or Verification nodes
 - **Turn end** → runs status → add → record, saves a provenance graph
-- **Session end** → creates an attestation, switches back to your stack
+- **Session end** → creates an attestation, switches back to your view
 
 ### 3. Review What Happened
 
@@ -105,35 +105,35 @@ You prompt Claude Code → agent reads files, makes edits, runs tests
 
 Each hook invocation is a separate process — no daemon required. The provenance accumulator is persisted to `.atomic/sessions/{session_id}/graph.json` between invocations using atomic writes (temp file + rename).
 
-## Agent Isolation with Stacks
+## Agent Isolation with Views
 
-When a session starts, Atomic automatically creates an **isolated agent stack** forked from the current stack:
+When a session starts, Atomic automatically creates an **isolated agent view** forked from the current view:
 
 ```
-  dev  (Shared — your working stack)
+  dev  (Shared — your working view)
     │
-    └── agent-ses_3781fc7a... (Local, parent: dev)
+    └── agent-ses_3781fc7a... (Draft, parent: dev)
           ├── Turn 1: Change ABC123
           ├── Turn 2: Change DEF456
           └── Turn 3: Change GHI789
 ```
 
-The agent stack uses the [two-tier graph model](/concepts/graph-model-explained):
-- Agent edges are stored in `STACK_GRAPH` (local, ephemeral)
-- Parent stack edges are in `GRAPH` (shared, permanent)
-- The agent sees the union of both — full project context with isolated changes
+The agent view uses the [single GRAPH + view filter model](/concepts/graph-model-explained):
+- All edges are stored in the canonical `GRAPH` (single source of truth)
+- The agent view's change filter determines which edges are visible
+- The agent sees the parent view's changes plus its own — full project context with isolated changes
 
-When the session ends, Atomic switches back to your original stack. You then decide what to promote:
+When the session ends, Atomic switches back to your original view. You then decide what to promote:
 
 ```bash
-# Apply specific changes from the agent stack to dev
-atomic apply <change-hash> --to dev
+# Insert specific changes from the agent view into dev
+atomic insert <change-hash> --to dev
 
-# Or apply the most recent change
-atomic apply @~1 --to dev
+# Or insert the most recent change
+atomic insert @~1 --to dev
 
-# Delete the agent stack — cascade-deletes its edges, zero orphans
-atomic stack delete agent-ses_3781fc7a...
+# Delete the agent view — removes VIEW_CHANGES entries, orphaned edges cleaned by GC
+atomic view delete agent-ses_3781fc7a...
 ```
 
 ## Provenance Graphs
@@ -248,7 +248,7 @@ Attestations are only uploaded when all their covered changes have been pushed. 
 | **Cost tracking** | Not possible | Per-model token and cost breakdown in attestations |
 | **Agent reasoning** | Not tracked | Causal provenance graph (goal → exploration → commitment) |
 | **Turn recording** | Manual `git commit` or wrapper scripts | Automatic on each turn end |
-| **Agent isolation** | Branches (diverge, need merging) | Stacks (views of same graph, zero-orphan cleanup) |
+| **Agent isolation** | Branches (diverge, need merging) | Views (filtered perspectives on same graph, zero-orphan cleanup) |
 | **Conflict granularity** | Whole lines | Token-level (two agents editing different tokens on same line merge cleanly) |
 | **Identity** | Name + email string | Ed25519 cryptographic identity with delegation |
 
@@ -260,7 +260,7 @@ Don't run `atomic record` manually during agent sessions — the hooks do this a
 
 ### Review Before Promoting
 
-Agent changes live on an isolated stack. Review them before applying to your shared stack:
+Agent changes live on an isolated view. Review them before inserting into your shared view:
 
 ```bash
 # See what the agent changed
@@ -269,8 +269,8 @@ atomic log --stack agent-ses_3781fc...
 # Diff against the parent
 atomic diff --stack agent-ses_3781fc...
 
-# Apply only the changes you want
-atomic apply <hash> --to dev
+# Insert only the changes you want
+atomic insert <hash> --to dev
 ```
 
 ### Use Explain for Complex Sessions
@@ -291,7 +291,7 @@ Attestations give reviewers context about the AI session that produced the code:
 ```bash
 $ atomic agent attest --hash XMJZ3IPF --verbose
 
-# Shows: model, tokens, cost, duration, files changed, coverage per stack
+# Shows: model, tokens, cost, duration, files changed, coverage per view
 ```
 
 This is especially useful when reviewing pull requests — you can see exactly how much AI assistance was involved and what model was used.
@@ -316,9 +316,9 @@ The state machine requires `TurnStart` (user prompt) before `TurnEnd` (stop) wil
 
 If the attestation shows `$0.00` and `0 tokens`, the provenance entries in the changes may not have token/cost data. This happens when the agent doesn't report usage metrics through its hook payload. The attestation will still show the correct model name, changes covered, and lines changed.
 
-### Agent Stack Not Created
+### Agent View Not Created
 
-If the agent stack wasn't created (e.g., repository couldn't be opened), recording still works — it just records to the current stack instead of an isolated one. Check stderr output for warnings.
+If the agent view wasn't created (e.g., repository couldn't be opened), recording still works — it just records to the current view instead of an isolated one. Check stderr output for warnings.
 
 ## Next Steps
 

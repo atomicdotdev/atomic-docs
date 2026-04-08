@@ -4,7 +4,7 @@ title: split
 
 # atomic split
 
-Split a stack with advanced options.
+Split a view with advanced options.
 
 ## Synopsis
 
@@ -14,19 +14,19 @@ atomic split [OPTIONS] <STACK>
 
 ## Description
 
-The `split` command creates a new stack by splitting an existing stack. This is similar to `atomic stack new` but provides additional options for advanced use cases.
+The `split` command creates a new view by splitting an existing view. This is similar to `atomic view create` but provides additional options for advanced use cases.
 
 ## Arguments
 
 ### `<STACK>`
 
-Name of the new stack to create.
+Name of the new view to create.
 
 ## Options
 
 ### `--stack <SOURCE>`
 
-Split from a specific source stack instead of the current stack.
+Split from a specific source view instead of the current view.
 
 ```bash
 atomic split new-feature --stack main
@@ -35,17 +35,17 @@ atomic split new-feature --stack main
 ## Examples
 
 ```bash
-# Split current stack
+# Split current view
 atomic split experimental
 
-# Split from specific stack
+# Split from specific view
 atomic split hotfix --stack release-1.0
 ```
 
 ## See Also
 
-- [`atomic stack`](./stack.md) - Basic stack management
-- [`atomic record`](./record.md) - Record changes in stacks
+- [`atomic view`](./view.md) - Basic view management
+- [`atomic record`](./record.md) - Record changes in views
 
 ## Documentation Status
 

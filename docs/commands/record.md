@@ -15,7 +15,7 @@ atomic record [OPTIONS] [PATHS]...
 
 ## Description
 
-The `record` command is the primary way to save your work in Atomic. It examines the differences between your working copy and the current state of the stack, then creates a new change containing those modifications.
+The `record` command is the primary way to save your work in Atomic. It examines the differences between your working copy and the current state of the view, then creates a new change containing those modifications.
 
 Unlike traditional VCS systems that record snapshots, Atomic records **semantic patches** - the actual operations performed on files (additions, deletions, modifications). This enables Atomic's powerful conflict-free merging and mathematical correctness guarantees.
 
@@ -24,7 +24,7 @@ When you record a change, Atomic:
 1. Computes the differences between the working copy and the pristine state
 2. Generates patch operations representing those differences
 3. Creates a change file with metadata (author, timestamp, message)
-4. Applies the change to the current stack
+4. Applies the change to the current view
 5. Updates the pristine database
 
 ## Options
@@ -65,7 +65,7 @@ atomic record -m "Fix bug" --author "John Doe <john@example.com>"
 
 ### `--stack <STACK>`
 
-Record the change to a specific stack instead of the current stack.
+Record the change to a specific view instead of the current view.
 
 ```bash
 atomic record -m "Feature work" --stack feature-branch
@@ -232,10 +232,10 @@ atomic record --amend -m "Updated commit message"
 atomic record --amend MNYNGT2V... -m "Fixed earlier commit"
 ```
 
-### Working with Stacks
+### Working with Views
 
 ```bash
-# Record to a different stack
+# Record to a different view
 atomic record -m "Feature work" --stack feature-branch
 
 # Record with custom author
@@ -356,7 +356,7 @@ default_provider = "cursor"
 ## See Also
 
 - [`atomic diff`](./diff.md) - Preview changes before recording
-- [`atomic apply`](./apply.md) - Apply changes from other sources
+- [`atomic insert`](./insert.md) - Insert changes from other sources
 - [`atomic log`](./log.md) - View recorded changes
 - [`atomic add`](./add.md) - Start tracking new files
 

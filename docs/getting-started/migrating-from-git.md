@@ -26,7 +26,7 @@ That's it! Atomic will:
 - Import your entire Git history
 - Convert commits to Atomic changes
 - Preserve author information and timestamps
-- Create equivalent branches as stacks
+- Create equivalent branches as views
 - Maintain your working copy
 
 ## Understanding the Differences
@@ -36,42 +36,42 @@ That's it! Atomic will:
 | Git Term | Atomic Term | Notes |
 |----------|-------------|-------|
 | Commit | Change | Immutable semantic patches |
-| Branch | Stack | Independent lines of development |
-| Merge | Pull/Apply | Conflict-free by design |
+| Branch | View | Independent lines of development |
+| Merge | Pull/Insert | Conflict-free by design |
 | Tag | Tag | Consolidating boundaries (more powerful!) |
 | Remote | Remote | Same concept |
 | Staging Area | _(none)_ | No staging - direct recording |
-| HEAD | Current Stack | Explicit stack selection |
+| HEAD | Current View | Explicit view selection |
 | Working Directory | Working Copy | Your editable files |
 
 ### Key Conceptual Differences
 
-#### 1. Stacks Share Working Copy (NOT Like Git Branches!)
+#### 1. Views Share Working Copy (NOT Like Git Branches!)
 
-**Critical Understanding**: Atomic stacks are fundamentally different from Git branches.
+**Critical Understanding**: Atomic views are fundamentally different from Git branches.
 
 **Git branches**: Each branch switch changes your working directory to match that branch's state.
 
-**Atomic stacks**: All stacks share the same working copy. Only the **patch history** is isolated.
+**Atomic views**: All views share the same working copy. Only the **patch history** is isolated.
 
 ##### Concrete Example
 
 ```bash
-# Start on main stack
-atomic stack switch main
+# Start on main view
+atomic view switch main
 ls
 # Output: test.txt
 
-# Create and switch to new stack
-atomic stack new new-feature
-atomic stack switch new-feature
+# Create and switch to new view
+atomic view create new-feature
+atomic view switch new-feature
 
 # Create and record a new file
 vi new-file.txt
 atomic record new-file.txt -m "Add new feature"
 
 # Switch back to main
-atomic stack switch main
+atomic view switch main
 ls
 # Output: new-file.txt test.txt
 #         ^^^^^^^^^^^^
@@ -80,19 +80,19 @@ ls
 
 **Why does `new-file.txt` appear on main?**
 
-- It's **recorded on new-feature stack** (in patch history) ✅
+- It's **recorded on new-feature view** (in patch history) ✅
 - But it's **untracked from main's perspective** (not recorded on main)
-- Atomic doesn't delete untracked files when switching stacks
+- Atomic doesn't delete untracked files when switching views
 - The **patch history** is isolated, but the **working copy** is shared
 
-##### What IS Isolated Between Stacks?
+##### What IS Isolated Between Views?
 
 ```bash
 # Patch history is isolated
-atomic stack switch main
+atomic view switch main
 atomic log              # Does NOT show "Add new feature"
 
-atomic stack switch new-feature
+atomic view switch new-feature
 atomic log              # DOES show "Add new feature"
 ```
 
@@ -104,11 +104,11 @@ Git:
   feature branch → working dir state B
 
 Atomic:
-  main stack    → patch history A  }
-  feature stack → patch history B  } → SAME working copy
+  main view    → patch history A  }
+  feature view → patch history B  } → SAME working copy
 ```
 
-**Think of stacks as different views of patch history, NOT different workspaces.**
+**Think of views as different perspectives on patch history, NOT different workspaces.**
 
 #### 2. No Merge Conflicts
 
@@ -226,12 +226,12 @@ git checkout feature-branch
 git checkout -b new-feature
 
 # Atomic
-atomic stack new feature-branch
-atomic stack switch feature-branch
-# Or combine: atomic stack new feature-branch && atomic stack switch feature-branch
+atomic view create feature-branch
+atomic view switch feature-branch
+# Or combine: atomic view create feature-branch && atomic view switch feature-branch
 ```
 
-> **⚠️ Important**: Unlike `git checkout`, `atomic stack switch` does NOT change untracked files in your working copy. Stacks share the same workspace - only the patch history is isolated. See [Stacks Share Working Copy](#1-stacks-share-working-copy-not-like-git-branches) above for details.
+> **⚠️ Important**: Unlike `git checkout`, `atomic view switch` does NOT change untracked files in your working copy. Views share the same workspace - only the patch history is isolated. See [Views Share Working Copy](#1-views-share-working-copy-not-like-git-branches) above for details.
 
 ### Merging
 
@@ -241,7 +241,7 @@ git checkout main
 git merge feature-branch
 
 # Atomic
-atomic stack switch main
+atomic view switch main
 atomic pull . --from-stack feature-branch
 # No merge conflicts - mathematically guaranteed!
 ```
@@ -326,7 +326,7 @@ atomic git
 
 # Verify import
 atomic log --limit 10
-atomic stack list
+atomic view list
 ```
 
 ### Import Specific Paths
@@ -342,7 +342,7 @@ atomic git /path/to/git/repo /path/to/atomic/repo
 - All commits as Atomic changes
 - Commit messages and descriptions
 - Author information and timestamps
-- Branch structure (as stacks)
+- Branch structure (as views)
 - Tags (as Atomic tags)
 - File history
 
@@ -359,7 +359,7 @@ After importing:
 ```bash
 # 1. Verify the import
 atomic log --limit 20
-atomic stack list
+atomic view list
 
 # 2. Create a consolidating tag for better performance
 atomic tag create v1.0.0 -m "Initial import from Git"
@@ -401,15 +401,15 @@ git push origin v1.0.0
 ### Atomic Workflow
 
 ```bash
-# Feature stack workflow
-atomic stack new feature/auth
-atomic stack switch feature/auth
+# Feature view workflow
+atomic view create feature/auth
+atomic view switch feature/auth
 # ... make changes ...
 atomic record -m "Add authentication"
 atomic push --from-stack feature/auth
 
 # Review, then merge (no conflicts!)
-atomic stack switch main
+atomic view switch main
 atomic pull . --from-stack feature/auth
 atomic push
 
@@ -466,20 +466,20 @@ Multiple developers can work simultaneously without conflicts:
 # Result: Both changes applied correctly (mathematical guarantee)
 ```
 
-### 4. Stack Independence
+### 4. View Independence
 
-Stacks are truly independent (unlike Git branches):
+Views are truly independent (unlike Git branches):
 
 ```bash
 # Work on multiple features simultaneously
-atomic stack new feature-1
+atomic view create feature-1
 atomic record -m "Work on feature 1"
 
-atomic stack new feature-2
+atomic view create feature-2
 atomic record -m "Work on feature 2"
 
-# Apply changes between stacks
-atomic stack switch main
+# Insert changes between views
+atomic view switch main
 atomic pull . --from-stack feature-1
 atomic pull . --from-stack feature-2
 # No merge conflicts!
@@ -546,13 +546,13 @@ git branch -d feature
 
 **Atomic:**
 ```bash
-atomic stack new feature
+atomic view create feature
 # work...
 atomic record -m "Feature"
-atomic stack switch main
+atomic view switch main
 atomic pull . --from-stack feature
 # no conflicts!
-atomic stack delete feature
+atomic view delete feature
 ```
 
 ### Scenario 2: Hotfix Workflow
@@ -569,9 +569,9 @@ git merge hotfix
 
 **Atomic (Revolutionary!):**
 ```bash
-# Checkout tag to new stack
+# Checkout tag to new view
 atomic tag checkout v1.0.0 --to-stack hotfix
-atomic stack switch hotfix
+atomic view switch hotfix
 # fix bug...
 atomic record -m "Hotfix"
 
@@ -579,7 +579,7 @@ atomic record -m "Hotfix"
 atomic tag create v1.0.1 --since v1.0.0 -m "Hotfix"
 
 # Merge back to main
-atomic stack switch main
+atomic view switch main
 atomic pull . --from-stack hotfix
 ```
 
@@ -594,7 +594,7 @@ git rebase main  # Can cause conflicts
 **Atomic:**
 ```bash
 # Just pull changes - no rebasing needed!
-atomic stack switch feature
+atomic view switch feature
 atomic pull . --from-stack main
 # Conflict-free!
 ```

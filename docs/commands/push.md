@@ -15,14 +15,14 @@ atomic push [OPTIONS] [REMOTE]
 
 ## Description
 
-The `push` command uploads changes, tags, and stack information to a remote repository, enabling collaboration and backup. This is one of the core commands for distributed collaboration in Atomic VCS.
+The `push` command uploads changes, tags, and view information to a remote repository, enabling collaboration and backup. This is one of the core commands for distributed collaboration in Atomic VCS.
 
 When you push, Atomic:
 
-1. Compares your local stack state with the remote
+1. Compares your local view state with the remote
 2. Determines which changes need to be uploaded
 3. Uploads missing changes to the remote
-4. Updates the remote stack to reflect your changes
+4. Updates the remote view to reflect your changes
 5. Optionally syncs AI attribution metadata
 
 Unlike some VCS systems, Atomic's push operation is **conflict-free** due to the mathematical properties of the patch theory. The remote can accept pushes from multiple sources simultaneously without merge conflicts.
@@ -56,7 +56,7 @@ atomic push --repository /path/to/repo
 
 ### `--from-stack <STACK>`
 
-Push from a specific stack instead of the current stack.
+Push from a specific view instead of the current view.
 
 ```bash
 # Push feature branch to remote
@@ -65,13 +65,13 @@ atomic push --from-stack feature/new-ui
 
 ### `--to-stack <STACK>`
 
-Push to a specific remote stack instead of the remote's default stack.
+Push to a specific remote view instead of the remote's default view.
 
 ```bash
 # Push to remote develop branch
 atomic push --to-stack develop
 
-# Push to different remote stack name
+# Push to different remote view name
 atomic push --to-stack origin:main
 ```
 
@@ -79,7 +79,7 @@ The format can be `remote_stack` or `remote_stack:push_stack` for advanced routi
 
 ### `-a, --all`
 
-Push all changes in the stack, not just those selected interactively.
+Push all changes in the view, not just those selected interactively.
 
 ```bash
 atomic push --all
@@ -146,20 +146,20 @@ atomic push MNYNGT2V...
 ### Basic Push
 
 ```bash
-# Push current stack to default remote
+# Push current view to default remote
 atomic push
 
 # Push to named remote
 atomic push origin
 
-# Push different stack
+# Push different view
 atomic push --from-stack feature/auth
 ```
 
-### Pushing to Different Remote Stacks
+### Pushing to Different Remote Views
 
 ```bash
-# Push to remote's develop stack
+# Push to remote's develop view
 atomic push --to-stack develop
 
 # Push local feature to remote main
@@ -206,7 +206,7 @@ atomic push origin CHANGE1... CHANGE2... CHANGE3...
 
 ### 1. State Comparison
 
-Atomic compares local and remote stack states:
+Atomic compares local and remote view states:
 
 ```
 Local State:  [A] -> [B] -> [C] -> [D]
@@ -226,9 +226,9 @@ Uploading changes...
 2/2 changes uploaded
 ```
 
-### 3. Stack Update
+### 3. View Update
 
-The remote stack is updated to include the pushed changes.
+The remote view is updated to include the pushed changes.
 
 ### 4. Attribution Sync
 
@@ -432,13 +432,13 @@ atomic push
 - [`atomic pull`](./pull.md) - Pull changes from a remote
 - [`atomic clone`](./clone.md) - Clone a remote repository
 - [`atomic tag`](./tag.md) - Manage tags
-- [`atomic stack`](./stack.md) - Manage stacks
+- [`atomic view`](./view.md) - Manage views
 - [`atomic record`](./record.md) - Record changes before pushing
 
 ## Related Concepts
 
 - **Remotes** - Remote repository locations
-- **Stacks** - Independent lines of development
+- **Views** - Independent lines of development
 - **Changes** - Atomic units of modification
 - **Attribution** - AI contribution metadata
 - **Conflict-Free** - Mathematical guarantees of merge correctness

@@ -81,7 +81,7 @@ Atomic's change identity and commutative merges eliminate rebasing:
 
 ```bash
 # Atomic stacked changes
-atomic stack new feature-work
+atomic view create feature-work
 atomic record src/types.rs -m "Step 1"  # Change ABC
 
 atomic record src/logic.rs -m "Step 2"  # Change DEF
@@ -92,7 +92,7 @@ atomic unrecord ABC  # Remove old version
 atomic record src/types.rs -m "Step 1 (updated)"  # Change ABC' (new hash)
 
 # Step 2 still works! No rebase needed!
-atomic apply DEF  # Atomic handles dependency automatically
+atomic insert DEF  # Atomic handles dependency automatically
 ```
 
 **Benefits**:
@@ -103,12 +103,12 @@ atomic apply DEF  # Atomic handles dependency automatically
 
 ## Building Your First Stack
 
-### Step 1: Create a Stack
+### Step 1: Create a View
 
 ```bash
-# Create a new stack for your feature
-atomic stack new feature/user-auth
-atomic stack switch feature/user-auth
+# Create a new view for your feature
+atomic view create feature/user-auth
+atomic view switch feature/user-auth
 ```
 
 ### Step 2: Build Changes Incrementally
@@ -151,7 +151,7 @@ atomic log --deps
 ### Step 4: Push for Review
 
 ```bash
-# Push entire stack to remote
+# Push entire view to remote
 atomic push --stack feature/user-auth
 
 # Or push individual changes
@@ -175,8 +175,8 @@ atomic record migrations/001_users.sql -m "Add users table (v2)"
 # New change: DEF' (different hash)
 
 # Dependent changes (GHI, JKL) still work!
-atomic apply GHI  # Automatically uses DEF'
-atomic apply JKL  # Still applies correctly
+atomic insert GHI  # Automatically uses DEF'
+atomic insert JKL  # Still applies correctly
 ```
 
 ### Reordering Changes
@@ -188,8 +188,8 @@ If changes are independent, reorder freely:
 # Want: ABC → GHI → DEF
 
 atomic unrecord DEF GHI  # Remove both
-atomic apply GHI         # Apply in new order
-atomic apply DEF
+atomic insert GHI         # Insert in new order
+atomic insert DEF
 ```
 
 ### Splitting a Large Change
@@ -253,33 +253,33 @@ atomic push ABC
 
 ## Advanced Patterns
 
-### Parallel Stacks from Same Base
+### Parallel Views from Same Base
 
 ```bash
-# Create two independent stacks from main
-atomic stack new feature/frontend
-atomic stack new feature/backend
+# Create two independent views from main
+atomic view create feature/frontend
+atomic view create feature/backend
 
 # Both can pull the same base changes
-atomic stack switch feature/frontend
+atomic view switch feature/frontend
 atomic pull ABC DEF  # Pull backend types
 
-atomic stack switch feature/backend
+atomic view switch feature/backend
 atomic pull ABC DEF  # Same changes, same hashes!
 ```
 
 ### Cascading Updates
 
-When a base change is updated, all stacks using it can pull the update:
+When a base change is updated, all views using it can pull the update:
 
 ```bash
-# Stack A updates shared change ABC
+# View A updates shared change ABC
 atomic unrecord ABC
 atomic record src/shared.rs -m "Shared types (v2)"
 atomic push ABC
 
-# Stack B can pull the update
-atomic stack switch feature-b
+# View B can pull the update
+atomic view switch feature-b
 atomic pull ABC  # Gets the updated version
 
 # Atomic handles dependency updates automatically
@@ -287,10 +287,10 @@ atomic pull ABC  # Gets the updated version
 
 ### Cherry-Picking Changes
 
-Pull specific changes from other stacks without the full history:
+Pull specific changes from other views without the full history:
 
 ```bash
-# You want just change DEF from another stack
+# You want just change DEF from another view
 atomic pull DEF
 
 # Atomic automatically pulls dependencies (ABC) if needed
@@ -343,18 +343,18 @@ atomic push  # Push immediately for early feedback
 atomic record logic.rs -m "Add logic"
 ```
 
-### 5. Use Descriptive Stack Names
+### 5. Use Descriptive View Names
 
 ```bash
-# Good stack names
-atomic stack new feature/user-authentication
-atomic stack new bugfix/memory-leak-in-parser
-atomic stack new refactor/extract-database-layer
+# Good view names
+atomic view create feature/user-authentication
+atomic view create bugfix/memory-leak-in-parser
+atomic view create refactor/extract-database-layer
 
-# Bad stack names
-atomic stack new my-work
-atomic stack new temp
-atomic stack new asdf
+# Bad view names
+atomic view create my-work
+atomic view create temp
+atomic view create asdf
 ```
 
 ## Common Workflows
@@ -363,7 +363,7 @@ atomic stack new asdf
 
 ```bash
 # Day 1: Foundation
-atomic stack new feature/payment-system
+atomic view create feature/payment-system
 atomic record types.rs -m "Payment types"
 atomic record schema.sql -m "Payment tables"
 atomic push
@@ -387,19 +387,19 @@ atomic push
 # Days 2-3 changes still work! No rebase needed!
 ```
 
-### Experimental Branch Pattern
+### Experimental View Pattern
 
 ```bash
-# Start experiment on separate stack
-atomic stack new experiment/new-algorithm
+# Start experiment on separate view
+atomic view create experiment/new-algorithm
 atomic record algorithm.rs -m "Try new approach"
 
 # If successful, merge back
-atomic stack switch main
+atomic view switch main
 atomic pull <algorithm-hash>
 
-# If failed, just delete stack
-atomic stack delete experiment/new-algorithm
+# If failed, just delete view
+atomic view delete experiment/new-algorithm
 # Change stays in global store, can recover if needed
 ```
 
@@ -407,26 +407,26 @@ atomic stack delete experiment/new-algorithm
 
 | Workflow | Git | Atomic |
 |----------|-----|--------|
-| **Create stack** | `git checkout -b` | `atomic stack new` |
+| **Create view** | `git checkout -b` | `atomic view create` |
 | **Add change** | `git commit` | `atomic record` |
 | **Update base** | `git rebase` (required) | Automatic |
-| **Reorder changes** | `git rebase -i` | `atomic unrecord` + `atomic apply` |
+| **Reorder changes** | `git rebase -i` | `atomic unrecord` + `atomic insert` |
 | **Split change** | Manual history rewrite | `atomic split-change` |
 | **Push for review** | `git push` | `atomic push` |
-| **Handle conflicts** | During rebase | During apply (more flexible) |
+| **Handle conflicts** | During rebase | During insert (more flexible) |
 | **Change identity** | Hash changes on rebase | Hash stays same |
 
 ## Troubleshooting
 
-### Change Won't Apply
+### Change Won't Insert
 
 ```bash
 # If a change conflicts:
-atomic apply ABC
+atomic insert ABC
 # Error: Conflict in src/file.rs
 
 # Option 1: Fix conflicts and amend
-atomic apply ABC --interactive
+atomic insert ABC --interactive
 # Resolve conflicts, then:
 atomic record src/file.rs -m "Resolved version"
 
@@ -444,30 +444,30 @@ atomic show ABC --deps
 
 # If you need to change dependencies:
 atomic unrecord ABC
-atomic apply <new-deps>
+atomic insert <new-deps>
 atomic record files -m "ABC with updated deps"
 ```
 
-### Stack Got Messy
+### View Got Messy
 
 ```bash
-# View current stack state
+# View current state
 atomic log --graph
 
 # Option 1: Reorder cleanly
-atomic unrecord --all  # Remove all from stack
-atomic apply ABC DEF GHI  # Reapply in order
+atomic unrecord --all  # Remove all from view
+atomic insert ABC DEF GHI  # Reinsert in order
 
-# Option 2: Create fresh stack
-atomic stack new feature-clean
-atomic pull ABC DEF GHI  # Pull changes to new stack
-atomic stack switch feature-clean
+# Option 2: Create fresh view
+atomic view create feature-clean
+atomic pull ABC DEF GHI  # Pull changes to new view
+atomic view switch feature-clean
 ```
 
 ## Next Steps
 
 - Read [AI Agent Workflows](ai-agent-workflows.md) for agent-based stacked changes
-- See [Stacks Command Reference](../commands/stack.md) for all stack operations
+- See [Views Command Reference](../commands/view.md) for all view operations
 - Learn about [Change Identity](../concepts/change-identity) for deeper understanding
 
 ## Summary

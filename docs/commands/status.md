@@ -17,8 +17,8 @@ atomic status [OPTIONS]
 
 The `status` command displays a summary of the current state of your working copy compared to the last recorded state. It shows:
 
-- The current stack name
-- The stack's merkle state hash
+- The current view name
+- The view's merkle state hash
 - Files that have been added, modified, deleted, or renamed
 - Untracked files (with the `-u` flag)
 - Any active conflicts
@@ -37,7 +37,7 @@ atomic status --repository /path/to/repo
 
 ### `--stack <STACK>`
 
-Show status relative to a specific stack instead of the current stack.
+Show status relative to a specific view instead of the current view.
 
 ```bash
 atomic status --stack feature-branch
@@ -87,7 +87,7 @@ atomic status
 
 Output:
 ```
-On stack main
+On view main
 State: ABCD1234EFGH5678
 
 Changes to be recorded:
@@ -108,7 +108,7 @@ atomic status
 
 Output:
 ```
-On stack main
+On view main
 State: ABCD1234EFGH5678
 
 nothing to record, working tree clean
@@ -135,7 +135,7 @@ atomic status -u
 
 Output:
 ```
-On stack main
+On view main
 State: ABCD1234EFGH5678
 
 Changes to be recorded:
@@ -189,7 +189,7 @@ Output:
 }
 ```
 
-### Check Status of Different Stack
+### Check Status of Different View
 
 ```bash
 atomic status --stack develop
@@ -308,13 +308,13 @@ if [ "$(jq '.clean' status.json)" != "true" ]; then
 fi
 ```
 
-### Comparing Stacks
+### Comparing Views
 
 ```bash
-# Check status on current stack
+# Check status on current view
 atomic status
 
-# Check status on another stack
+# Check status on another view
 atomic status --stack feature-branch
 ```
 
@@ -338,7 +338,7 @@ Use `status` for a quick check of what's changed, and `diff` when you need to se
 ## Notes
 
 - **No Staging Area**: Unlike Git, Atomic doesn't have a staging area. All changes shown in status will be included when you run `atomic record`.
-- **Stack State**: The "State" hash shown is the merkle hash of the current stack state, useful for verifying repository integrity.
+- **View State**: The "State" hash shown is the merkle hash of the current view state, useful for verifying repository integrity.
 - **Performance**: Status is computed by comparing the working copy against the pristine state, which is generally very fast.
 - **Untracked Detection**: The `-u` flag scans the working directory for files not in the tracking database, respecting `.ignore` patterns.
 
@@ -373,6 +373,6 @@ enabled = "auto"
 
 - **Working Copy** - Your editable files on disk
 - **Pristine** - The recorded repository state
-- **Stack** - Atomic's term for a branch/channel of development
-- **Merkle State** - Cryptographic hash representing the stack's state
+- **View** - Atomic's term for a branch/channel of development
+- **Merkle State** - Cryptographic hash representing the view's state
 - **Untracked Files** - Files in the working directory not managed by Atomic

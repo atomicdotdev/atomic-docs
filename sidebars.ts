@@ -114,14 +114,14 @@ const sidebars: SidebarsConfig = {
         "commands/revise",
         "commands/log",
         "commands/change",
-        "commands/apply",
+        "commands/insert",
       ],
     },
     {
       type: "category",
-      label: "Stacks & Tags",
+      label: "Views & Tags",
       collapsed: true,
-      items: ["commands/stack", "commands/stash", "commands/tag"],
+      items: ["commands/view", "commands/stash", "commands/tag"],
     },
     {
       type: "category",

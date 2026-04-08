@@ -5,7 +5,7 @@ title: log
 
 # atomic log
 
-Display the history of changes in a stack.
+Display the history of changes in a view.
 
 ## Synopsis
 
@@ -15,7 +15,7 @@ atomic log [OPTIONS] [FILTERS]...
 
 ## Description
 
-The `log` command displays the history of changes recorded in a stack. It shows change metadata including hashes, authors, timestamps, messages, and optionally descriptions, files changed, and AI attribution information.
+The `log` command displays the history of changes recorded in a view. It shows change metadata including hashes, authors, timestamps, messages, and optionally descriptions, files changed, and AI attribution information.
 
 Unlike traditional VCS log commands, Atomic's log displays the **dependency graph** of changes based on the mathematical patch theory. Each change has cryptographically verifiable dependencies, forming a directed acyclic graph (DAG).
 
@@ -33,7 +33,7 @@ atomic log --repository /path/to/repo
 
 ### `--stack <STACK>`
 
-Show logs for a specific stack instead of the current stack.
+Show logs for a specific view instead of the current view.
 
 ```bash
 atomic log --stack feature-branch
@@ -139,7 +139,7 @@ atomic log --human-only
 
 Filter log output to show only changes that touched specified files or directories. Paths are relative to the repository root.
 
-**Note**: Filters can only be applied when logging the current stack (the one comprising the working copy).
+**Note**: Filters can only be applied when logging the current view (the one comprising the working copy).
 
 ```bash
 # Show only changes that modified files in src/
@@ -354,13 +354,13 @@ When using file filters, Atomic shows only changes that:
 - Affected directories containing the specified paths
 - Touched any file matching the filter criteria
 
-**Important**: File filtering only works when viewing the current stack. To filter logs for other stacks, switch to that stack first.
+**Important**: File filtering only works when viewing the current view. To filter logs for other views, switch to that view first.
 
 ```bash
-# This works (current stack)
+# This works (current view)
 atomic log src/
 
-# This won't filter (different stack)
+# This won't filter (different view)
 atomic log --stack other-branch src/  # Shows all changes, ignores filter
 ```
 
@@ -437,7 +437,7 @@ atomic log --ai-only --hash-only
 ## Notes
 
 - **Reverse Order**: Changes are displayed in reverse chronological order (newest first)
-- **Stack-Specific**: Each stack has its own independent log
+- **View-Specific**: Each view has its own independent log
 - **Immutable History**: The log reflects the immutable change history in the DAG
 - **No Merge Commits**: Atomic has no merge commits; all changes are semantic patches
 - **Cryptographic Integrity**: Each change hash cryptographically ensures the integrity of the change
@@ -482,7 +482,7 @@ PAGER="" atomic log
 ## Exit Codes
 
 - `0` - Success
-- `1` - Error (stack not found, invalid filter, etc.)
+- `1` - Error (view not found, invalid filter, etc.)
 
 ## See Also
 
@@ -490,12 +490,12 @@ PAGER="" atomic log
 - [`atomic change`](./change.md) - Inspect individual changes
 - [`atomic diff`](./diff.md) - Show differences
 - [`atomic agent`](./agent.md) - AI agent integration and provenance
-- [`atomic stack`](./stack.md) - Manage stacks
+- [`atomic view`](./view.md) - Manage views
 
 ## Related Concepts
 
 - **Changes** - Immutable semantic patches
 - **DAG** - Directed acyclic graph of change dependencies
-- **Stacks** - Independent lines of development
+- **Views** - Independent lines of development
 - **State** - Merkle tree hash representing repository state
 - **AI Attribution** - Cryptographic tracking of AI contributions
