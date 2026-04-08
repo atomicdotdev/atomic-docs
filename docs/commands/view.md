@@ -317,7 +317,7 @@ atomic insert <feature-hash> --to-view release-2.0
 atomic insert <bugfix-hash> --to-view release-2.0
 
 # Tag the release
-atomic tag create v2.0.0 --stack release-2.0 -m "Release 2.0"
+atomic tag create v2.0.0 --view release-2.0 -m "Release 2.0"
 ```
 
 ## Inserting Changes Between Views
@@ -385,12 +385,8 @@ atomic init
 # Creates "dev" view (shared, root)
 
 # Or specify a custom name
-atomic init --stack main
+atomic init --view main
 ```
-
-:::note
-The `--stack` flag on `init` and other commands (like `log --stack`) has not yet been renamed to `--view`. This only affects the `atomic view` subcommand itself.
-:::
 
 ## Performance
 

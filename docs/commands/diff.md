@@ -34,12 +34,12 @@ Specify the repository path if not running from within the repository directory.
 atomic diff --repository /path/to/repo
 ```
 
-### `--stack <STACK>`
+### `--view <VIEW>`
 
 Show differences relative to a specific view instead of the current view.
 
 ```bash
-atomic diff --stack feature-branch
+atomic diff --view feature-branch
 ```
 
 ### `--json`

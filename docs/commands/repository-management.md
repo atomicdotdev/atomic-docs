@@ -25,7 +25,7 @@ Commands for creating, cloning, and managing Atomic repositories.
 atomic init
 
 # Initialize with a custom view name
-atomic init --stack main
+atomic init --view main
 
 # Initialize with project-specific ignore patterns
 atomic init --kind rust

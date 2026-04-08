@@ -121,7 +121,7 @@ git merge feature
 
 **Atomic**: Mathematically guaranteed conflict-free merging
 ```bash
-atomic pull . --from-stack feature
+atomic pull . --from-view feature
 # Changes applied successfully (no conflicts ever!)
 ```
 
@@ -242,7 +242,7 @@ git merge feature-branch
 
 # Atomic
 atomic view switch main
-atomic pull . --from-stack feature-branch
+atomic pull . --from-view feature-branch
 # No merge conflicts - mathematically guaranteed!
 ```
 
@@ -286,7 +286,7 @@ git push origin main
 # Atomic
 # Edit .atomic/config.toml to add remote
 atomic pull origin
-atomic pull origin --from-stack main
+atomic pull origin --from-view main
 atomic push origin
 ```
 
@@ -402,15 +402,15 @@ git push origin v1.0.0
 
 ```bash
 # Feature view workflow
-atomic view create feature/auth
-atomic view switch feature/auth
+atomic view create feature-auth
+atomic view switch feature-auth
 # ... make changes ...
 atomic record -m "Add authentication"
-atomic push --from-stack feature/auth
+atomic push --from-view feature-auth
 
 # Review, then merge (no conflicts!)
 atomic view switch main
-atomic pull . --from-stack feature/auth
+atomic pull . --from-view feature-auth
 atomic push
 
 # Tag release (with consolidation!)
@@ -480,8 +480,8 @@ atomic record -m "Work on feature 2"
 
 # Insert changes between views
 atomic view switch main
-atomic pull . --from-stack feature-1
-atomic pull . --from-stack feature-2
+atomic pull . --from-view feature-1
+atomic pull . --from-view feature-2
 # No merge conflicts!
 ```
 
@@ -550,7 +550,7 @@ atomic view create feature
 # work...
 atomic record -m "Feature"
 atomic view switch main
-atomic pull . --from-stack feature
+atomic pull . --from-view feature
 # no conflicts!
 atomic view delete feature
 ```
@@ -570,7 +570,7 @@ git merge hotfix
 **Atomic (Revolutionary!):**
 ```bash
 # Checkout tag to new view
-atomic tag checkout v1.0.0 --to-stack hotfix
+atomic tag checkout v1.0.0 --to-view hotfix
 atomic view switch hotfix
 # fix bug...
 atomic record -m "Hotfix"
@@ -580,7 +580,7 @@ atomic tag create v1.0.1 --since v1.0.0 -m "Hotfix"
 
 # Merge back to main
 atomic view switch main
-atomic pull . --from-stack hotfix
+atomic pull . --from-view hotfix
 ```
 
 ### Scenario 3: Rebasing (Not Needed!)
@@ -595,7 +595,7 @@ git rebase main  # Can cause conflicts
 ```bash
 # Just pull changes - no rebasing needed!
 atomic view switch feature
-atomic pull . --from-stack main
+atomic pull . --from-view main
 # Conflict-free!
 ```
 

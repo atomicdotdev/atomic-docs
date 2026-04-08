@@ -58,16 +58,16 @@ Specify the repository path if not running from within the repository directory.
 atomic reset --repository /path/to/repo
 ```
 
-### `--stack <STACK>`
+### `--view <VIEW>`
 
 Reset the working copy to a specific view and switch to that view.
 
 ```bash
 # Switch to main view
-atomic reset --stack main
+atomic reset --view main
 
 # Switch to feature branch
-atomic reset --stack feature/new-ui
+atomic reset --view feature-new-ui
 ```
 
 ### `--dry-run`
@@ -123,10 +123,10 @@ atomic reset Cargo.toml README.md src/lib.rs
 
 ```bash
 # Switch to main view
-atomic reset --stack main
+atomic reset --view main
 
 # Switch to feature view and reset working copy
-atomic reset --stack feature/auth
+atomic reset --view feature-auth
 ```
 
 ### Preview File Contents
@@ -183,13 +183,13 @@ atomic reset --force  # Update working copy
 
 ## View Switching
 
-When using `--stack` to switch views:
+When using `--view` to switch views:
 
 ### Without Uncommitted Changes
 
 ```bash
 # Clean switch
-atomic reset --stack feature-branch
+atomic reset --view feature-branch
 ```
 
 Atomic will:
@@ -201,7 +201,7 @@ Atomic will:
 
 ```bash
 # Attempt to switch with changes
-atomic reset --stack main
+atomic reset --view main
 # Error: Cannot change view, as there are unrecorded changes.
 ```
 
@@ -209,10 +209,10 @@ Solution:
 ```bash
 # Option 1: Record changes first
 atomic record -m "Save changes"
-atomic reset --stack main
+atomic reset --view main
 
 # Option 2: Force discard changes
-atomic reset --force --stack main
+atomic reset --force --view main
 ```
 
 ### Partial View Difference
@@ -221,7 +221,7 @@ If views have diverged, reset updates only affected files:
 
 ```bash
 # Switch to view with different files
-atomic reset --stack experimental
+atomic reset --view experimental
 
 # Only files that differ between views are updated
 # Other files remain unchanged

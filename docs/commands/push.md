@@ -54,25 +54,25 @@ Specify the repository path if not running from within the repository directory.
 atomic push --repository /path/to/repo
 ```
 
-### `--from-stack <STACK>`
+### `--from-view <VIEW>`
 
 Push from a specific view instead of the current view.
 
 ```bash
 # Push feature branch to remote
-atomic push --from-stack feature/new-ui
+atomic push --from-view feature-new-ui
 ```
 
-### `--to-stack <STACK>`
+### `--to-view <VIEW>`
 
 Push to a specific remote view instead of the remote's default view.
 
 ```bash
 # Push to remote develop branch
-atomic push --to-stack develop
+atomic push --to-view develop
 
 # Push to different remote view name
-atomic push --to-stack origin:main
+atomic push --to-view origin:main
 ```
 
 The format can be `remote_stack` or `remote_stack:push_stack` for advanced routing.
@@ -153,17 +153,17 @@ atomic push
 atomic push origin
 
 # Push different view
-atomic push --from-stack feature/auth
+atomic push --from-view feature-auth
 ```
 
 ### Pushing to Different Remote Views
 
 ```bash
 # Push to remote's develop view
-atomic push --to-stack develop
+atomic push --to-view develop
 
 # Push local feature to remote main
-atomic push --from-stack feature/ready --to-stack main
+atomic push --from-view feature-ready --to-view main
 ```
 
 ### Selective Push

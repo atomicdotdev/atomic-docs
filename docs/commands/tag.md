@@ -75,12 +75,12 @@ Override the default author for this tag.
 atomic tag create v1.0.0 --author "Release Team <team@example.com>"
 ```
 
-**`--stack <STACK>`**
+**`--view <VIEW>`**
 
 Tag a specific view instead of the current view.
 
 ```bash
-atomic tag create v1.0.0 --stack main
+atomic tag create v1.0.0 --view main
 ```
 
 **`--timestamp <TIMESTAMP>`**
@@ -151,7 +151,7 @@ atomic tag create --patch -m "Security fixes"
 atomic tag create v1.0.1 --since v1.0.0 -m "Critical bugfix"
 
 # Tag a specific view
-atomic tag create release-1.0 --stack release -m "Production release"
+atomic tag create release-1.0 --view release -m "Production release"
 ```
 
 ### `tag list` - List Tags
@@ -166,12 +166,12 @@ atomic tag list [OPTIONS]
 
 #### Options
 
-**`--stack <STACK>`**
+**`--view <VIEW>`**
 
 List tags from a specific view.
 
 ```bash
-atomic tag list --stack main
+atomic tag list --view main
 ```
 
 **`--attribution`**
@@ -189,7 +189,7 @@ atomic tag list --attribution
 atomic tag list
 
 # List tags in main view
-atomic tag list --stack main
+atomic tag list --view main
 
 # List with attribution info
 atomic tag list --attribution
@@ -221,22 +221,22 @@ The tag name or state hash to checkout.
 
 #### Options
 
-**`--to-stack <STACK>`**
+**`--to-view <VIEW>`**
 
 Name for the new view. If not specified, uses the tag's state hash as the view name.
 
 ```bash
-atomic tag checkout v1.0.0 --to-stack release-1.0
+atomic tag checkout v1.0.0 --to-view release-1.0
 ```
 
 #### Examples
 
 ```bash
 # Checkout tag to new view
-atomic tag checkout v1.0.0 --to-stack hotfix-branch
+atomic tag checkout v1.0.0 --to-view hotfix-branch
 
 # Checkout using state hash
-atomic tag checkout XYZABC123... --to-stack investigation
+atomic tag checkout XYZABC123... --to-view investigation
 
 # Checkout with auto-generated view name
 atomic tag checkout v1.0.0
@@ -288,12 +288,12 @@ The tag name or state hash to delete.
 
 #### Options
 
-**`--stack <STACK>`**
+**`--view <VIEW>`**
 
 Delete the tag from a specific view instead of the current view.
 
 ```bash
-atomic tag delete v0.9.0-beta --stack develop
+atomic tag delete v0.9.0-beta --view develop
 ```
 
 #### Examples
@@ -303,7 +303,7 @@ atomic tag delete v0.9.0-beta --stack develop
 atomic tag delete v0.9.0-beta
 
 # Delete from specific view
-atomic tag delete v1.0.0-rc --stack release
+atomic tag delete v1.0.0-rc --view release
 ```
 
 ## Complete Examples
@@ -344,7 +344,7 @@ atomic record -m "Add feature Y"
 
 # Critical bug found in production (v1.0.0)
 # Checkout v1.0.0 to hotfix view
-atomic tag checkout v1.0.0 --to-stack hotfix-1.0.1
+atomic tag checkout v1.0.0 --to-view hotfix-1.0.1
 
 # Switch to hotfix view and fix bug
 atomic view switch hotfix-1.0.1
@@ -356,16 +356,16 @@ atomic tag create v1.0.1 --since v1.0.0 -m "Security hotfix"
 # Now you can push v1.0.1 to production
 # and also merge the fix back to main
 atomic view switch main
-atomic pull . --from-stack hotfix-1.0.1
+atomic pull . --from-view hotfix-1.0.1
 ```
 
 ### Multi-Version Support
 
 ```bash
 # Maintain multiple release branches
-atomic tag checkout v1.0.0 --to-stack support-1.x
-atomic tag checkout v2.0.0 --to-stack support-2.x
-atomic tag checkout v3.0.0 --to-stack support-3.x
+atomic tag checkout v1.0.0 --to-view support-1.x
+atomic tag checkout v2.0.0 --to-view support-2.x
+atomic tag checkout v3.0.0 --to-view support-3.x
 
 # Apply fix to v2.x branch
 atomic view switch support-2.x

@@ -31,12 +31,12 @@ Set the repository where this command should run. Defaults to the first ancestor
 atomic log --repository /path/to/repo
 ```
 
-### `--stack <STACK>`
+### `--view <VIEW>`
 
 Show logs for a specific view instead of the current view.
 
 ```bash
-atomic log --stack feature-branch
+atomic log --view feature-branch
 ```
 
 ### `--hash-only`
@@ -361,7 +361,7 @@ When using file filters, Atomic shows only changes that:
 atomic log src/
 
 # This won't filter (different view)
-atomic log --stack other-branch src/  # Shows all changes, ignores filter
+atomic log --view other-branch src/  # Shows all changes, ignores filter
 ```
 
 ## Performance

@@ -72,7 +72,7 @@ Coverage:
 ### Filter by View
 
 ```bash
-$ atomic agent attest --stack dev
+$ atomic agent attest --view dev
 ```
 
 ### Verbose Output

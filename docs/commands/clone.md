@@ -68,12 +68,12 @@ atomic clone ssh://host/path/to/myrepo.git custom-name
 
 ## Options
 
-### `--stack <STACK>`
+### `--view <VIEW>`
 
 Clone and checkout a specific view instead of the default view.
 
 ```bash
-atomic clone --stack develop ssh://host/repo.git
+atomic clone --view develop ssh://host/repo.git
 ```
 
 ### `--change <HASH>`
@@ -129,10 +129,10 @@ atomic clone ssh://host/repo.git my-project
 
 ```bash
 # Clone and checkout the 'develop' view
-atomic clone --stack develop ssh://host/repo.git
+atomic clone --view develop ssh://host/repo.git
 
 # Clone and checkout a feature branch
-atomic clone --stack feature/new-ui ssh://host/repo.git
+atomic clone --view feature-new-ui ssh://host/repo.git
 ```
 
 ### Partial Clone

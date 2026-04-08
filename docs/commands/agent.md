@@ -139,7 +139,7 @@ atomic agent attest
 atomic agent attest --hash XMJZ3IPF
 
 # Show attestations for a view
-atomic agent attest --stack dev
+atomic agent attest --view dev
 
 # Verbose output with model breakdown
 atomic agent attest --verbose
@@ -150,7 +150,7 @@ atomic agent attest --verbose
 | Option | Description |
 |--------|-------------|
 | `--hash <PREFIX>` | Show details for a specific attestation (supports prefix matching) |
-| `--stack <NAME>` | Filter attestations covering changes in this view |
+| `--view <NAME>` | Filter attestations covering changes in this view |
 | `--verbose`, `-v` | Show per-model token breakdown and per-change details |
 
 **Example output:**
@@ -276,7 +276,7 @@ atomic agent explain <session-id> --all --save
 
 ```bash
 # See what the agent changed on its isolated view
-atomic log --stack agent-ses_3781fc...
+atomic log --view agent-ses_3781fc...
 
 # Insert specific changes into your view
 atomic insert <change-hash> --to dev

@@ -35,12 +35,12 @@ Specify the repository path if not running from within the repository directory.
 atomic status --repository /path/to/repo
 ```
 
-### `--stack <STACK>`
+### `--view <VIEW>`
 
 Show status relative to a specific view instead of the current view.
 
 ```bash
-atomic status --stack feature-branch
+atomic status --view feature-branch
 ```
 
 ### `-s, --short`
@@ -174,7 +174,7 @@ atomic status --json
 Output:
 ```json
 {
-  "stack": "main",
+  "view": "main",
   "state": "ABCD1234EFGH5678IJKL9012MNOP3456QRST7890UVWXYZAB",
   "changes": {
     "added": ["src/new_feature.rs"],
@@ -192,7 +192,7 @@ Output:
 ### Check Status of Different View
 
 ```bash
-atomic status --stack develop
+atomic status --view develop
 ```
 
 ## Status Codes
@@ -315,7 +315,7 @@ fi
 atomic status
 
 # Check status on another view
-atomic status --stack feature-branch
+atomic status --view feature-branch
 ```
 
 ## Differences from `atomic diff`

@@ -63,12 +63,12 @@ Override the default author for this change. Useful when recording changes on be
 atomic record -m "Fix bug" --author "John Doe <john@example.com>"
 ```
 
-### `--stack <STACK>`
+### `--view <VIEW>`
 
 Record the change to a specific view instead of the current view.
 
 ```bash
-atomic record -m "Feature work" --stack feature-branch
+atomic record -m "Feature work" --view feature-branch
 ```
 
 ### `--repository <PATH>`
@@ -236,7 +236,7 @@ atomic record --amend MNYNGT2V... -m "Fixed earlier commit"
 
 ```bash
 # Record to a different view
-atomic record -m "Feature work" --stack feature-branch
+atomic record -m "Feature work" --view feature-branch
 
 # Record with custom author
 atomic record -m "Pair programming changes" --author "Alice & Bob <team@example.com>"

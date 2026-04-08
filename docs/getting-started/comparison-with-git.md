@@ -200,7 +200,7 @@ git push origin feature-branch
 
 # Atomic: Push changes
 atomic push ABC DEF GHI  # Push specific changes
-atomic push --stack feature-work  # Or push entire view
+atomic push --view feature-work  # Or push entire view
 ```
 
 **Why this matters**:

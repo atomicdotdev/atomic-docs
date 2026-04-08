@@ -5,479 +5,341 @@ title: Stacked Diffs
 
 # Stacked Diffs with Atomic
 
-Stacked diffs (also called "stacked changes" or "patch stacks") are a powerful workflow pattern where you build multiple logical changes on top of each other, each representing a reviewable unit of work.
+Stacked diffs are a workflow pattern where you build multiple focused changes, each representing a reviewable unit of work. In Atomic, this workflow emerges naturally from the underlying patch theory — changes are algebraic operations on a directed acyclic graph (DAG), and their dependencies are computed automatically from the graph structure.
 
-## What are Stacked Diffs?
+## The Model: Patches on a DAG
 
-A **stacked diff** is a series of changes where each change builds on the previous one, creating a dependency chain. Instead of one massive change with 50 files, you create 5 focused changes with 10 files each.
-
-### Example Stack
+Every file in Atomic is a DAG of vertices and edges. A **change** is a set of operations that adds or removes vertices and edges in this graph. When you record a change, Atomic examines which existing vertices your edits touch and computes the dependency set automatically.
 
 ```
-Feature Implementation Stack:
-┌─────────────────────────────────┐
-│ Change 5: Integration tests     │ ← Top of stack
-├─────────────────────────────────┤
-│ Change 4: API routes            │
-├─────────────────────────────────┤
-│ Change 3: Business logic        │
-├─────────────────────────────────┤
-│ Change 2: Database schema       │
-├─────────────────────────────────┤
-│ Change 1: Type definitions      │ ← Base
-└─────────────────────────────────┘
+Your code is a graph:
+
+  ┌──────────┐     ┌──────────┐     ┌──────────┐
+  │ "fn main" │────▶│ "()  {"  │────▶│ "}"      │
+  └──────────┘     └──────────┘     └──────────┘
+  (Change A)        (Change A)        (Change A)
+
+Recording a new change that inserts a line between "{" and "}":
+
+  ┌──────────┐     ┌──────────┐     ┌──────────────┐     ┌──────────┐
+  │ "fn main" │────▶│ "()  {"  │────▶│ "println!(…)" │────▶│ "}"      │
+  └──────────┘     └──────────┘     └──────────────┘     └──────────┘
+  (Change A)        (Change A)        (Change B)           (Change A)
+
+  Change B depends on Change A because it spliced into A's vertices.
+  This dependency is computed, not declared.
 ```
 
-## Why Use Stacked Diffs?
+Because changes are algebraic operations with well-defined composition rules, two changes that touch independent parts of the graph **commute** — their order doesn't matter. This is the foundation that makes stacked workflows friction-free.
 
-### 1. Better Code Review
-- **Focused Reviews**: Each change is small and reviewable in minutes
-- **Clear Context**: Reviewers understand the progression
-- **Faster Approval**: Small changes get approved quickly
-- **Better Feedback**: Easier to spot issues in focused changes
+## Why Stacked Changes?
 
-### 2. Parallel Development
-- **Don't Wait**: Continue building while earlier changes are under review
-- **Stay Productive**: Keep moving forward without blocking
-- **Easy Iteration**: Update individual changes without rebuilding everything
+### Better Code Review
+- **Focused changes**: Each change does one logical thing and is reviewable in minutes
+- **Clear progression**: Reviewers see the dependency chain and understand the build-up
+- **Faster approval**: Small, focused changes get approved quickly
 
-### 3. Easier Debugging
-- **Bisect Changes**: Find which change introduced a bug
-- **Selective Testing**: Test each layer independently
-- **Rollback Precision**: Remove problematic changes without affecting others
+### Parallel Development
+- **Don't block on review**: Continue building dependent changes while earlier ones are under review
+- **Independent iteration**: Update any change in the chain without disrupting others
+- **Team coordination**: Multiple people can build on the same base changes simultaneously
 
-## Atomic vs Git: Key Differences
+### Precise Debugging
+- **Bisect by change**: Each change is a semantic unit, so finding which one introduced a bug is straightforward
+- **Selective rollback**: Remove a single change from a view's history without affecting unrelated work
+- **Independent testing**: Test each layer of the stack on its own
 
-### Git's Problem
+## How It Works in Practice
 
-In Git, stacked changes require rebasing when the base changes:
+### Record a Chain of Changes
+
+All work happens on a **view** — a filtered perspective on the single canonical graph. Every change you record goes into the global GRAPH immediately; the view tracks which changes are visible through its `VIEW_CHANGES` filter.
 
 ```bash
-# Git stacked branches
-git checkout -b feature-1
-git commit -m "Step 1"
+# Create a view for your feature
+atomic view create feature-user-auth --switch
 
-git checkout -b feature-2
-git commit -m "Step 2"
+# Record focused changes — dependencies are computed automatically
+atomic record src/types/user.rs -m "Define User and Session types"
+# Recorded: change A (no dependencies — first change)
 
-# If feature-1 gets updated after review:
-git checkout feature-1
-git commit --amend  # Change the commit
-
-git checkout feature-2
-git rebase feature-1  # REQUIRED: Rebase to get updates
-# Conflict potential! Commit hashes change!
-```
-
-**Problems**:
-- Rebase required for every update to base changes
-- Commit hashes change (breaks references, discussions)
-- Conflicts happen during rebase
-- Linear history assumption breaks parallel work
-
-### Atomic's Solution
-
-Atomic's change identity and commutative merges eliminate rebasing:
-
-```bash
-# Atomic stacked changes
-atomic view create feature-work
-atomic record src/types.rs -m "Step 1"  # Change ABC
-
-atomic record src/logic.rs -m "Step 2"  # Change DEF
-# DEF depends on ABC automatically
-
-# If ABC gets updated after review:
-atomic unrecord ABC  # Remove old version
-atomic record src/types.rs -m "Step 1 (updated)"  # Change ABC' (new hash)
-
-# Step 2 still works! No rebase needed!
-atomic insert DEF  # Atomic handles dependency automatically
-```
-
-**Benefits**:
-- No rebasing required
-- Changes maintain identity even when base changes
-- Conflicts detected at application time (more flexible)
-- True parallel development
-
-## Building Your First Stack
-
-### Step 1: Create a View
-
-```bash
-# Create a new view for your feature
-atomic view create feature/user-auth
-atomic view switch feature/user-auth
-```
-
-### Step 2: Build Changes Incrementally
-
-```bash
-# Change 1: Add types
-vi src/types/user.rs
-atomic record src/types/user.rs -m "Add User type definition"
-# Output: Change ABC123 recorded
-
-# Change 2: Add database schema (depends on types)
-vi migrations/001_users.sql
 atomic record migrations/001_users.sql -m "Add users table schema"
-# Output: Change DEF456 recorded (depends on ABC123)
+# Recorded: change B (depends on A — references types from A)
 
-# Change 3: Add authentication logic
-vi src/auth/login.rs
-atomic record src/auth/login.rs -m "Implement login logic"
-# Output: Change GHI789 recorded (depends on DEF456)
+atomic record src/auth/login.rs -m "Implement login with JWT validation"
+# Recorded: change C (depends on B — references schema from B)
 
-# Change 4: Add API routes
-vi src/api/auth.rs
-atomic record src/api/auth.rs -m "Add auth API endpoints"
-# Output: Change JKL012 recorded (depends on GHI789)
+atomic record src/api/auth.rs -m "Add /login and /logout endpoints"
+# Recorded: change D (depends on C — calls functions from C)
 ```
 
-### Step 3: View Your Stack
+### Inspect the Dependency DAG
 
 ```bash
-# See the dependency chain
 atomic log --deps
 
-# Output:
-# JKL012 - Add auth API endpoints
-#   └─ GHI789 - Implement login logic
-#      └─ DEF456 - Add users table schema
-#         └─ ABC123 - Add User type definition
+# D — Add /login and /logout endpoints
+#   └─ C — Implement login with JWT validation
+#      └─ B — Add users table schema
+#         └─ A — Define User and Session types
 ```
 
-### Step 4: Push for Review
+This isn't a linear stack — it's a DAG. If change D touched only types from A (not functions from C), the graph would show `D → A` directly, skipping B and C. The structure reflects actual code dependencies, not recording order.
+
+### Push to Remote
 
 ```bash
-# Push entire view to remote
-atomic push --stack feature/user-auth
+# Push everything on this view to the remote
+atomic push
 
-# Or push individual changes
-atomic push ABC123 DEF456  # Just types and schema
+# Or push specific changes
+atomic push A B
 ```
 
-## Working with Stack Changes
+### Update a Change
 
-### Updating a Change in the Middle
-
-Unlike Git, updating changes is straightforward:
+When change B needs to be revised — whether flagged by an agent, a CI pipeline, or a human reviewer — you don't rebase anything:
 
 ```bash
-# Current stack: ABC → DEF → GHI → JKL
-atomic log --graph
+# Remove B from this view's history
+atomic unrecord B
 
-# Update the middle change (DEF)
-atomic unrecord DEF
-vi migrations/001_users.sql  # Make improvements
-atomic record migrations/001_users.sql -m "Add users table (v2)"
-# New change: DEF' (different hash)
+# Edit the file and re-record
+vi migrations/001_users.sql
+atomic record migrations/001_users.sql -m "Add users table schema (addressed review)"
+# Recorded: change B' (new hash — this is a new change)
 
-# Dependent changes (GHI, JKL) still work!
-atomic insert GHI  # Automatically uses DEF'
-atomic insert JKL  # Still applies correctly
+# B' introduces the same vertices that C and D depended on,
+# so they continue to apply cleanly. If B' changed the graph
+# structure that C depends on, Atomic detects the conflict
+# at insert time — no silent corruption.
 ```
 
-### Reordering Changes
+The key insight: there is no rebase step. Changes C and D reference specific graph positions. If B' preserves those positions, everything composes. If it doesn't, Atomic tells you exactly where the conflict is.
 
-If changes are independent, reorder freely:
+## Cross-View Operations with Insert
+
+Views are filtered perspectives on the same graph. The `insert` command adds change references (and their transitive dependencies) to a view's filter. Because all edges already exist in the single canonical GRAPH, insert is an **O(1) metadata operation** — no data is copied.
+
+### Insert Changes Between Views
 
 ```bash
-# Current: ABC → DEF → GHI
-# Want: ABC → GHI → DEF
+# Insert all changes from feature view into dev
+atomic insert from-view feature-user-auth --to-view dev
 
-atomic unrecord DEF GHI  # Remove both
-atomic insert GHI         # Insert in new order
-atomic insert DEF
+# Cherry-pick specific changes (dependencies pulled automatically)
+atomic insert pick D --to-view dev
+# Atomic computes: deps(D) = {A, B, C}
+# dev already has: {A}
+# Missing: {B, C, D} → inserted in dependency order
 ```
 
-### Splitting a Large Change
+### Preview Before Inserting
 
 ```bash
-# You have a large change XYZ
-atomic show XYZ
-# Output: 20 files modified
-
-# Split into logical pieces
-atomic split-change XYZ \
-  --files src/types/*.rs \
-  -m "Part 1: Type definitions"
-
-atomic split-change XYZ \
-  --files src/logic/*.rs \
-  -m "Part 2: Business logic"
-
-# Now you have XYZ-1 and XYZ-2 that reviewers can handle separately
+# See what would be inserted without doing it
+atomic insert preview --from feature-user-auth --to-view dev
 ```
 
-### Squashing Changes
+### Create Parallel Views from the Same Base
+
+Both views see the shared graph through their parent chain — no need to copy changes:
 
 ```bash
-# Combine two related changes
-atomic squash ABC DEF -m "Combined type and schema changes"
-# Output: New change with combined hunks
+atomic view create feature-frontend --parent dev
+atomic view create feature-backend --parent dev
+
+# Both views already see everything in dev.
+# Changes recorded on feature-frontend are invisible to feature-backend
+# (and vice versa) until explicitly inserted.
 ```
 
-## Review Workflow
+## Reordering and Restructuring
 
-### Push Changes Individually
+Because changes are algebraic operations, independent changes commute — you can reorder them freely:
 
 ```bash
-# Push just the base change for initial review
-atomic push ABC
+# Current view history: A → B → C
+# B and C are independent (touch different files)
+# Want: A → C → B
 
-# Continue working on dependent changes locally
-atomic record more-work.rs -m "Building on ABC"
-
-# When ABC is approved, push next layer
-atomic push DEF
+atomic unrecord B C
+atomic insert C    # Insert in new order
+atomic insert B
 ```
 
-### Update After Review Feedback
+If B and C are NOT independent (they touch overlapping graph positions), Atomic will tell you — no silent reordering of dependent changes.
 
-```bash
-# Reviewer comments on ABC
-atomic show ABC  # Review the change
-
-# Update it
-atomic unrecord ABC
-vi src/types/user.rs  # Address feedback
-atomic record src/types/user.rs -m "Add User type (v2)"
-
-# Push updated version
-atomic push ABC
-
-# Dependent changes still work without modification!
-```
-
-## Advanced Patterns
-
-### Parallel Views from Same Base
-
-```bash
-# Create two independent views from main
-atomic view create feature/frontend
-atomic view create feature/backend
-
-# Both can pull the same base changes
-atomic view switch feature/frontend
-atomic pull ABC DEF  # Pull backend types
-
-atomic view switch feature/backend
-atomic pull ABC DEF  # Same changes, same hashes!
-```
-
-### Cascading Updates
-
-When a base change is updated, all views using it can pull the update:
-
-```bash
-# View A updates shared change ABC
-atomic unrecord ABC
-atomic record src/shared.rs -m "Shared types (v2)"
-atomic push ABC
-
-# View B can pull the update
-atomic view switch feature-b
-atomic pull ABC  # Gets the updated version
-
-# Atomic handles dependency updates automatically
-```
-
-### Cherry-Picking Changes
-
-Pull specific changes from other views without the full history:
-
-```bash
-# You want just change DEF from another view
-atomic pull DEF
-
-# Atomic automatically pulls dependencies (ABC) if needed
-# But NOT unrelated changes (GHI, JKL)
-```
-
-## Best Practices
-
-### 1. Keep Changes Focused
-
-Each change should:
-- ✅ Do one logical thing
-- ✅ Be independently reviewable
-- ✅ Pass tests on its own (if possible)
-- ❌ Mix unrelated concerns
-
-### 2. Write Clear Messages
-
-```bash
-# Good messages
-atomic record -m "Add User authentication type"
-atomic record -m "Implement JWT token validation"
-atomic record -m "Add /login API endpoint"
-
-# Bad messages
-atomic record -m "Updates"
-atomic record -m "Fix stuff"
-atomic record -m "Work in progress"
-```
-
-### 3. Test Each Layer
-
-```bash
-# After each change, verify it works
-atomic record src/feature.rs -m "Add feature"
-cargo test  # Make sure tests pass
-
-atomic record src/api.rs -m "Add API"
-cargo test  # Verify again
-```
-
-### 4. Push Early, Push Often
-
-```bash
-# Don't wait to push entire stack
-atomic record types.rs -m "Add types"
-atomic push  # Push immediately for early feedback
-
-# Continue building while under review
-atomic record logic.rs -m "Add logic"
-```
-
-### 5. Use Descriptive View Names
-
-```bash
-# Good view names
-atomic view create feature/user-authentication
-atomic view create bugfix/memory-leak-in-parser
-atomic view create refactor/extract-database-layer
-
-# Bad view names
-atomic view create my-work
-atomic view create temp
-atomic view create asdf
-```
-
-## Common Workflows
-
-### Building a Complex Feature
+## Real-World Workflow: Building a Feature Over Multiple Days
 
 ```bash
 # Day 1: Foundation
-atomic view create feature/payment-system
-atomic record types.rs -m "Payment types"
-atomic record schema.sql -m "Payment tables"
+atomic view create feature-payment-system --switch
+atomic record types.rs -m "Payment types and error hierarchy"
+atomic record schema.sql -m "Payment and transaction tables"
 atomic push
+# Agents validate the change immediately — type-checking,
+# schema linting, dependency analysis all happen automatically.
 
-# Day 2: Core logic (while Day 1 under review)
-atomic record processor.rs -m "Payment processor"
-atomic record validation.rs -m "Payment validation"
+# Day 2: Core logic (don't wait — agents already validated Day 1)
+atomic record processor.rs -m "Payment processor with retry logic"
+atomic record validation.rs -m "Card and amount validation rules"
 atomic push
 
 # Day 3: Integration
 atomic record api.rs -m "Payment API endpoints"
-atomic record webhooks.rs -m "Payment webhooks"
+atomic record webhooks.rs -m "Stripe webhook handlers"
 atomic push
 
-# Day 4: Address review feedback on Day 1
+# Day 4: Agent flags a type mismatch introduced in Day 1
 atomic unrecord <types-hash>
-vi types.rs  # Fix issues
-atomic record types.rs -m "Payment types (v2)"
+vi types.rs
+atomic record types.rs -m "Payment types (v2 — added refund support)"
 atomic push
 
-# Days 2-3 changes still work! No rebase needed!
+# Days 2-3 changes compose with the updated types.
+# If the type changes broke an interface that processor.rs depends on,
+# Atomic flags the conflict explicitly.
 ```
 
-### Experimental View Pattern
+## Experimental Work
+
+Views are cheap (they're just filter metadata). Use them freely:
 
 ```bash
-# Start experiment on separate view
-atomic view create experiment/new-algorithm
-atomic record algorithm.rs -m "Try new approach"
+# Try a new approach
+atomic view create experiment-new-algorithm --switch
+atomic record algorithm.rs -m "Alternative sort implementation"
 
-# If successful, merge back
-atomic view switch main
-atomic pull <algorithm-hash>
+# If successful — insert the change into dev
+atomic view switch dev
+atomic insert <algorithm-hash>
 
-# If failed, just delete view
-atomic view delete experiment/new-algorithm
-# Change stays in global store, can recover if needed
+# If failed — delete the view
+atomic view delete experiment-new-algorithm
+# The change's edges remain in the global GRAPH (immutable).
+# They're invisible to all views and cleaned up by GC.
 ```
 
-## Comparison with Git Workflows
+## How This Differs from Branch-Based Workflows
 
-| Workflow | Git | Atomic |
-|----------|-----|--------|
-| **Create view** | `git checkout -b` | `atomic view create` |
-| **Add change** | `git commit` | `atomic record` |
-| **Update base** | `git rebase` (required) | Automatic |
-| **Reorder changes** | `git rebase -i` | `atomic unrecord` + `atomic insert` |
-| **Split change** | Manual history rewrite | `atomic split-change` |
-| **Push for review** | `git push` | `atomic push` |
-| **Handle conflicts** | During rebase | During insert (more flexible) |
-| **Change identity** | Hash changes on rebase | Hash stays same |
+In branch-based systems, "stacked diffs" are a workflow discipline imposed on top of a model that doesn't natively support it. The base abstraction is a snapshot, and relating snapshots requires rebasing, cherry-picking, and conflict resolution at every step.
+
+In Atomic, stacked changes are a **natural consequence of the model**:
+
+| Concept | Branch-Based Systems | Atomic |
+|---------|---------------------|--------|
+| **Fundamental unit** | Snapshot (full tree state) | Change (algebraic graph operation) |
+| **Dependencies** | Implicit (parent commit pointer) | Explicit (computed from graph structure) |
+| **Identity** | Commit hash (changes on rebase) | Content hash (immutable) |
+| **Sharing changes** | Cherry-pick (copies data, new hash) | Insert (O(1) metadata reference) |
+| **Updating a change** | Amend + rebase all dependents | Unrecord + re-record; dependents checked automatically |
+| **Storage** | Each branch stores full history | Single GRAPH; views are filters |
+| **Independent changes** | May still conflict during rebase | Commute by definition (patch theory) |
+
+The critical difference: in Atomic, whether two changes can coexist isn't determined by textual diffing at merge time — it's determined by their algebraic properties in the graph. Two changes that touch independent vertices commute regardless of how close they are in a file. Two changes that modify the same vertex conflict regardless of how far apart they are.
 
 ## Troubleshooting
 
-### Change Won't Insert
+### Insert Reports a Conflict
 
 ```bash
-# If a change conflicts:
-atomic insert ABC
-# Error: Conflict in src/file.rs
+atomic insert C
+# Error: Conflict in src/auth/login.rs
+#   Change C references vertex V[42:58] which was modified by change B'
 
-# Option 1: Fix conflicts and amend
-atomic insert ABC --interactive
-# Resolve conflicts, then:
-atomic record src/file.rs -m "Resolved version"
-
-# Option 2: Skip the change
-atomic unrecord ABC
-# Continue without it
+# This means B' changed the graph structure that C depends on.
+# Fix: unrecord C, update the code, re-record.
+atomic unrecord C
+vi src/auth/login.rs
+atomic record src/auth/login.rs -m "Login logic (updated for new types)"
 ```
 
-### Dependency Issues
+### Dependency Chain Feels Wrong
 
 ```bash
-# If dependencies are wrong:
-atomic show ABC --deps
-# See what ABC depends on
+# Inspect what a change actually depends on
+atomic change <HASH> --deps
 
-# If you need to change dependencies:
-atomic unrecord ABC
-atomic insert <new-deps>
-atomic record files -m "ABC with updated deps"
+# If your change has unexpected dependencies, you may have
+# edited a file that shares vertices with another change.
+# Split your edits into separate records to get cleaner deps.
 ```
 
-### View Got Messy
+### View History Got Tangled
 
 ```bash
-# View current state
-atomic log --graph
+# See the current state
+atomic log --deps
 
-# Option 1: Reorder cleanly
-atomic unrecord --all  # Remove all from view
-atomic insert ABC DEF GHI  # Reinsert in order
+# Option 1: Reorder
+atomic unrecord --all
+atomic insert A B C D  # Re-insert in the order you want
 
-# Option 2: Create fresh view
-atomic view create feature-clean
-atomic pull ABC DEF GHI  # Pull changes to new view
-atomic view switch feature-clean
+# Option 2: Start fresh
+atomic view create feature-v2 --switch
+atomic insert pick A C D  # Pull only the changes you want
+```
+
+## Best Practices
+
+### Record Semantically, Not Chronologically
+
+Each `atomic record` should capture one logical change. Don't record "end of day" snapshots — record "added input validation" or "extracted database layer."
+
+```bash
+# Good: semantic units
+atomic record src/validation.rs -m "Add card number validation (Luhn check)"
+atomic record src/processor.rs -m "Add idempotency key to payment requests"
+
+# Avoid: chronological dumps
+atomic record . -m "Tuesday work"
+atomic record . -m "More progress"
+```
+
+### Use the Dependency DAG as a Design Tool
+
+If `atomic log --deps` shows a tangled web, that's a signal your code changes are too coupled. Clean dependency chains often reflect clean architecture:
+
+```
+# Clean: linear chain with clear layers
+D (API) → C (logic) → B (schema) → A (types)
+
+# Messy: everything depends on everything
+D → A, B, C
+C → A, B
+B → A
+```
+
+### Push Continuously for Validation
+
+Push after every logical change. Agents and CI pipelines validate each change as it lands — type-checking, linting, test execution, and dependency analysis happen automatically. Don't batch work waiting for a human to look at it.
+
+```bash
+atomic record types.rs -m "Core types"
+atomic push  # Agents validate immediately; keep building
+
+atomic record logic.rs -m "Business rules"
+atomic push  # Each push is independently validated
+```
+
+### Name Views for Intent
+
+```bash
+# Clear intent
+atomic view create feature-user-authentication
+atomic view create bugfix-memory-leak-in-parser
+atomic view create refactor-extract-database-layer
+
+# Unclear
+atomic view create stuff
+atomic view create wip
 ```
 
 ## Next Steps
 
-- Read [AI Agent Workflows](ai-agent-workflows.md) for agent-based stacked changes
-- See [Views Command Reference](../commands/view.md) for all view operations
-- Learn about [Change Identity](../concepts/change-identity) for deeper understanding
-
-## Summary
-
-Stacked diffs in Atomic provide:
-
-- ✅ **Better reviews**: Small, focused changes
-- ✅ **Parallel work**: Build while reviewing
-- ✅ **No rebasing**: Changes maintain identity
-- ✅ **Flexible iteration**: Update any layer easily
-- ✅ **True independence**: Commutative merge semantics
-
-Unlike Git's branch-based stacks that require constant rebasing, Atomic's change-based model makes stacked workflows natural and friction-free.
+- **[AI Agent Workflows](ai-agent-workflows.md)** — How agents use views for isolated, auditable work
+- **[Views Command Reference](../commands/view.md)** — Full view lifecycle: create, switch, list, delete
+- **[Insert Command Reference](../commands/insert.md)** — Cross-view change operations
+- **[Change Identity](../concepts/change-identity)** — How content-addressing and immutability work
+- **[The Graph Model](../concepts/graph-model-explained.md)** — Deep dive into vertices, edges, and patch composition

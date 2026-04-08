@@ -26,12 +26,12 @@ Unlike some version control systems, `atomic init` creates a fully functional di
 
 ## Options
 
-### `--stack <NAME>`
+### `--view <NAME>`
 
 Set the name of the initial view. If not specified, defaults to `"main"`.
 
 ```bash
-atomic init --stack develop
+atomic init --view develop
 ```
 
 ### `-k, --kind <KIND>`
@@ -69,7 +69,7 @@ Creates a new repository in the current directory with default settings (view na
 ### Initialize with Custom View Name
 
 ```bash
-atomic init --stack develop
+atomic init --view develop
 ```
 
 Creates a repository with the initial view named "develop" instead of "main".
@@ -85,7 +85,7 @@ Creates a new repository in the `myproject` directory with Rust-specific ignore 
 ### Initialize with All Options
 
 ```bash
-atomic init --stack main --kind rust ~/projects/new-app
+atomic init --view main --kind rust ~/projects/new-app
 ```
 
 Creates a Rust project repository at `~/projects/new-app` with the "main" view.

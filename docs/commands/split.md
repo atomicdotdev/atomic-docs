@@ -19,7 +19,7 @@ The `split` command creates a new view by forking from an existing view. This is
 When you split, Atomic:
 
 1. Creates a new view with the given name
-2. Copies the change log from the source view (or current view if `--stack` is not specified)
+2. Copies the change log from the source view (or current view if `--view` is not specified)
 3. Optionally switches to the new view
 
 The new view is a **Draft** view parented on the source, sharing the same underlying graph. No data is duplicated — only change references are copied to `VIEW_CHANGES`.
@@ -34,12 +34,12 @@ View names should be descriptive and follow a naming convention like `feature-*`
 
 ## Options
 
-### `--stack <SOURCE>`
+### `--view <SOURCE>`
 
 Split from a specific source view instead of the current view.
 
 ```bash
-atomic split new-feature --stack main
+atomic split new-feature --view main
 ```
 
 ### `--switch`, `-s`
@@ -64,7 +64,7 @@ atomic split experimental
 
 ```bash
 # Create a hotfix view from the release view
-atomic split hotfix --stack release-1.0
+atomic split hotfix --view release-1.0
 # Created view: hotfix (split from release-1.0 with 42 changes)
 ```
 

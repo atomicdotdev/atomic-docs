@@ -55,25 +55,25 @@ Specify the repository path if not running from within the repository directory.
 atomic pull --repository /path/to/repo
 ```
 
-### `--to-stack <STACK>`
+### `--to-view <VIEW>`
 
 Pull into a specific view instead of the current view.
 
 ```bash
 # Pull into feature branch
-atomic pull --to-stack feature/new-ui
+atomic pull --to-view feature-new-ui
 ```
 
-### `--from-stack <STACK>`
+### `--from-view <VIEW>`
 
 Pull from a specific remote view instead of the remote's default view.
 
 ```bash
 # Pull from remote develop branch
-atomic pull --from-stack develop
+atomic pull --from-view develop
 
 # Pull from specific remote and view
-atomic pull origin --from-stack experimental
+atomic pull origin --from-view experimental
 ```
 
 ### `-a, --all`
@@ -164,13 +164,13 @@ atomic pull upstream
 
 ```bash
 # Pull from remote's develop view
-atomic pull --from-stack develop
+atomic pull --from-view develop
 
 # Pull remote feature into local feature
-atomic pull --from-stack feature/auth --to-stack feature/auth
+atomic pull --from-view feature-auth --to-view feature-auth
 
 # Pull main into current view
-atomic pull origin --from-stack main
+atomic pull origin --from-view main
 ```
 
 ### Selective Pull
@@ -200,7 +200,7 @@ atomic pull --skip-attribution
 
 ```bash
 # Pull changes from another local view
-atomic pull . --from-stack feature/completed
+atomic pull . --from-view feature-completed
 
 # Apply specific local changes
 atomic pull . ABCD1234... EFGH5678...
@@ -328,7 +328,7 @@ atomic pull /path/to/other/repo
 atomic pull file:///path/to/other/repo
 
 # Current repository (different view)
-atomic pull . --from-stack other-branch
+atomic pull . --from-view other-branch
 ```
 
 ## Conflict-Free Pull
@@ -441,8 +441,8 @@ atomic view switch main
 atomic pull
 
 # Merge into feature branch
-atomic view switch feature/my-work
-atomic pull . --from-stack main
+atomic view switch feature-my-work
+atomic pull . --from-view main
 ```
 
 ### Staying Up to Date
@@ -458,10 +458,10 @@ atomic push
 
 ```bash
 # Pull from upstream (original repo)
-atomic pull upstream --from-stack main
+atomic pull upstream --from-view main
 
 # Pull from origin (your split)
-atomic pull origin --from-stack develop
+atomic pull origin --from-view develop
 
 # Push to your split
 atomic push origin
