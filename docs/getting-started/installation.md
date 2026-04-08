@@ -98,7 +98,7 @@ Clone the repository and build from source:
 
 ```bash
 # Clone the repository
-git clone https://github.com/atomic-vcs/atomic.git
+git clone https://github.com/atomicdotdev/atomic.git
 cd atomic
 
 # Build in release mode
@@ -127,7 +127,7 @@ atomic --version
 You should see output similar to:
 
 ```
-atomic 1.0.0
+atomic 0.5.0
 ```
 
 #### 5. Add to PATH (if needed)
@@ -154,78 +154,7 @@ source ~/.bashrc  # or source ~/.zshrc
 
 ## Distribution Packages
 
-### Nix / NixOS
-
-Nix is a package manager available on any Linux distribution and macOS:
-
-```bash
-# Install Nix (if not already installed)
-curl -L https://nixos.org/nix/install | sh
-
-# Install Atomic
-nix-env --upgrade
-nix-env -iA nixpkgs.atomic
-```
-
-### Arch Linux (AUR)
-
-Atomic will be available in the Arch User Repository (coming soon):
-
-```bash
-# Using yay (when available)
-yay -S atomic
-
-# Using paru (when available)
-paru -S atomic
-```
-
-For now, install from source.
-
-### FreeBSD
-
-```bash
-# Binary package
-pkg install atomic
-
-# Or build from ports
-cd /usr/ports/devel/atomic/ && make install clean
-```
-
-### Windows
-
-Windows binaries are available from the [releases page](https://github.com/atomic-vcs/atomic/releases).
-
-#### Using Chocolatey (coming soon):
-
-```powershell
-choco install atomic
-```
-
-#### Manual Installation:
-
-1. Download the Windows binary from the releases page
-2. Extract the archive
-3. Add the directory containing `atomic.exe` to your PATH
-4. Open a new command prompt or PowerShell window
-5. Verify with `atomic --version`
-
-## Docker
-
-Run Atomic in a Docker container:
-
-```bash
-# Pull the official image
-docker pull atomicvcs/atomic:latest
-
-# Run Atomic
-docker run --rm -it -v $(pwd):/workspace atomicvcs/atomic:latest atomic --version
-```
-
-Create an alias for convenience:
-
-```bash
-alias atomic='docker run --rm -it -v $(pwd):/workspace atomicvcs/atomic:latest atomic'
-```
+**COMING SOON**
 
 ## Building from Git (Development)
 
@@ -233,7 +162,7 @@ To build the latest development version:
 
 ```bash
 # Clone the repository
-git clone https://github.com/atomic-vcs/atomic.git
+git clone https://github.com/atomicdotdev/atomic.git
 cd atomic
 
 # Build with all features
@@ -295,8 +224,6 @@ To remove Atomic installed via Cargo:
 cargo uninstall atomic
 ```
 
-For distribution packages, use your package manager's remove command.
-
 ---
 
-**Need help?** Join our [Discord community](https://discord.gg/atomic-vcs) or [open an issue](https://github.com/atomic-vcs/atomic/issues) on GitHub.
+**Need help?** [open an issue](https://github.com/atomicdotdev/atomic/issues) on GitHub.
