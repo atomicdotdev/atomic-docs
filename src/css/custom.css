@@ -1245,6 +1245,114 @@ details summary:hover {
 }
 
 /* ============================================
+   QUICKSTART — Atomic Storage inspired cards
+   ============================================ */
+.quickstart-hero {
+    padding: 2.5rem 0 1.5rem;
+    text-align: center;
+}
+
+.quickstart-eyebrow {
+    margin-bottom: 0.75rem;
+    color: var(--color-pink-900);
+    font-family: var(--ifm-font-family-monospace);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.quickstart-hero h1 {
+    margin-bottom: 1rem;
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    letter-spacing: -0.04em;
+}
+
+.quickstart-hero > p:not(.quickstart-eyebrow) {
+    max-width: 720px;
+    margin: 0 auto 1.75rem;
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+}
+
+.quickstart-hero-cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.quickstart-hero-card,
+.quickstart-card {
+    border: 1px solid var(--color-slate-200);
+    background: var(--color-slate-50);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="dark"] .quickstart-hero-card,
+[data-theme="dark"] .quickstart-card {
+    border-color: var(--color-border);
+    background: var(--color-bg-raised);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.quickstart-hero-card {
+    display: block;
+    padding: 1rem;
+    text-align: left;
+    color: inherit;
+}
+
+.quickstart-hero-card:hover {
+    border-color: var(--color-pink-900);
+    color: inherit;
+    text-decoration: none;
+}
+
+.quickstart-hero-card span {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: var(--color-pink-900);
+    font-weight: 700;
+}
+
+.quickstart-hero-card code {
+    white-space: normal;
+}
+
+.quickstart-steps {
+    display: grid;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.quickstart-card {
+    padding: 1.5rem;
+}
+
+.quickstart-card h3 {
+    margin-top: 0;
+}
+
+.quickstart-step-number {
+    color: var(--color-pink-900);
+    font-family: var(--ifm-font-family-monospace);
+}
+
+@media (max-width: 768px) {
+    .quickstart-hero-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .quickstart-hero-card,
+    .quickstart-card,
+    [data-theme="dark"] .quickstart-hero-card,
+    [data-theme="dark"] .quickstart-card {
+        box-shadow: none;
+    }
+}
+
+/* ============================================
    DOCUSAURUS CARDS & BUTTONS — Geometric
    ============================================ */
 .card {

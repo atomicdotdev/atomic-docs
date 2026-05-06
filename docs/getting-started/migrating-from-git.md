@@ -16,7 +16,7 @@ The fastest way to get started is to import your existing Git repository:
 cd /path/to/your/git/repo
 
 # Import into Atomic (creates .atomic directory)
-atomic git
+atomic git import
 
 # Start using Atomic!
 atomic log
@@ -322,7 +322,7 @@ atomic unrecord  # Remove WIP change, keeps working copy
 ```bash
 # Import entire Git history
 cd your-git-repo
-atomic git
+atomic git import
 
 # Verify import
 atomic log --limit 10
@@ -333,7 +333,7 @@ atomic view list
 
 ```bash
 # Import Git repo from different location
-atomic git /path/to/git/repo /path/to/atomic/repo
+atomic git import /path/to/git/repo /path/to/atomic/repo
 ```
 
 ### What Gets Imported
@@ -619,8 +619,8 @@ Example with 100 changes:
 
 ## Migration Checklist
 
-- [ ] Install Atomic: `cargo install --path atomic` (from source)
-- [ ] Import Git repo: `atomic git`
+- [ ] Install Atomic: `curl -sSf https://atomic.storage/install.sh | sh`
+- [ ] Import Git repo: `atomic git import`
 - [ ] Verify import: `atomic log`
 - [ ] Configure identity: `atomic identity new`
 - [ ] Set up remotes in `.atomic/config.toml`
@@ -639,7 +639,7 @@ Example with 100 changes:
 # Solution: Commit or stash in Git first
 git status
 git commit -am "Pending changes"
-atomic git
+atomic git import
 ```
 
 ### Working Copy Differences
@@ -668,7 +668,7 @@ atomic reset --force
 
 ## Next Steps
 
-1. **Import your Git repository**: `atomic git`
+1. **Import your Git repository**: `atomic git import`
 2. **Create your first change**: `atomic record -m "First Atomic change"`
 3. **Explore AI attribution**: `atomic record --ai-assisted`
 4. **Create consolidating tags**: `atomic tag create v1.0.0`
@@ -693,6 +693,6 @@ Welcome to the future of version control! 🚀
 
 ```bash
 cd your-git-repo
-atomic git
+atomic git import
 atomic log
 ```

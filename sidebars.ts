@@ -12,6 +12,7 @@ const sidebars: SidebarsConfig = {
       value: '<div class="sidebar-section-label">GETTING STARTED</div>',
       defaultStyle: true,
     },
+    "getting-started/quickstart",
     "getting-started/installation",
     "getting-started/first-repository",
     "getting-started/migrating-from-git",
@@ -73,6 +74,16 @@ const sidebars: SidebarsConfig = {
     "proposals/performance-benchmarking-strategy",
     {
       type: "html",
+      value: '<div class="sidebar-section-label">TEAMS & STORAGE</div>',
+      defaultStyle: true,
+    },
+    {
+      type: "doc",
+      id: "teams/overview",
+      label: "Team Collaboration",
+    },
+    {
+      type: "html",
       value: '<div class="sidebar-section-label">COMMANDS</div>',
       defaultStyle: true,
     },
@@ -132,6 +143,10 @@ const sidebars: SidebarsConfig = {
         id: "commands/remote-operations",
       },
       items: [
+        "commands/org",
+        "commands/workspace",
+        "commands/project",
+        "commands/team",
         "commands/remote",
         "commands/push",
         "commands/pull",

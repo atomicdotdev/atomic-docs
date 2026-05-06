@@ -33,6 +33,10 @@ Every command listed here corresponds to a real subcommand in the `atomic` CLI b
 | [`pull`](pull.md) | Pull changes from a remote |
 | [`clone`](clone.md) | Clone a remote repository |
 | [`remote`](remote.md) | Manage named remote repositories |
+| [`org`](org.md) | Manage Atomic Storage organizations and members |
+| [`workspace`](workspace.md) | Manage hosted workspaces |
+| [`project`](project.md) | Manage hosted projects and project remotes |
+| [`team`](team.md) | Manage organization teams and team members |
 | [`identity`](identity.md) | Manage user identities and signing keys |
 | [`agent`](agent.md) | Manage AI agent integration |
 
@@ -89,16 +93,28 @@ atomic view delete old-feature    # Delete a view
 - **[`view`](view.md)** — Create, switch, list, and delete views
 - **[`stash`](stash.md)** — Temporarily save uncommitted changes to an orphan view
 
-### Remote Operations
+### Remote Operations and Atomic Storage
 
-Synchronize with remote repositories:
+Synchronize with remote repositories and manage hosted organizations,
+workspaces, projects, and teams:
 
 ```bash
-atomic remote add origin https://api.atomic.dev/acme/project/code
+atomic identity new alice-acme --email alice@acme.com --set-default
+atomic identity register https://atomic.storage
+atomic org create acme --email team@acme.com
+atomic workspace create platform --visibility private --org acme
+atomic project create api --workspace platform --kind rust --org acme
+atomic team create engineering --visibility visible --org acme
+
+atomic project init api --workspace platform --kind rust --org acme
 atomic push                       # Push changes to default remote
 atomic pull                       # Pull changes from default remote
 ```
 
+- **[`org`](org.md)** — Create organizations and manage members
+- **[`workspace`](workspace.md)** — Create, list, update, and delete hosted workspaces
+- **[`project`](project.md)** — Create hosted projects and configure local remotes
+- **[`team`](team.md)** — Create teams and manage team members
 - **[`push`](push.md)** — Upload local changes to a remote
 - **[`pull`](pull.md)** — Download and insert changes from a remote
 - **[`clone`](clone.md)** — Create a new local repository from a remote
@@ -118,15 +134,16 @@ atomic tag show v1.0.0
 
 ### Identity
 
-Manage user identities for signing changes:
+Manage user identities for signing changes and Atomic Storage authentication:
 
 ```bash
-atomic identity new alice --email alice@example.com
+atomic identity new alice-acme --email alice@acme.com --set-default
+atomic identity register https://atomic.storage
 atomic identity list
 atomic identity whoami
 ```
 
-- **[`identity`](identity.md)** — Create, list, show, and delete identities
+- **[`identity`](identity.md)** — Create, list, show, register, and delete identities
 
 ### AI Agent Integration
 

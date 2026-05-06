@@ -89,15 +89,13 @@ With 100 changes, traditional VCS systems create **5,050 dependencies** (O(n²) 
 
 ## Getting Started
 
-Ready to experience the future of version control? Start with our Getting Started guide to install Atomic and create your first repository.
+Ready to experience the future of version control? Start with the [Quickstart](./getting-started/quickstart) to install Atomic, register with Atomic Storage, create a workspace and project, and push your first change.
 
 ### New to Atomic?
 
 ```bash
-# Install Atomic (from source)
-git clone https://github.com/atomicdotdev/atomic.git
-cd atomic
-cargo install --path atomic
+# Install Atomic
+curl -sSf https://atomic.storage/install.sh | sh
 
 # Create your first repository
 atomic init myproject
@@ -120,7 +118,7 @@ Import your existing Git repository in seconds:
 cd /path/to/your/git/repo
 
 # Import Git history into Atomic
-atomic git
+atomic git import
 
 # Start using Atomic immediately!
 atomic log
@@ -133,10 +131,10 @@ See our [Migration Guide](./getting-started/migrating-from-git) for a complete w
 
 ## Next Steps
 
-- **New to version control?** Start with the Getting Started section
+- **New to Atomic?** Start with the [Quickstart](./getting-started/quickstart)
+- **Working with a team?** Read the [Team Collaboration overview](./teams/overview)
 - **Coming from Git?** Check out our [Migration Guide](./getting-started/migrating-from-git)
-- **Want to dive deep?** Explore the Command Reference
-- **Need API docs?** See the comprehensive command documentation
+- **Want to dive deep?** Explore the [Command Reference](./commands/overview)
 
 ## Community & Support
 

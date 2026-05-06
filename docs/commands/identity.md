@@ -13,6 +13,7 @@ Manage user identities and cryptographic keys for signing changes.
 atomic identity [OPTIONS]
 atomic identity new [NAME] [OPTIONS]
 atomic identity list
+atomic identity register <SERVER_URL> [--identity <NAME>]
 atomic identity edit [NAME] [OPTIONS]
 atomic identity remove [NAME] [OPTIONS]
 atomic identity prove [OPTIONS]
@@ -187,6 +188,48 @@ Identities
     ├── Public Key: EFGH5678...
     ├── Remote: origin
     └── Last Modified: 2025-01-14 09:15:00 UTC
+```
+
+### `identity register` - Register with Atomic Storage
+
+Register an identity with an Atomic Storage server.
+
+Registration sends a signed Ed25519 payload to the server. On success, the
+server creates a personal organization for the identity and the CLI stores the
+server URL and default organization in your global Atomic config.
+
+#### Synopsis
+
+```bash
+atomic identity register <SERVER_URL> [--identity <NAME>]
+```
+
+#### Arguments
+
+**`<SERVER_URL>`**
+
+Base URL of the Atomic Storage server.
+
+```bash
+atomic identity register https://atomic.storage
+```
+
+#### Options
+
+**`--identity <NAME>`**
+
+Register a specific identity instead of the current default.
+
+```bash
+atomic identity register https://atomic.storage --identity alice
+```
+
+#### Example
+
+```bash
+atomic identity new alice --email alice@example.com --set-default
+atomic identity register https://atomic.storage
+atomic org show
 ```
 
 ### `identity edit` - Edit an Existing Identity

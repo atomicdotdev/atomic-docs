@@ -5,7 +5,7 @@ title: Remote Operations
 
 # Remote Operations
 
-Commands for synchronizing your repository with remote servers. Atomic uses a simple push/pull model where changes are content-addressed — the same change hash means the same content everywhere.
+Commands for synchronizing your repository with remote servers and managing hosted Atomic Storage resources. Atomic uses a simple push/pull model where changes are content-addressed — the same change hash means the same content everywhere.
 
 ## Commands
 
@@ -15,6 +15,10 @@ Commands for synchronizing your repository with remote servers. Atomic uses a si
 | [`pull`](pull.md) | Download and apply changes from a remote |
 | [`clone`](clone.md) | Create a new local repository from a remote source |
 | [`remote`](remote.md) | Add, remove, list, and configure named remotes |
+| [`org`](org.md) | Manage Atomic Storage organizations and members |
+| [`workspace`](workspace.md) | Manage hosted workspaces |
+| [`project`](project.md) | Manage hosted projects and configure remotes |
+| [`team`](team.md) | Manage organization teams and team members |
 
 ## How Remotes Work
 
@@ -42,13 +46,20 @@ Because changes are content-addressed (identified by their Blake3 hash), the sam
 
 ## Typical Workflow
 
-### Setting up a new project
+### Setting up a new hosted project
 
 ```bash
+atomic identity new alice-acme --email alice@acme.com --set-default
+atomic identity register https://atomic.storage
+atomic org create acme --email team@acme.com
+atomic org switch acme
+
+atomic workspace create platform --visibility private --org acme
+atomic project create myproject --workspace platform --kind rust --org acme
+
 atomic init myproject
 cd myproject
-atomic remote add origin https://api.atomic.dev/acme/platform/myproject/code
-atomic remote default origin
+atomic project init myproject --workspace platform --kind rust --org acme
 
 # Work and record changes...
 atomic record -m "Initial commit"
@@ -98,6 +109,10 @@ The server reconstructs session timelines, usage dashboards, and code review dat
 
 ## See Also
 
+- [org](org.md) — Managing organizations and members
+- [workspace](workspace.md) — Managing hosted workspaces
+- [project](project.md) — Managing hosted projects
+- [team](team.md) — Managing organization teams
 - [remote](remote.md) — Managing named remotes
 - [push](push.md) — Pushing changes
 - [pull](pull.md) — Pulling changes

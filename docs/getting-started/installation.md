@@ -5,26 +5,42 @@ title: Installation
 
 # Installing Atomic
 
-This guide will help you install Atomic VCS on your system. Atomic can be installed from source using Cargo, or through various package managers depending on your platform.
-
-## Requirements
-
-Before installing Atomic, ensure you have the following prerequisites:
-
-### Required Dependencies
-
-- **Rust toolchain** (1.70 or later) via [rustup](https://rustup.rs/)
-- **Clang compiler**
-- **libsodium** - Cryptographic library
-- **libssl** - SSL/TLS support
-- **xxhash** - Fast hashing library
-- **zstd** - Compression library
+This guide will help you install Atomic VCS on your system. The recommended installation path is the hosted installer script from Atomic Storage. Development builds can still be installed from source.
 
 ## Installation Methods
 
-### From Source (Recommended)
+### Hosted Installer (Recommended)
 
-The primary way to install Atomic is through Cargo, Rust's package manager.
+Install the latest Atomic CLI release with the installer hosted by Atomic Storage:
+
+```bash
+curl -sSf https://atomic.storage/install.sh | sh
+```
+
+Install a specific version:
+
+```bash
+curl -sSf https://atomic.storage/install.sh | ATOMIC_VERSION=0.5.1 sh
+```
+
+Install to a user-writable directory:
+
+```bash
+curl -sSf https://atomic.storage/install.sh | ATOMIC_INSTALL="$HOME/.local/bin" sh
+```
+
+The installer detects your platform, downloads the matching GitHub release
+archive, verifies checksums when available, and installs the `atomic` binary.
+
+### Verify Installation
+
+```bash
+atomic --version
+```
+
+### Source Install (Development)
+
+Use a source install when you need to test unreleased changes.
 
 #### 1. Install Rust
 
@@ -94,45 +110,17 @@ sudo xbps-install libgcc-devel libressl-devel libsodium-devel \
 
 #### 3. Build and Install Atomic
 
-Clone the repository and build from source:
+Clone the repository and install the CLI crate:
 
 ```bash
-# Clone the repository
 git clone https://github.com/atomicdotdev/atomic.git
 cd atomic
-
-# Build in release mode
-cargo build --release
-
-# Install to your system
-cargo install --path atomic
+cargo install --path atomic-cli
 ```
 
-Or install directly from crates.io (when published):
+#### 4. Add to PATH (if needed)
 
-```bash
-cargo install atomic
-```
-
-**Note**: The package is not yet published to crates.io. Install from source for now.
-
-#### 4. Verify Installation
-
-Check that Atomic is installed correctly:
-
-```bash
-atomic --version
-```
-
-You should see output similar to:
-
-```
-atomic 0.5.0
-```
-
-#### 5. Add to PATH (if needed)
-
-If the `atomic` command is not found, you may need to add Cargo's bin directory to your PATH.
+If the `atomic` command is not found, you may need to add Cargo's bin directory or your chosen installer directory to your PATH.
 
 **On Linux/macOS**, add to your `~/.bashrc`, `~/.zshrc`, or equivalent:
 
@@ -161,18 +149,11 @@ source ~/.bashrc  # or source ~/.zshrc
 To build the latest development version:
 
 ```bash
-# Clone the repository
 git clone https://github.com/atomicdotdev/atomic.git
 cd atomic
-
-# Build with all features
 cargo build --release --all-features
-
-# Run tests
 cargo test
-
-# Install locally
-cargo install --path atomic
+cargo install --path atomic-cli
 ```
 
 ## Troubleshooting
@@ -212,16 +193,26 @@ rustup update stable
 
 Now that you have Atomic installed, you're ready to:
 
-1. Create your first repository
-2. Learn the basic workflow
-3. Configure Atomic
+1. Follow the [Quickstart](./quickstart) to register with Atomic Storage and push a hosted project
+2. Create [your first local repository](./first-repository)
+3. Learn the [team collaboration model](../teams/overview)
+4. Explore the [command reference](../commands/overview)
 
 ## Uninstalling
+
+To remove Atomic installed by the hosted installer:
+
+```bash
+rm /usr/local/bin/atomic
+```
+
+If you installed to a custom `ATOMIC_INSTALL` directory, remove the binary from
+that directory instead.
 
 To remove Atomic installed via Cargo:
 
 ```bash
-cargo uninstall atomic
+cargo uninstall atomic-cli
 ```
 
 ---
