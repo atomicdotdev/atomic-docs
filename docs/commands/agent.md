@@ -15,15 +15,23 @@ atomic agent <SUBCOMMAND>
 
 ## Description
 
-The `agent` command manages integration with AI coding agents — Claude Code, Gemini CLI, and OpenCode. When enabled, every agent turn is automatically recorded as an Atomic change with full provenance, and every session produces a provenance graph (causal decision DAG) and an attestation (session-level audit node).
+The `agent` command is the Atomic-side control plane for AI coding integrations. Agent-specific packages such as `atomic-claude`, `atomic-codex`, `atomic-cline`, `atomic-pi`, `atomic-copilot`, `atomic-cursor`, and `atomic-opencode` install hooks, plugins, extensions, or project instructions for their host agent. Those hooks call back into `atomic agent hooks <agent> <verb>` so Atomic can record turns and sessions with provenance.
+
+When an integration is active, every supported turn or task is automatically recorded as an Atomic change with full provenance, and every session produces a provenance graph (causal decision DAG) and an attestation (session-level audit node).
 
 No daemon required. Each hook invocation is a standalone process that opens the repo, does its work, and exits.
+
+For setup steps by agent, see [Installing Agent Integrations](/agents/installing-agent-integrations).
 
 ## Subcommands
 
 ### `enable`
 
-Install agent hooks for turn-level recording.
+Install built-in agent hooks for turn-level recording.
+
+:::info
+Most users should install the agent-specific packages documented in [Installing Agent Integrations](/agents/installing-agent-integrations). Use `atomic agent enable` directly when you are working with a built-in adapter or developing an integration.
+:::
 
 ```bash
 # Auto-detect which agent is present
@@ -242,13 +250,17 @@ Agent author:    claude+60f5 <lee@atomic.dev>
 | Gemini CLI | `gemini+abcd <lee@atomic.dev>` |
 | OpenCode | `opencode+9876 <lee@atomic.dev>` |
 
-## Supported Agents
+## Supported Integration Packages
 
-| Agent | Config File | Hook System |
-|-------|------------|-------------|
-| Claude Code | `.claude/settings.json` | Native hooks |
-| Gemini CLI | `.gemini/settings.json` | Native hooks |
-| OpenCode | `.opencode/plugins/atomic/` | Plugin-based |
+| Integration | Agent | Setup Guide |
+|-------------|-------|-------------|
+| `atomic-claude` | Claude Code | [Installing Agent Integrations](/agents/installing-agent-integrations#claude-code) |
+| `atomic-codex` | Codex | [Installing Agent Integrations](/agents/installing-agent-integrations#codex) |
+| `atomic-cline` | Cline | [Installing Agent Integrations](/agents/installing-agent-integrations#cline) |
+| `atomic-pi` | Pi | [Installing Agent Integrations](/agents/installing-agent-integrations#pi) |
+| `atomic-copilot` | GitHub Copilot | [Installing Agent Integrations](/agents/installing-agent-integrations#github-copilot) |
+| `atomic-cursor` | Cursor | [Installing Agent Integrations](/agents/installing-agent-integrations#cursor) |
+| `atomic-opencode` | OpenCode | [Installing Agent Integrations](/agents/installing-agent-integrations#opencode) |
 
 ## Examples
 

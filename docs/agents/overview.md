@@ -56,17 +56,23 @@ Each agent session follows a well-defined lifecycle managed by the **TurnOrchest
 
 ## Setup
 
-### 1. Enable Hooks
+### 1. Install an Integration
 
-```bash
-# Auto-detect which agent is present (Claude Code, Gemini CLI, or OpenCode)
-atomic agent enable
+Choose the adapter for your agent and install it into the agent's normal configuration:
 
-# Or target a specific agent
-atomic agent enable --agent claude-code
-atomic agent enable --agent gemini-cli
-atomic agent enable --agent opencode
-```
+| Integration | Agent |
+|-------------|-------|
+| `atomic-claude` | Claude Code |
+| `atomic-codex` | Codex |
+| `atomic-cline` | Cline |
+| `atomic-pi` | Pi |
+| `atomic-copilot` | GitHub Copilot |
+| `atomic-cursor` | Cursor |
+| `atomic-opencode` | OpenCode |
+
+Some adapters are global hooks or plugins. Others also require repo-local instruction files so the agent follows the Atomic intent workflow in each project.
+
+→ [Installing Agent Integrations](installing-agent-integrations.md)
 
 ### 2. Work Normally
 
@@ -146,15 +152,19 @@ atomic insert <change-hash> --to dev
 atomic view delete agent-ses_3781fc...
 ```
 
-## Supported Agents
+## Supported Agent Integrations
 
-| Agent | Config Location | Hook System | Turn Boundary |
-|-------|----------------|-------------|---------------|
-| **Claude Code** | `.claude/settings.json` | Native hooks | `stop` event |
-| **Gemini CLI** | `.gemini/settings.json` | Native hooks | `after-agent` event |
-| **OpenCode** | `.opencode/plugins/atomic/` | Plugin-based | `session.idle` event |
+| Integration | Agent | Hook or Extension Model | Recording Boundary |
+|-------------|-------|-------------------------|--------------------|
+| **atomic-claude** | Claude Code | Native Claude Code hooks | Turn end |
+| **atomic-codex** | Codex | Codex hooks | Turn end, with current hook limitations |
+| **atomic-cline** | Cline | Executable hook scripts | Task completion |
+| **atomic-pi** | Pi | Pi extension | Turn end |
+| **atomic-copilot** | GitHub Copilot | Repository hook manifest | Session end |
+| **atomic-cursor** | Cursor | Cursor hooks | Turn end |
+| **atomic-opencode** | OpenCode | OpenCode plugin | Session idle / turn end |
 
-All three agents share the same Rust-side orchestrator. The only difference is how hooks are installed and how events are parsed — the `AgentHook` trait normalizes everything into common `TurnEvent` values before the orchestrator processes them.
+All integrations share the same Rust-side orchestrator. The only difference is how hooks are installed and how events are parsed — the adapter normalizes agent-specific events into common `TurnEvent` values before the orchestrator processes them.
 
 ## Key Concepts
 

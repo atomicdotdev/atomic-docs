@@ -45,7 +45,7 @@ Total: $0.27 · 4 changes covered · 20.5k tokens
 ### Inspect a Specific Attestation
 
 ```bash
-$ atomic agent attest --hash XMJZ3IPF
+$ atomic agent attest --hash MBV7MPERY4WO
 
 Attestation XMJZ3IPF
 

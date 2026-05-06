@@ -158,7 +158,6 @@ $ atomic push origin
   ✓ Pushed 2 changes
   ✓ XMJZ3IPF provenance (7 nodes, 1 change)
   ✓ R3KQP7YN provenance (12 nodes, 1 change)
-  ✓ ABCDEF12 attestation ($0.12, 2 covered)
 ```
 
 The server stores them and serves them to the web UI for visualization.
@@ -174,16 +173,8 @@ Provenance data is embedded in changes and visible through existing commands:
 atomic log --verbose
 
 # Inspect a specific change's provenance
-atomic change <hash> --show-provenance
-
-# List provenance graphs for a session
-# (via the attestation which references covered changes)
-atomic agent attest --hash <prefix> --verbose
+atomic change -p <hash>
 ```
-
-### Web UI
-
-The Atomic web UI renders provenance graphs as interactive visualizations on the Attestations tab. Each node is clickable, showing tool details, duration, and the causal chain that led to each change.
 
 ## Data Model
 

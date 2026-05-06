@@ -29,6 +29,11 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "doc",
+      id: "agents/installing-agent-integrations",
+      label: "Installing Integrations",
+    },
+    {
+      type: "doc",
       id: "agents/provenance",
       label: "Provenance Graphs",
     },

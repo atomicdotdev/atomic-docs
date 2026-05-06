@@ -11,19 +11,37 @@ No manual flags. No wrapper scripts. No environment variables.
 
 ## Quick Start
 
-### 1. Enable Agent Hooks
+### 1. Install an Agent Integration
+
+Atomic's agent adapters live in agent-specific packages:
+
+| Integration | Agent |
+|-------------|-------|
+| `atomic-claude` | Claude Code |
+| `atomic-codex` | Codex |
+| `atomic-cline` | Cline |
+| `atomic-pi` | Pi |
+| `atomic-copilot` | GitHub Copilot |
+| `atomic-cursor` | Cursor |
+| `atomic-opencode` | OpenCode |
+
+Each package installs hooks, plugins, extensions, or skills for that agent and, when needed, provides project instruction files such as `CLAUDE.md`, `AGENTS.md`, `.cursor/rules/atomic.md`, or `.github/hooks/atomic-hooks.json`.
+
+→ [Install an agent integration](/agents/installing-agent-integrations)
+
+If you are using a built-in Atomic adapter directly, you can still use `atomic agent enable`:
 
 ```bash
-# Auto-detect which agent is present
+# Auto-detect which built-in agent adapter is present
 atomic agent enable
 
-# Or target a specific agent
+# Or target a specific built-in adapter
 atomic agent enable --agent claude-code
 atomic agent enable --agent opencode
 atomic agent enable --agent gemini-cli
 ```
 
-This installs hooks into the agent's configuration file. The hooks call back to `atomic agent hooks <agent> <verb>` on each lifecycle event.
+All integrations call back to `atomic agent hooks <agent> <verb>` on lifecycle events.
 
 ### 2. Work Normally
 
@@ -207,23 +225,21 @@ The `+tag` is a short hash of the session ID — every agent turn traces back to
 | Gemini CLI | `gemini+abcd <lee@atomic.dev>` |
 | OpenCode | `opencode+9876 <lee@atomic.dev>` |
 
-## Supported Agents
+## Supported Agent Integrations
 
-| Agent | Config Location | Hook System | How Hooks Are Installed |
-|-------|----------------|-------------|------------------------|
-| **Claude Code** | `.claude/settings.json` | Native hooks | Writes hook entries into settings JSON |
-| **Gemini CLI** | `.gemini/settings.json` | Native hooks | Writes hook entries into settings JSON |
-| **OpenCode** | `.opencode/plugins/atomic/` | Plugin-based | Copies TypeScript plugin to plugins directory |
+| Integration | Agent | Install Model | Project Setup |
+|-------------|-------|---------------|---------------|
+| **atomic-claude** | Claude Code | Global hooks + skills | Copy `CLAUDE.md` to the project root |
+| **atomic-codex** | Codex | Global hooks + feature flag | Copy `AGENTS.md` to the project root |
+| **atomic-cline** | Cline | Hook scripts in Cline's hooks directory | Copy `rules/atomic.md` to `.clinerules/atomic.md` |
+| **atomic-pi** | Pi | Pi extension package | No repo-local file required by default |
+| **atomic-copilot** | GitHub Copilot | Repository hook manifest for cloud agent | Copy `.github/hooks/atomic-hooks.json`, `.github/copilot-instructions.md`, and `AGENTS.md` |
+| **atomic-cursor** | Cursor | Global hooks | Copy `rules/atomic.md` to `.cursor/rules/atomic.md` |
+| **atomic-opencode** | OpenCode | Plugin + agent + skills | Select the Atomic agent in OpenCode |
 
-All three agents share the same Rust-side orchestrator (`TurnOrchestrator`). The only difference is how hooks are installed and how events are parsed — each agent has an `AgentHook` adapter that normalizes events into common `TurnEvent` values.
+All integrations share the same Rust-side orchestrator (`TurnOrchestrator`). The only difference is how each agent reports lifecycle events and how project instructions are discovered. Each adapter normalizes events into common `TurnEvent` values before Atomic records provenance.
 
-### Global Installation
-
-For agents that support global settings (Claude Code, Gemini CLI), you can install hooks once for all projects:
-
-```bash
-atomic agent enable --global --agent claude-code
-```
+→ [Installing Agent Integrations](/agents/installing-agent-integrations)
 
 ## Pushing Agent Data
 
