@@ -23,7 +23,7 @@ title: Quickstart
     </a>
     <a className="quickstart-hero-card" href="/commands/remote-operations">
       <span>Remote repos</span>
-      <code>atomic project init</code>
+      <code>atomic clone</code>
     </a>
   </div>
 </div>
@@ -120,29 +120,35 @@ atomic team member list engineering --org acme
 </div>
 
 <div className="quickstart-card">
-<h3><span className="quickstart-step-number">5.</span> Initialize a local repo and push</h3>
+<h3><span className="quickstart-step-number">5.</span> Clone, record, and push</h3>
 <p>
-Link a local repository to the hosted project. `project init` creates the remote
-project if needed and configures the repository remote URL.
+`atomic project create` registered the project on the server. Clone it locally,
+initialize a vault for AI agent context, then make changes and push.
 </p>
 
 ```bash
-mkdir api && cd api
-atomic init --kind rust
+atomic clone https://acme.atomic.storage/workspaces/platform/projects/api/code
+cd api
+atomic vault init
 
 echo 'fn main() { println!("hello atomic"); }' > src/main.rs
 atomic add src/main.rs
 atomic record -m "Initial record"
-
-atomic project init api --workspace platform --kind rust --org acme
 atomic push
 ```
+
+<p>
+The clone wires <code>origin</code> automatically and authenticates as the
+identity matching the URL's subdomain. Pull updates from collaborators with
+<code>atomic pull</code>.
+</p>
 </div>
 
 </div>
 
 ## What to read next
 
+- [AI agent workflows](/getting-started/ai-agent-workflows)
 - [Team collaboration overview](/teams/overview)
 - [CLI command reference](/commands/overview)
 - [Remote operations](/commands/remote-operations)
