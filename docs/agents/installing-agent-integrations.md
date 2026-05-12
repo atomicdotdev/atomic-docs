@@ -247,6 +247,7 @@ Removing hooks stops future automatic recording. Existing Atomic changes, proven
 
 ## See Also
 
+- [Querying the Graph](/getting-started/querying-the-graph) — Learn the `atomic vault query` commands that the code-intelligence skill teaches agents to use
 - [Agent Integration Overview](overview.md)
 - [Provenance Graphs](provenance.md)
 - [Attestations](attestations.md)
