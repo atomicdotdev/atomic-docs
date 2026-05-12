@@ -462,4 +462,4 @@ These are the relationship types in the knowledge graph:
 
 - [AI Agent Workflows](/getting-started/ai-agent-workflows) — How agents use Atomic for provenance, isolation, and automated recording
 - [Installing Agent Integrations](/agents/installing-agent-integrations) — Set up `atomic-claude`, `atomic-codex`, and other agent packages
-- [`atomic vault query` command reference](/commands/vault) — Full CLI documentation for all query subcommands
+- [Command Reference](/commands/overview) — Full CLI documentation for all Atomic commands
