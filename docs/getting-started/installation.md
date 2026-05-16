@@ -5,11 +5,11 @@ title: Installation
 
 # Installing Atomic
 
-This guide will help you install Atomic VCS on your system. macOS users should prefer the Homebrew tap; everyone else should use the hosted installer script. Development builds can still be installed from source.
+This guide will help you install Atomic VCS on your system. Homebrew users (macOS or Linux) should prefer the official tap; Linux, CI, Windows, and other non-Homebrew users should use the hosted installer or manual release downloads. Development builds can still be installed from source.
 
 ## Installation Methods
 
-### macOS — Homebrew (Recommended)
+### macOS — Homebrew (Recommended) {#homebrew}
 
 The official Homebrew tap is the easiest path on macOS:
 
@@ -168,7 +168,7 @@ Available via the official tap at [atomicdotdev/homebrew-tap](https://github.com
 brew install atomicdotdev/tap/atomic
 ```
 
-Covers macOS (Apple Silicon and Intel) and Linux (x86_64 and aarch64). See the [Homebrew section](#macos--homebrew-recommended) above for full usage.
+Covers macOS (Apple Silicon and Intel) and Linux (x86_64 and aarch64). See the [Homebrew section](#homebrew) above for full usage.
 
 ### Other package managers
 
