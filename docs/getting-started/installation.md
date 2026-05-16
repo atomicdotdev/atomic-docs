@@ -5,13 +5,31 @@ title: Installation
 
 # Installing Atomic
 
-This guide will help you install Atomic VCS on your system. The recommended installation path is the hosted installer script from Atomic Storage. Development builds can still be installed from source.
+This guide will help you install Atomic VCS on your system. macOS users should prefer the Homebrew tap; everyone else should use the hosted installer script. Development builds can still be installed from source.
 
 ## Installation Methods
 
-### Hosted Installer (Recommended)
+### macOS — Homebrew (Recommended)
 
-Install the latest Atomic CLI release with the installer hosted by Atomic Storage:
+The official Homebrew tap is the easiest path on macOS:
+
+```bash
+brew install atomicdotdev/tap/atomic
+```
+
+Upgrade later with:
+
+```bash
+brew upgrade atomicdotdev/tap/atomic
+```
+
+After installation, `brew upgrade atomic` also works in normal Homebrew setups.
+
+The tap supports both Apple Silicon and Intel Macs, and Linux x86_64 / aarch64 for users who prefer Homebrew on Linux.
+
+### Hosted Installer (Linux, CI, no Homebrew)
+
+For Linux, CI environments, or any machine without Homebrew, install the latest Atomic CLI release with the hosted installer:
 
 ```bash
 curl -sSf https://atomic.storage/install.sh | sh
@@ -20,7 +38,7 @@ curl -sSf https://atomic.storage/install.sh | sh
 Install a specific version:
 
 ```bash
-curl -sSf https://atomic.storage/install.sh | ATOMIC_VERSION=0.5.1 sh
+curl -sSf https://atomic.storage/install.sh | ATOMIC_VERSION=0.6.0 sh
 ```
 
 Install to a user-writable directory:
@@ -142,7 +160,19 @@ source ~/.bashrc  # or source ~/.zshrc
 
 ## Distribution Packages
 
-**COMING SOON**
+### Homebrew
+
+Available via the official tap at [atomicdotdev/homebrew-tap](https://github.com/atomicdotdev/homebrew-tap):
+
+```bash
+brew install atomicdotdev/tap/atomic
+```
+
+Covers macOS (Apple Silicon and Intel) and Linux (x86_64 and aarch64). See the [Homebrew section](#macos--homebrew-recommended) above for full usage.
+
+### Other package managers
+
+Distribution packages for `apt`, `dnf`, `pacman`, Scoop, and winget are tracked in the [roadmap](https://github.com/atomicdotdev/atomic/blob/release/docs/ROADMAP.md). Until they ship, use the hosted installer on Linux and download the `.zip` directly from the [release page](https://github.com/atomicdotdev/atomic/releases/latest) on Windows.
 
 ## Building from Git (Development)
 
