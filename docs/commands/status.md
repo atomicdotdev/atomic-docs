@@ -91,7 +91,7 @@ On view main
 State: ABCD1234EFGH5678
 
 Changes to be recorded:
-  (use "atomic reset <file>..." to discard changes)
+  (use "atomic restore <file>..." to discard changes)
 
 	new file:   src/new_feature.rs
 	modified:   src/main.rs
@@ -139,7 +139,7 @@ On view main
 State: ABCD1234EFGH5678
 
 Changes to be recorded:
-  (use "atomic reset <file>..." to discard changes)
+  (use "atomic restore <file>..." to discard changes)
 
 	modified:   src/main.rs
 
@@ -366,7 +366,7 @@ enabled = "auto"
 - [`atomic diff`](./diff.md) - Show detailed content differences
 - [`atomic record`](./record.md) - Record changes after reviewing status
 - [`atomic add`](./add.md) - Add untracked files to tracking
-- [`atomic reset`](./reset.md) - Discard working copy changes
+- [`atomic restore`](./restore.md) - Discard working copy changes
 - [`atomic log`](./log.md) - View history of recorded changes
 
 ## Related Concepts

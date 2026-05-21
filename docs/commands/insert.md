@@ -254,7 +254,7 @@ Because Atomic uses a single canonical GRAPH with view filters, inserting a chan
 - **Dependencies**: Transitive dependencies are computed and inserted automatically. A change cannot be inserted without every change it depends on already present in the target view.
 - **Idempotent**: Inserting a change that already exists in the view is a no-op.
 - **Source unchanged**: The source view is never modified by an insert operation.
-- **Working copy**: Use `atomic reset` after insert to update the working copy if needed.
+- **Working copy**: Use `atomic restore` after insert to update the working copy if needed.
 - **Conflicts**: True conflicts only arise when changes modify the same graph region in incompatible ways.
 
 ## See Also

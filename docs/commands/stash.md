@@ -201,5 +201,5 @@ atomic stash drop --all
 
 - [view](view.md) — Managing views
 - [record](record.md) — Recording changes
-- [reset](reset.md) — Discarding working copy changes
+- [restore](restore.md) — Discarding working copy changes
 - [status](status.md) — Viewing working copy status

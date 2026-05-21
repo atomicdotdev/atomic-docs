@@ -409,7 +409,7 @@ atomic push
 
 Or push from a clean state:
 ```bash
-atomic reset
+atomic restore
 atomic push
 ```
 

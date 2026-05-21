@@ -24,7 +24,7 @@ Every command listed here corresponds to a real subcommand in the `atomic` CLI b
 | [`log`](log.md) | Show change history |
 | [`change`](change.md) | Inspect a specific change |
 | [`insert`](insert.md) | Insert changes into a view |
-| [`reset`](reset.md) | Reset working copy to last recorded state |
+| [`restore`](restore.md) | Restore working copy to last recorded state |
 | [`split`](split.md) | Create a new view from an existing one |
 | [`view`](view.md) | Manage views (create, switch, list, delete) |
 | [`stash`](stash.md) | Temporarily save uncommitted changes |
@@ -66,17 +66,17 @@ atomic log                        # View history
 
 ### Repository Management
 
-Create, clone, and reset repositories:
+Create, clone, and restore repositories:
 
 ```bash
 atomic init myproject             # Create a new repo
 atomic clone https://...          # Clone from remote
-atomic reset --force              # Discard uncommitted changes
+atomic restore --force            # Discard uncommitted changes
 ```
 
 - **[`init`](init.md)** — Initialize a new Atomic repository
 - **[`clone`](clone.md)** — Clone an existing repository from a remote
-- **[`reset`](reset.md)** — Reset the working copy to the last recorded state
+- **[`restore`](restore.md)** — Restore the working copy to the last recorded state
 - **[`split`](split.md)** — Create a new view from an existing one
 
 ### Views
