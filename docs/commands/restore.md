@@ -195,7 +195,6 @@ materializes the working copy for the target view.
 - [`atomic diff`](./diff.md) - Preview changes before restoring
 - [`atomic view`](./view.md) - Switch and manage views
 - [`atomic record`](./record.md) - Record changes before restoring
-- [`atomic unrecord`](./unrecord.md) - Remove a recorded change
 
 ## Related Concepts
 
