@@ -456,7 +456,7 @@ context = "white"
 - [`atomic add`](./add.md) - Add files to track their changes
 - [`atomic change`](./change.md) - View diffs of recorded changes
 - [`atomic log`](./log.md) - View history of changes
-- [`atomic reset`](./reset.md) - Discard working copy changes
+- [`atomic restore`](./restore.md) - Discard working copy changes
 
 ## Related Concepts
 

@@ -13,7 +13,7 @@ Commands for creating, cloning, and managing Atomic repositories.
 |---------|-------------|
 | [`init`](init.md) | Initialize a new Atomic repository |
 | [`clone`](clone.md) | Clone an existing repository from a remote |
-| [`reset`](reset.md) | Reset working copy to the last recorded state |
+| [`restore`](restore.md) | Restore working copy to the last recorded state |
 | [`split`](split.md) | Create a new view from an existing one |
 
 ## Creating a Repository
@@ -52,19 +52,19 @@ atomic clone https://api.atomic.dev/acme/platform/core/code
 atomic clone https://api.atomic.dev/acme/platform/core/code myproject
 ```
 
-## Resetting the Working Copy
+## Restoring the Working Copy
 
-The `reset` command discards uncommitted changes and restores the working copy to the last recorded state:
+The `restore` command discards uncommitted changes and restores the working copy to the last recorded state (the legacy name `reset` still works as an alias):
 
 ```bash
 # Discard all uncommitted changes
-atomic reset --force
+atomic restore --force
 
-# Reset specific files
-atomic reset src/main.rs
+# Restore specific files
+atomic restore src/main.rs
 
-# Preview what would be reset
-atomic reset --dry-run
+# Preview what would be restored
+atomic restore --dry-run
 ```
 
 ## Splitting Views

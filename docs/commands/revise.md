@@ -106,5 +106,5 @@ atomic revise @~1 --dry-run
 
 - [record](record.md) — Recording new changes
 - [log](log.md) — Viewing change history
-- [reset](reset.md) — Discarding working copy changes
+- [restore](restore.md) — Discarding working copy changes
 - [change](change.md) — Inspecting change details

@@ -109,7 +109,7 @@ const sidebars: SidebarsConfig = {
       items: [
         "commands/init",
         "commands/clone",
-        "commands/reset",
+        "commands/restore",
         "commands/split",
       ],
     },

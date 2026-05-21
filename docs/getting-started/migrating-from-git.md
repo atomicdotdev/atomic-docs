@@ -269,7 +269,7 @@ git reset HEAD~1
 git revert commit-hash
 
 # Atomic
-atomic reset --force              # Discard working copy changes
+atomic restore --force              # Discard working copy changes
 atomic unrecord                   # Remove recorded changes
 atomic unrecord CHANGE-HASH       # Remove specific change
 ```
@@ -646,8 +646,8 @@ atomic git import
 
 **Problem**: Files look different after import
 ```bash
-# Solution: Reset working copy
-atomic reset --force
+# Solution: Restore working copy
+atomic restore --force
 ```
 
 ### Remote Push Issues
