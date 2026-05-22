@@ -52,14 +52,15 @@ Because changes are content-addressed (identified by their Blake3 hash), the sam
 atomic identity new alice-acme --email alice@acme.com --set-default
 atomic identity register https://atomic.storage
 atomic org create acme --email team@acme.com
-atomic org switch acme
+atomic org set acme
 
-atomic workspace create platform --visibility private --org acme
-atomic project create myproject --workspace platform --kind rust --org acme
+atomic workspace create platform --visibility private
+atomic workspace set platform
+atomic project create myproject --kind rust
 
 atomic init myproject
 cd myproject
-atomic project init myproject --workspace platform --kind rust --org acme
+atomic project init myproject --kind rust
 
 # Work and record changes...
 atomic record -m "Initial commit"

@@ -17,7 +17,7 @@ selects the organization domain/subdomain to operate on.
 ```bash
 atomic org show [SLUG] [--org <ORG>] [--format table|json]
 atomic org create <NAME> [--email <EMAIL>]
-atomic org switch <SLUG>
+atomic org set <SLUG> [--no-verify]
 atomic org update <SLUG> [--name <NAME>] [--email <EMAIL>]
 atomic org delete <SLUG> --force [--org <ORG>]
 atomic org upgrade <SLUG> [--org <ORG>]
@@ -31,7 +31,7 @@ atomic identity new alice-acme --email alice@acme.com --set-default
 atomic identity register https://atomic.storage
 
 atomic org create acme --email team@acme.com
-atomic org switch acme
+atomic org set acme
 atomic org show
 ```
 
@@ -55,12 +55,30 @@ Create a team organization. The server derives or validates a URL-safe slug.
 atomic org create acme --email team@acme.com
 ```
 
-### `org switch`
+### `org set`
 
-Set the default organization for subsequent management commands.
+Set the default organization for subsequent management commands. The slug is
+verified against the server before being written to local config, so typos and
+stale slugs fail fast instead of producing a 404 on the next call.
 
 ```bash
-atomic org switch acme
+atomic org set acme
+```
+
+If the org does not exist on the server, the command errors and leaves the
+local config unchanged:
+
+```text
+✗ Invalid argument: Organization 'acmme' not found on the server.
+  Check the slug with: atomic org list
+  Or pass --no-verify to set the value without checking.
+```
+
+Use `--no-verify` to skip the server check (useful when offline or pointing at
+an org that is not yet provisioned):
+
+```bash
+atomic org set acme --no-verify
 ```
 
 ### `org update`

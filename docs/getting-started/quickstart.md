@@ -78,10 +78,11 @@ map to hosted Atomic repositories.
 
 ```bash
 atomic org create acme --email dev@acme.com
-atomic org switch acme
+atomic org set acme
 
-atomic workspace create platform --visibility private --org acme
-atomic project create api --workspace platform --kind rust --org acme
+atomic workspace create platform --visibility private
+atomic workspace set platform
+atomic project create api --kind rust
 ```
 
 <p>Public/private access is enforced at both workspace and project boundaries:</p>
