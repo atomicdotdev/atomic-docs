@@ -33,7 +33,7 @@ atomic identity register https://atomic.storage
 # 2. Alice creates and administers the organization
 atomic identity default alice-acme
 atomic org create acme --email team@acme.com
-atomic org switch acme
+atomic org set acme
 
 # 3. Add Bob by his organization-domain email address
 atomic org member add bob@acme.com --role member --org acme
@@ -67,7 +67,7 @@ Common commands:
 ```bash
 atomic org show
 atomic org create acme --email team@acme.com
-atomic org switch acme
+atomic org set acme
 atomic org update acme --email ops@acme.com
 atomic org delete acme --force
 ```

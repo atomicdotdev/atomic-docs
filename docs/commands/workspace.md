@@ -17,6 +17,7 @@ readable by non-members.
 atomic workspace create <NAME> [--description <TEXT>] [--visibility private|public] [--org <ORG>]
 atomic workspace list [--org <ORG>] [--format table|json]
 atomic workspace show <SLUG> [--org <ORG>] [--format table|json]
+atomic workspace set <SLUG> [--no-verify] [--org <ORG>]
 atomic workspace update <SLUG> [--name <NAME>] [--description <TEXT>] [--visibility private|public] [--org <ORG>]
 atomic workspace delete <SLUG> --force [--org <ORG>]
 ```
@@ -31,6 +32,42 @@ atomic workspace show platform --org acme
 atomic workspace update platform --visibility public --org acme
 atomic workspace delete platform --force --org acme
 ```
+
+## Default workspace per organization
+
+`atomic workspace set <SLUG>` records a default workspace for the **current
+default organization**. Once set, commands that take `--workspace` (like
+`atomic project create`) use the default and you can drop the flag:
+
+```bash
+atomic org set acme
+atomic workspace set platform
+atomic project create api --kind rust    # uses workspace=platform under acme
+```
+
+Defaults are stored per-org under `[server.default_workspaces]` in
+`~/.atomic/config.toml`, so switching orgs picks up the correct default:
+
+```toml
+[server]
+default_org = "acme"
+
+[server.default_workspaces]
+acme = "platform"
+open-source = "site"
+```
+
+The slug is verified against the server before being written, so a wrong slug
+fails fast instead of producing a 404 later:
+
+```text
+✗ Invalid argument: Workspace 'platfor' not found on the server.
+  Check the slug with: atomic workspace list
+  Or pass --no-verify to set the value without checking.
+```
+
+Pass `--no-verify` to skip the check (offline use, or pointing at a workspace
+that has not yet been provisioned).
 
 ## Visibility
 
