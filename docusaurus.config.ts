@@ -34,7 +34,7 @@ const config: Config = {
         docs: {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/",
-          editUrl: "https://github.com/atomicdotdev/atomic/tree/main/docs/",
+          editUrl: "https://github.com/atomicdotdev/atomic-docs/tree/release/",
         },
         blog: false,
         theme: {

@@ -16,6 +16,8 @@ const sidebars: SidebarsConfig = {
     "getting-started/installation",
     "getting-started/first-repository",
     "getting-started/migrating-from-git",
+    "getting-started/comparison-with-git",
+    "getting-started/stacked-diffs",
     "getting-started/querying-the-graph",
     "getting-started/ai-agent-workflows",
     {
