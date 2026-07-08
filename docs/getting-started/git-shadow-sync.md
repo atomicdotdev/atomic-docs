@@ -92,7 +92,7 @@ atomic status               # should be clean
 # Import a specific branch
 atomic git import --branch main
 
-# Import all local branches as Atomic views
+# Import all reachable commits (including inner-PR commits)
 atomic git import --all
 
 # Preview without creating anything
@@ -104,6 +104,24 @@ atomic git import --no-vault
 # Pre-build semantic layer for token-level blame on imported history
 atomic git import --with-crdt
 ```
+
+:::warning `--all` can produce materialization conflicts
+The `--all` flag imports every reachable commit, including commits from **both sides of merge commits**. If those branches had overlapping edits (which is normal — that's why they were merged), Atomic's graph will contain conflicting changes. When the working copy is materialized, Atomic writes conflict markers into the affected files.
+
+**Why this happens:** Consider a merge in git:
+
+```
+A───B───C───M───  (main)
+     \     /
+      D───E      (feature branch)
+```
+
+First-parent import walks `A → B → C → M`. Each commit is diffed against its parent — a linear chain with no conflicts. But `--all` also imports D and E. Both C and D descend from B, so if both modified the same file, Atomic creates two changes that edit the same graph vertices — genuinely conflicting operations.
+
+Git's merge commit M resolved that conflict, but the import doesn't understand it that way. It treats M as just another commit (diffed against its first parent C). It doesn't tell Atomic "M resolves the conflict between C and D." In native Atomic workflows, conflicts are resolved explicitly in the graph at insert time — but imported merge commits don't carry that resolution.
+
+The default first-parent import avoids this entirely. Use `--all` only when you need to preserve individual PR commit attribution through squash merges, and be prepared to [resolve materialization conflicts](#--all-import-produced-conflict-markers) afterward.
+:::
 
 ### From an Existing Atomic Repo
 
@@ -447,10 +465,10 @@ xyz "Add auth (#42)" (merger) ← only      Change D "Add auth (#42)"  ← impor
 
 This means individual developer attribution survives squash merges. If Alice wrote the auth logic and Bob wrote the API, that's preserved in the Atomic graph even after the PR is squash-merged under a single committer name on GitHub.
 
-:::warning Why `--all` matters
-The default import (`atomic git import`) uses **first-parent** traversal, which imports only the mainline commits — including the squash commit itself, but **not** the individual PR commits it replaced. Those inner-PR commits are reachable through merge commit second parents, but first-parent skips them.
+:::warning `--all` import: tradeoff between attribution and conflicts
+The default import (`atomic git import`) uses **first-parent** traversal, which imports only the mainline commits — including the squash commit itself, but **not** the individual PR commits it replaced. This is safe and conflict-free.
 
-Use `atomic git import --all` to import every reachable commit, including those inside merged PRs. This is what ensures the original changes exist in Atomic **before** the squash merge destroys them in Git.
+Use `atomic git import --all` to import every reachable commit, including those inside merged PRs. This preserves individual attribution, but can produce [materialization conflicts](#--all-import-produced-conflict-markers) when branches had overlapping edits. See the troubleshooting section for the recovery procedure.
 :::
 
 ### Supported forge formats
@@ -597,6 +615,42 @@ atomic log
 
 :::warning
 Never delete `.atomic/` and re-import as a "fix." This destroys all Atomic-native changes, ReviewGate tags, and view structure that don't exist in Git. Run `atomic git import --incremental` instead.
+:::
+
+### `--all` import produced conflict markers
+
+`atomic git import --all` imports commits from both sides of merge commits. When those branches had overlapping edits, Atomic's graph contains conflicting changes, and materialization writes conflict markers into the affected files:
+
+```
+>>>>>>> 1 [ABCD1234]
+Content from one branch
+======= 1
+Content from the other branch
+<<<<<<< 1
+```
+
+**Do not `atomic git push` in this state** — it commits the conflict markers into git.
+
+**To recover:**
+
+```bash
+# 1. Restore the clean working tree from git
+git reset --hard origin/dev     # or whatever your clean branch is
+
+# 2. Record the clean state into Atomic to resolve the conflicts
+atomic add -A
+atomic record -m "fix: resolve materialization conflicts from --all import"
+
+# 3. Verify both systems are clean
+atomic status                   # should be clean
+git status                      # should be clean
+cargo build --release           # should pass (for Rust projects)
+```
+
+This works because git's first-parent history has the correct merged result of every PR. Recording that clean state into Atomic resolves the graph conflicts by accepting the merged outcome.
+
+:::tip Avoiding this in the future
+For most workflows, the default first-parent import is sufficient and conflict-free. Use `--all` only when you specifically need individual PR commit attribution to survive squash merges, and always check for conflict markers before pushing.
 :::
 
 ### Circular import concern
