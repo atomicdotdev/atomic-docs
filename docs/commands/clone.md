@@ -393,4 +393,4 @@ timeout = 300  # seconds
 - **Views** - Independent lines of development
 - **Working Copy** - Your editable files
 - **Lazy Clone** - On-demand change downloading
-- **Distributed VCS** - Every repository is complete and autonomous
+- **Distributed Architecture** - Every repository is complete and autonomous

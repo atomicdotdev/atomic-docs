@@ -11,7 +11,7 @@ status: Enterprise Only
 
 ## Overview
 
-Virtual working copies are a key innovation in Atomic VCS that enable massive AI agent parallelism. Instead of requiring disk-based working directories for each agent, sessions maintain **in-memory virtual working copies** that track only diffs, not full file copies.
+Virtual working copies are a key innovation in Atomic that enable massive AI agent parallelism. Instead of requiring disk-based working directories for each agent, sessions maintain **in-memory virtual working copies** that track only diffs, not full file copies.
 
 ## What It Is
 
@@ -224,7 +224,7 @@ session.commit()  # 💾 ONE disk write (change file)
 
 ## Key Takeaway
 
-Virtual working copies make Atomic the first VCS where **changes are first-class operations**, not artifacts computed from file diffs. This enables AI agents to work at unprecedented scale without the filesystem bottlenecks of traditional VCS.
+Virtual working copies make Atomic the first system where **changes are first-class operations**, not artifacts computed from file diffs. This enables AI agents to work at unprecedented scale without the filesystem bottlenecks of traditional version control.
 
 **The paradigm shift:**
 - **Git**: Files → Diffs → Commits (state-based)

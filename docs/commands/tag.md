@@ -20,7 +20,7 @@ atomic tag delete <TAG> [OPTIONS]
 
 ## Description
 
-Tags in Atomic are **consolidating boundaries** that dramatically reduce dependency complexity while maintaining full semantic accuracy. Unlike traditional VCS tags that are simply named pointers to commits, Atomic tags are first-class nodes in the dependency graph with mathematical properties.
+Tags in Atomic are **consolidating boundaries** that dramatically reduce dependency complexity while maintaining full semantic accuracy. Unlike traditional version control tags that are simply named pointers to commits, Atomic tags are first-class nodes in the dependency graph with mathematical properties.
 
 ### Why Tags Are Revolutionary
 

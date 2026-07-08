@@ -5,7 +5,7 @@ title: Overview
 
 # AI Agent Integration
 
-Atomic is the first version control system designed for AI-assisted development. Agent identity, provenance, and attestation are core concepts — not bolted-on metadata flags.
+Atomic is the first semantic change graph designed for AI-assisted development. Agent identity, provenance, and attestation are core concepts — not bolted-on metadata flags.
 
 ## How It Works
 

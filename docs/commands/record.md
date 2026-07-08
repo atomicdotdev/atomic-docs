@@ -17,7 +17,7 @@ atomic record [OPTIONS] [PATHS]...
 
 The `record` command is the primary way to save your work in Atomic. It examines the differences between your working copy and the current state of the view, then creates a new change containing those modifications.
 
-Unlike traditional VCS systems that record snapshots, Atomic records **semantic patches** - the actual operations performed on files (additions, deletions, modifications). This enables Atomic's powerful conflict-free merging and mathematical correctness guarantees.
+Unlike traditional version control systems that record snapshots, Atomic records **semantic patches** — the actual operations performed on files (additions, deletions, modifications). This enables Atomic's powerful conflict-free merging and mathematical correctness guarantees.
 
 When you record a change, Atomic:
 

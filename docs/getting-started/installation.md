@@ -5,7 +5,7 @@ title: Installation
 
 # Installing Atomic
 
-This guide will help you install Atomic VCS on your system. The recommended installation path is the hosted installer script from Atomic Storage. Development builds can still be installed from source.
+This guide will help you install Atomic on your system. The recommended installation path is the hosted installer script from Atomic Storage. Development builds can still be installed from source.
 
 ## Installation Methods
 

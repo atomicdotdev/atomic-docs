@@ -6,7 +6,7 @@ title: Team Collaboration Overview
 # Team Collaboration Overview
 
 Atomic Storage adds organization, workspace, project, and team management on top
-of Atomic VCS. Management commands use your current default identity as the
+of Atomic. Management commands use your current default identity as the
 caller, while `--org` selects the organization domain/subdomain being managed.
 The model is simple:
 

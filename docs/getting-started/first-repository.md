@@ -5,7 +5,7 @@ title: Your First Repository
 
 # Creating Your First Repository
 
-This guide will walk you through creating your first Atomic repository, adding files, and recording your first changes. By the end, you'll understand the basic workflow of using Atomic VCS.
+This guide will walk you through creating your first Atomic repository, adding files, and recording your first changes. By the end, you'll understand the basic workflow of using Atomic.
 
 ## Initializing a Repository
 

@@ -7,7 +7,7 @@ title: Change Identity
 
 ## Overview
 
-Change identity is a fundamental concept in Atomic VCS that distinguishes it from Git and other version control systems. In Atomic, **changes are identified by their content alone**, not by metadata like author, timestamp, or parent commits.
+Change identity is a fundamental concept in Atomic that distinguishes it from Git and other version control systems. In Atomic, **changes are identified by their content alone**, not by metadata like author, timestamp, or parent commits.
 
 ## What is Change Identity?
 

@@ -168,7 +168,7 @@ We use slightly more storage by maintaining two indexes instead of one. But stor
 
 ### "Is this a standard technique?"
 
-The dual-index pattern is well-established—databases use it constantly. Our innovation is applying it specifically to version control's unique graph structure, and combining it with the smart-sync caching layer for remote operations.
+The dual-index pattern is well-established — databases use it constantly. Our innovation is applying it specifically to Atomic's unique graph structure, and combining it with the smart-sync caching layer for remote operations.
 
 ### "How do you keep both indexes in sync?"
 

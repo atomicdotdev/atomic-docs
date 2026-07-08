@@ -5,7 +5,7 @@ title: Comparison with Git
 
 # Atomic vs Git: Key Differences
 
-This guide explains the fundamental differences between Atomic and Git, helping Git users understand Atomic's unique approach to version control.
+This guide explains the fundamental differences between Atomic and Git, helping Git users understand Atomic's unique approach to tracking changes.
 
 ## Core Philosophy
 
@@ -19,8 +19,8 @@ Commit A (tree snapshot) → Commit B (tree snapshot) → Commit C (tree snapsho
             (compute diff)        (compute diff)        (compute diff)
 ```
 
-### Atomic: Change-Based Version Control
-Atomic stores transformations (changes/patches) and computes repository state when needed.
+### Atomic: Semantic Change Graph
+Atomic stores transformations (changes/patches) alongside memories, intents, provenance, and attestations — computing repository state when needed.
 
 ```
 Atomic Model:

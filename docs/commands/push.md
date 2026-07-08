@@ -15,7 +15,7 @@ atomic push [OPTIONS] [REMOTE]
 
 ## Description
 
-The `push` command uploads changes, tags, and view information to a remote repository, enabling collaboration and backup. This is one of the core commands for distributed collaboration in Atomic VCS.
+The `push` command uploads changes, tags, and view information to a remote repository, enabling collaboration and backup. This is one of the core commands for distributed collaboration in Atomic.
 
 When you push, Atomic:
 
@@ -25,7 +25,7 @@ When you push, Atomic:
 4. Updates the remote view to reflect your changes
 5. Optionally syncs AI attribution metadata
 
-Unlike some VCS systems, Atomic's push operation is **conflict-free** due to the mathematical properties of the patch theory. The remote can accept pushes from multiple sources simultaneously without merge conflicts.
+Atomic's push operation is **conflict-free** due to the mathematical properties of the patch theory. The remote can accept pushes from multiple sources simultaneously without merge conflicts.
 
 ## Arguments
 

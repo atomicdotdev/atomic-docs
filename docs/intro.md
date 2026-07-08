@@ -6,11 +6,11 @@ title: Introduction
 
 # Welcome to Atomic
 
-Welcome to the Atomic documentation! Atomic is a **mathematically sound distributed version control system** that revolutionizes software development through breakthrough innovations in patch management, AI integration, and workflow automation.
+Welcome to the Atomic documentation! Atomic is a **mathematically sound semantic change graph** that tracks memories, intents, provenance, attestations, and patches as a single unit of change — revolutionizing software development through breakthrough innovations in AI integration and workflow automation.
 
 ## What is Atomic?
 
-Atomic is a distributed version control system (VCS) designed for the modern era of software development—where AI agents, distributed teams, and complex workflows are the norm, not the exception.
+Atomic is a distributed semantic change graph designed for the modern era of software development — where AI agents, distributed teams, and complex workflows are the norm, not the exception. Unlike traditional version control systems that only track code, Atomic captures the full context of every change: who made it, why, what AI assisted, and how it was reviewed.
 
 :::tip New to Version Control Concepts?
 If you want to understand *why* Atomic works differently from Git, start with **[The Lego Story](/concepts/the-lego-story)** — a visual explanation of how Atomic thinks about your code using a simple Lego analogy. It takes 5 minutes and will change how you think about version control.
@@ -28,7 +28,7 @@ Atomic combines **patch-level semantic precision** during development with **sna
 - O(n) complexity instead of O(n²)
 
 #### 2. Cryptographic AI Attestation
-The first VCS with built-in **Merkle-tree-based cryptographic signatures** for AI contributions. Every AI-generated change is mathematically verifiable and tamper-evident.
+Built-in **Merkle-tree-based cryptographic signatures** for AI contributions. Every AI-generated change is mathematically verifiable and tamper-evident.
 
 - Track which AI provider and model made changes
 - Cryptographic verification of AI contributions
@@ -83,13 +83,13 @@ True distributed collaboration where every repository is equal. Complete attribu
 
 ## Performance at Scale
 
-With 100 changes, traditional VCS systems create **5,050 dependencies** (O(n²) growth). Atomic with tag consolidation creates just **~200 dependencies** (O(n) growth).
+With 100 changes, traditional version control systems create **5,050 dependencies** (O(n²) growth). Atomic with tag consolidation creates just **~200 dependencies** (O(n) growth).
 
 **Result**: 96% reduction in complexity, infinite scalability potential.
 
 ## Getting Started
 
-Ready to experience the future of version control? Start with the [Quickstart](./getting-started/quickstart) to install Atomic, register with Atomic Storage, create a workspace and project, and push your first change.
+Ready to get started? Head to the [Quickstart](./getting-started/quickstart) to install Atomic, register with Atomic Storage, create a workspace and project, and push your first change.
 
 ### New to Atomic?
 
@@ -145,4 +145,4 @@ See our [Migration Guide](./getting-started/migrating-from-git) for a complete w
 
 ---
 
-**Atomic VCS**: Mathematical Guarantees + AI Intelligence = The Future of Version Control
+**Atomic**: Mathematical Guarantees + AI Intelligence = The Future of Software Development

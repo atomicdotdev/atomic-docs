@@ -6,7 +6,7 @@ title: Quickstart
 # Atomic Quickstart
 
 <div className="quickstart-hero">
-  <p className="quickstart-eyebrow">Atomic VCS + Atomic Storage</p>
+  <p className="quickstart-eyebrow">Atomic + Atomic Storage</p>
   <h1>From identity to hosted project in five steps</h1>
   <p>
     Create an Ed25519 identity, register with Atomic Storage, create an

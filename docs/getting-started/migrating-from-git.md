@@ -5,7 +5,7 @@ title: Migrating from Git
 
 # Migrating from Git to Atomic
 
-Welcome, Git users! This guide will help you transition from Git to Atomic VCS. While both are distributed version control systems, Atomic offers unique features like conflict-free merging, AI attribution, and consolidating tags that fundamentally change how you work with code.
+Welcome, Git users! This guide will help you transition from Git to Atomic. While Git is a version control system that tracks snapshots, Atomic is a semantic change graph that tracks memories, intents, provenance, attestations, and patches as a single unit of change — fundamentally changing how you work with code.
 
 ## Quick Start: Import Your Git Repository
 
@@ -685,7 +685,7 @@ atomic restore --force
 ✅ **True Distribution** - Every repo is complete and independent  
 ✅ **Production Ready** - Enterprise workflow integration  
 
-Welcome to the future of version control! 🚀
+Welcome to the future of software development! 🚀
 
 ---
 

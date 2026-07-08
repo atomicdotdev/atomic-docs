@@ -1,8 +1,8 @@
 ---
 sidebar_position: 1
 title: "The Lego Story: How Atomic Thinks Differently"
-description: "Understanding Atomic's graph-based version control through a simple Lego analogy"
-keywords: [atomic, version control, DAG, semantic diff, lego analogy, merge conflicts]
+description: "Understanding Atomic's semantic change graph through a simple Lego analogy"
+keywords: [atomic, semantic change graph, DAG, semantic diff, lego analogy, merge conflicts]
 ---
 
 # 🧱 The Lego Story
@@ -300,7 +300,7 @@ When you make your first merge with Atomic, you'll feel the difference. No more 
 
 🔗 **Atomic**: Each piece knows its neighbors, structure is explicit, merges are mathematical
 
-The Lego analogy captures Atomic's core insight: **code isn't just text to be photographed—it's a structure to be understood.** By tracking *connections* instead of *snapshots*, Atomic transforms version control from pixel-comparison guesswork into graph-based certainty.
+The Lego analogy captures Atomic's core insight: **code isn't just text to be photographed — it's a structure to be understood.** By tracking *connections* instead of *snapshots*, Atomic transforms software development from pixel-comparison guesswork into graph-based certainty.
 
 ---
 

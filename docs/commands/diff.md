@@ -17,7 +17,7 @@ atomic diff [OPTIONS] [PATHS]...
 
 The `diff` command displays the differences between your working copy (the files you're editing) and the pristine state (the last recorded state in the view). This helps you review changes before recording them.
 
-Unlike traditional VCS diff commands, Atomic computes differences based on the patch theory, showing semantic operations rather than just line-level changes. This enables:
+Unlike traditional diff commands, Atomic computes differences based on the patch theory, showing semantic operations rather than just line-level changes. This enables:
 
 - Preview of what will be recorded
 - Identification of file additions, deletions, and modifications
