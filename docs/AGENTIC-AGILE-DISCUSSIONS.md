@@ -2,11 +2,11 @@
 
 ## Overview
 
-We are introducing a portfolio-level **discussion** model that treats planning as an ongoing conversation between humans and agents rather than a queue of tickets. Each discussion aggregates intent, Atomic vocabulary, and live context so that `atomic-ui`, `atomic-api`, `atomic-workflows`, and external agents can coordinate through a real-time channel. The goal is to support “agentic agile++” workflows without polluting the pristine VCS database while still honoring the Atomic principles of stacked diffs and immutable records.
+We are introducing a portfolio-level **discussion** model that treats planning as an ongoing conversation between humans and agents rather than a queue of tickets. Each discussion aggregates intent, Atomic vocabulary, and live context so that `atomic-ui`, `atomic-api`, `atomic-workflows`, and external agents can coordinate through a real-time channel. The goal is to support “agentic agile++” workflows without polluting the pristine VCS database while still honoring the Atomic principles of change-based development and immutable records.
 
 ## Terminology Alignment
 
-- **Discussion (_conversation stack_)** – Portfolio-scoped initiative that owns the high-level goal, owner, status, and links to underlying projects. Uses “stack” language to remain consistent with Atomic, but remains distinct from the repository’s patch stack.
+- **Discussion** – Portfolio-scoped initiative that owns the high-level goal, owner, status, and links to underlying projects.
 - **Conversation record** – Project-scoped snapshot that captures the current spec, intent, acceptance criteria, and decision log for that discussion within a project. Records are append-only; revisions produce new records and reference the previous record they supersede.
 - **Conversation tag** – Label applied to a record when it represents a notable state (for example `in_discovery`, `ready_for_agents`, `landed`). Tags make it easy to navigate discussions and align with Atomic’s existing tag semantics.
 - **Linked patch** – Change hashes produced by Atomic operations and associated with a conversation record once the code lands. The pristine database remains the source of truth for patches; the planning layer only stores references.

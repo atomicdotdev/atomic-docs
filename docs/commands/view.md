@@ -130,7 +130,7 @@ atomic view create feature-api --draft --switch
 The `--parent` option sets where this view sits in the filter hierarchy. When you're working in a view, graph traversal filters edges through your view's changes, then your parent's, all the way up to the root.
 
 ```bash
-# Stacked draft views for team-level organization
+# Draft views for team-level organization
 atomic view create service-auth --draft --parent dev
 atomic view create feature-login --draft --parent service-auth
 atomic view create feature-oauth --draft --parent service-auth

@@ -75,7 +75,7 @@ atomic push --to-view develop
 atomic push --to-view origin:main
 ```
 
-The format can be `remote_stack` or `remote_stack:push_stack` for advanced routing.
+The format can be `remote_view` or `remote_view:local_view` for advanced routing.
 
 ### `-a, --all`
 

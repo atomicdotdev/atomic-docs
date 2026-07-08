@@ -220,7 +220,7 @@ atomic remote -v
 | Storage | `.git/config` | `.atomic/config.toml` |
 | Default remote | Convention (`origin`) | Explicit via `atomic remote default` |
 | Fetch vs Push URLs | Separate | Single URL per remote |
-| Refspecs | Complex fetch/push refspecs | Stacks sync directly |
+| Refspecs | Complex fetch/push refspecs | Views sync directly |
 
 ## See Also
 

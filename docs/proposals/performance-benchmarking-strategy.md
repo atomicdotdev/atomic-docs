@@ -221,7 +221,7 @@ pub struct BenchmarkRepo {
 pub enum ChangePattern {
     Sequential,      // Each change depends on previous
     Independent,     // All changes independent
-    Stacked,         // Changes form dependency chains
+    DependencyChain, // Changes form dependency chains
     Mixed,           // Combination of patterns
 }
 

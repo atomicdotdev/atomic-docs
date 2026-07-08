@@ -131,7 +131,7 @@ ls  # Output: Same files + changes applied/unapplied
 |--------|-----|--------|
 | **Purpose** | Update commit history | Not needed |
 | **Changes commit hashes?** | Yes | N/A |
-| **Required for stacked changes?** | Yes | No |
+| **Required for dependent changes?** | Yes | No |
 | **Conflict resolution** | During rebase | During apply |
 | **Interactive mode** | `git rebase -i` | `atomic unrecord` + `atomic insert` |
 
@@ -150,7 +150,7 @@ atomic pull  # Gets updates from main
 ```
 
 **Why this matters**:
-- ✅ No rebasing required for stacked workflows
+- ✅ No rebasing required — dependencies are in the causal graph
 - ✅ Change identity preserved
 - ✅ Simpler mental model
 
@@ -233,7 +233,7 @@ atomic view switch main
 atomic insert <change-hash>
 ```
 
-### Stacked Changes Workflow
+### Dependent Changes Workflow
 
 ```bash
 # Git (requires rebasing)
@@ -288,9 +288,9 @@ atomic insert ABC      # Reinsert later if needed
 
 ## What Atomic Does Better
 
-### ✅ Stacked Workflows
-- No rebasing required
-- Changes maintain identity
+### ✅ Change-Based Workflows
+- No rebasing required — the causal graph tracks dependencies automatically
+- Changes maintain identity across views
 - Parallel development without conflicts
 
 ### ✅ Change Identity
@@ -338,7 +338,7 @@ atomic insert ABC      # Reinsert later if needed
 ## When to Use Atomic vs Git
 
 ### Use Atomic When:
-- ✅ Building stacked changes for review
+- ✅ Building focused, reviewable changes with automatic dependency tracking
 - ✅ Working with AI agents (especially headless/swarms)
 - ✅ Need mathematical correctness guarantees
 - ✅ Parallel development with many contributors
@@ -437,7 +437,7 @@ atomic view create feature
 **False**. Many concepts map directly from Git. Core differences are around merge semantics and change identity.
 
 ### ❌ "Atomic makes Git obsolete"
-**Not yet**. Git has massive ecosystem advantage. Atomic excels in specific workflows (stacked changes, AI agents) but isn't a complete replacement today.
+**Not yet**. Git has massive ecosystem advantage. Atomic excels in specific workflows (change-based development, AI agents) but isn't a complete replacement today.
 
 ## Summary
 
@@ -447,17 +447,17 @@ atomic view create feature
 | **Identity** | Commit (snapshot + metadata) | Change (patch content) |
 | **Merge** | Three-way (order-dependent) | Commutative (order-independent) |
 | **Branching** | Separate working copies | Shared working copy |
-| **Rebasing** | Required for stacked changes | Not needed |
+| **Rebasing** | Required for dependent changes | Not needed |
 | **History** | Rewritable DAG | Immutable dependency graph |
-| **Best For** | Traditional workflows | Stacked changes, AI agents |
+| **Best For** | Traditional workflows | Change-based development, AI agents |
 
-**The Bottom Line**: Atomic isn't "better Git" - it's a different approach based on patch theory that excels in modern workflows (stacked changes, AI code generation, parallel development).
+**The Bottom Line**: Atomic isn't "better Git" - it's a different approach based on patch theory that excels in modern workflows (change-based development, AI code generation, parallel development).
 
 ## Next Steps
 
 - [Installation](installation.md) - Get started with Atomic
 - [First Repository](first-repository.md) - Create your first Atomic repository  
-- [Stacked Diffs Guide](stacked-diffs.md) - Learn stacked workflows
+- [Git Shadow Sync](git-shadow-sync) - Run Atomic alongside Git
 - [Migrating from Git](migrating-from-git.md) - Transition from Git to Atomic
 
 ## References

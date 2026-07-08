@@ -404,7 +404,7 @@ Hashes are encoded as **base32** for human readability:
 ## See Also
 
 - [Virtual Working Copies](../proposals/virtual-working-copies.md) - How sessions use change identity
-- [Stacked Diffs Guide](../getting-started/stacked-diffs.md) - Building on change identity
+- [Git Shadow Sync](../getting-started/git-shadow-sync) - Using change identity across Atomic and Git
 - [Comparison with Git](../getting-started/comparison-with-git.md) - Why change identity matters
 
 ## Summary
@@ -418,7 +418,7 @@ Hashes are encoded as **base32** for human readability:
 - ✅ Automatic deduplication
 - ✅ Mathematical correctness
 
-This foundation enables Atomic's advanced features: commutative merges, stacked workflows, and AI agent collaboration at scale.
+This foundation enables Atomic's advanced features: commutative merges, view-based development, and AI agent collaboration at scale.
 
 ---
 

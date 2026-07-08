@@ -235,7 +235,7 @@ In short format (`-s`), two-character codes are used:
 
 By default, `atomic status` uses colors to make the output easier to read:
 
-- **Cyan (bold)**: Stack name
+- **Cyan (bold)**: View name
 - **Yellow**: State hash
 - **Green**: New files
 - **Yellow**: Modified files
