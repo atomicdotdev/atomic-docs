@@ -173,94 +173,49 @@ git push -u origin main
 
 ### Both Repos Exist But Aren't Connected
 
-This is the trickiest scenario — you have both `.atomic/` and `.git/` but they were set up independently. For example, you cloned an Atomic remote and then added a Git remote, or fetched from Git but never created a local branch.
-
-The typical symptom is Git showing all files as **"untracked"** because it has no local branch with commits.
-
-#### Diagnose the problem
+Use this path when the project already has history on both remotes and you are
+setting up a new local checkout. Start from Git so Git owns the working tree,
+then bootstrap Atomic into that same directory.
 
 ```bash
-# Check Atomic — should show a working view with history
-atomic status
-atomic log
+# 1. Clone the Git repository and enter its worktree
+git clone git@github.com:org/project.git project
+cd project
 
-# Check Git — look for the issue
-git status          # "No commits yet" or all files untracked?
-git branch -a       # Any remote tracking branches?
-```
+# 2. Download and insert the existing Atomic view without rewriting Git files
+atomic clone https://atomic.example.com/org/project/code . \
+  --into-existing --view dev
 
-Common issues:
+# 3. Import Git commits that are not already represented in Atomic
+atomic git import --incremental
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| `No commits yet` + all files untracked | HEAD points to a branch ref that doesn't exist | Wire up a local branch (see below) |
-| `HEAD detached` | No branch checked out | Wire up a local branch (see below) |
-| Remote branch exists, local doesn't | `git fetch` ran but no local branch was created | Wire up a local branch (see below) |
-| `git branch -a` shows nothing | Remote added but never fetched | Run `git fetch origin` first |
-
-#### Fix: Fetch the remote (if needed)
-
-If `git branch -a` shows no remote tracking branches, fetch first:
-
-```bash
-git fetch origin
-git branch -a           # should now show remotes/origin/...
-```
-
-#### Fix: Create a local branch without clobbering Atomic's working tree
-
-Once you have a remote tracking branch (e.g., `remotes/origin/dev`), wire up the local branch **without overwriting files**:
-
-```bash
-# Create the branch ref pointing to the remote
-git update-ref refs/heads/dev refs/remotes/origin/dev
-
-# Point HEAD to the new branch
-git symbolic-ref HEAD refs/heads/dev
-
-# Sync the index (updates Git's staging area, leaves files untouched)
-git reset
-
-# Set upstream tracking
-git branch --set-upstream-to=origin/dev dev
-```
-
-:::warning
-Don't use `git checkout` here. It tries to overwrite every file in the working tree to match the branch. Since those files already exist (materialized by Atomic), Git refuses with "untracked working tree files would be overwritten." The commands above wire up the branch without touching any files.
-:::
-
-If Git has **no remote** and no history at all, create an initial commit from the Atomic state instead:
-
-```bash
-atomic git push --no-push -m "Initial sync from Atomic"
-```
-
-#### Configure excludes and sync
-
-```bash
-# Add shadow excludes
-cat >> .git/info/exclude << 'EOF'
-
-# Atomic local state (managed by atomic git import)
-/.atomic/
-/.vault/
-/.atomicignore
-EOF
-
-# Sync working tree state into a Git commit
-atomic git push --no-push -m "sync: align Git with Atomic"
-```
-
-#### Install hooks and verify
-
-```bash
+# 4. Keep future Git changes synchronized automatically
 atomic git hooks install
-
-# Both systems should be clean
-atomic status               # nothing to record
-git status                  # clean or expected diffs only
-atomic git hooks status     # all 3 installed
 ```
+
+`atomic clone --into-existing` downloads every change in the selected remote
+Atomic view and inserts it into the local Atomic repository. It does **not**
+materialize the Atomic view over the Git checkout, so `.git/` and the files
+selected by Git remain intact. The incremental import then adds Git-only
+commits to the same local Atomic graph.
+
+Use your team's shared Atomic view in place of `dev`. The target must be the
+root of an existing, non-bare Git worktree, and it must not already contain an
+`.atomic/` repository.
+
+#### Verify
+
+```bash
+atomic log                  # includes remote Atomic changes and Git imports
+git status                  # remains Git's checkout
+atomic git hooks status     # all 3 should show "installed"
+```
+
+Bootstrap is complete once both histories are local. From this point forward,
+follow the normal workflow below: create and record feature work in Atomic,
+then use `atomic git push` to publish it for Git review. Git remains the
+collaboration shadow and imports externally created Git commits through the
+installed hooks.
 
 ---
 
