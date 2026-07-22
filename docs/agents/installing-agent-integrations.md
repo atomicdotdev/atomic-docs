@@ -57,8 +57,8 @@ atomic init
 | Integration | Agent | Repository | Global install | Project files for existing repos |
 |-------------|-------|------------|----------------|----------------------------------|
 | `atomic-agy` | Antigravity CLI (`agy`) | https://github.com/atomicdotdev/atomic-agy | `atomic agent enable --agent agy` | None required — a managed section is written into `AGENTS.md` automatically |
-| `atomic-claude` | Claude Code | https://github.com/atomicdotdev/atomic-claude | `./install.sh` or `npx atomic-claude` once published | Copy `CLAUDE.md` to the project root |
-| `atomic-codex` | Codex | https://github.com/atomicdotdev/atomic-codex | `./install.sh` or `npx atomic-codex` once published | Copy `AGENTS.md` to the project root |
+| `atomic-claude` | Claude Code | https://github.com/atomicdotdev/atomic-claude | `atomic agent enable --agent claude-code` (add `--global` for user-level) | Optional: copy `CLAUDE.md` to the project root |
+| `atomic-codex` | Codex | https://github.com/atomicdotdev/atomic-codex | `atomic agent enable --agent codex` (add `--global` for user-level) | Optional: copy `AGENTS.md` to the project root |
 | `atomic-cline` | Cline | https://github.com/atomicdotdev/atomic-cline | `./install.sh` or `npx atomic-cline` once published | Copy `rules/atomic.md` to `.clinerules/atomic.md` |
 | `atomic-pi` | Pi | https://github.com/atomicdotdev/atomic-pi | `pi install /path/to/atomic-pi` or `pi install npm:atomic-pi` once published | No repo-local file is required by default |
 | `atomic-copilot` | GitHub Copilot cloud agent and CLI | https://github.com/atomicdotdev/atomic-copilot | `./install.sh` for local helper setup | Copy `.github/hooks/atomic-hooks.json`, `.github/copilot-instructions.md`, and `AGENTS.md` into the repository |
@@ -82,37 +82,35 @@ The [atomic-agy](https://github.com/atomicdotdev/atomic-agy) repository holds th
 
 ## Claude Code
 
-Use `atomic-claude` for Claude Code.
+Use `atomic agent enable --agent claude-code` for Claude Code.
 
 ```bash
-git clone https://github.com/atomicdotdev/atomic-claude
-cd atomic-claude
-./install.sh
-
 cd /path/to/my-project
 atomic init
-cp /path/to/atomic-claude/CLAUDE.md .
+atomic agent enable --agent claude-code
 claude
 ```
 
-The installer adds Atomic hooks to Claude Code's global settings and installs the `atomic-vault` and `code-intelligence` skills. The `CLAUDE.md` file is repo-local because Claude Code discovers project instructions from the project root.
+The enable command merges Atomic's hooks (plus a `permissions.deny` rule for `.atomic/metadata`) into the project's `.claude/settings.json`. Add `--global` to install into `~/.claude/settings.json` instead, covering every project. In a repo that already has a `.claude/` directory, plain `atomic agent enable` auto-detects Claude Code and needs no `--agent` flag.
+
+For the full prompt setup, the [atomic-claude](https://github.com/atomicdotdev/atomic-claude) repository additionally provides the `CLAUDE.md` instruction file (copy it to the project root), the `@intent` agent, and skills symlinked into `~/.claude/` via its `./install.sh` (or `npx atomic-claude` once published).
 
 ## Codex
 
-Use `atomic-codex` for Codex.
+Use `atomic agent enable --agent codex` for Codex.
 
 ```bash
-git clone https://github.com/atomicdotdev/atomic-codex
-cd atomic-codex
-./install.sh
-
 cd /path/to/my-project
 atomic init
-cp /path/to/atomic-codex/AGENTS.md .
+atomic agent enable --agent codex
 codex
 ```
 
-The installer enables the Codex hooks feature flag and installs hooks into `~/.codex/hooks.json`. Codex hook support is currently experimental, so shell-command provenance may be richer than edit-tool provenance until Codex publishes complete hook events.
+The enable command writes hooks into the project's `.codex/hooks.json` and enables Codex's `[features] hooks = true` flag in the sibling `config.toml` (migrating the deprecated `codex_hooks` name if present). Add `--global` to install into `~/.codex/` instead.
+
+Codex hook support is currently experimental, so shell-command provenance may be richer than edit-tool provenance until Codex publishes complete hook events.
+
+For the instruction file and skills, the [atomic-codex](https://github.com/atomicdotdev/atomic-codex) repository provides `AGENTS.md` (copy it to the project root) and skills symlinked into `~/.codex/` via its `./install.sh` (or `npx atomic-codex` once published).
 
 ## Cline
 
@@ -251,8 +249,9 @@ Each package provides an uninstall path:
 
 | Integration | Uninstall |
 |-------------|-----------|
-| `atomic-claude` | `npx atomic-claude --uninstall`, then remove project `CLAUDE.md` files manually |
-| `atomic-codex` | `npx atomic-codex --uninstall`, then remove project `AGENTS.md` files manually |
+| `atomic-agy` | `atomic agent disable --agent agy` |
+| `atomic-claude` | `atomic agent disable --agent claude-code` (or `npx atomic-claude --uninstall`), then remove project `CLAUDE.md` files manually |
+| `atomic-codex` | `atomic agent disable --agent codex` (or `npx atomic-codex --uninstall`), then remove project `AGENTS.md` files manually |
 | `atomic-cline` | `npx atomic-cline --uninstall`, or remove `atomic-*` files from `~/Documents/Cline/Hooks/` |
 | `atomic-pi` | `pi remove /path/to/atomic-pi` or `pi remove npm:atomic-pi` |
 | `atomic-copilot` | Remove `.github/hooks/atomic-hooks.json`, `.github/copilot-instructions.md`, and `AGENTS.md` if they were added only for Copilot |
