@@ -56,6 +56,7 @@ atomic init
 
 | Integration | Agent | Repository | Global install | Project files for existing repos |
 |-------------|-------|------------|----------------|----------------------------------|
+| `atomic-agy` | Antigravity CLI (`agy`) | https://github.com/atomicdotdev/atomic-agy | `./install.sh` or `npx atomic-agy` once published | Copy `AGENTS.md` to the project root |
 | `atomic-claude` | Claude Code | https://github.com/atomicdotdev/atomic-claude | `./install.sh` or `npx atomic-claude` once published | Copy `CLAUDE.md` to the project root |
 | `atomic-codex` | Codex | https://github.com/atomicdotdev/atomic-codex | `./install.sh` or `npx atomic-codex` once published | Copy `AGENTS.md` to the project root |
 | `atomic-cline` | Cline | https://github.com/atomicdotdev/atomic-cline | `./install.sh` or `npx atomic-cline` once published | Copy `rules/atomic.md` to `.clinerules/atomic.md` |
@@ -63,6 +64,23 @@ atomic init
 | `atomic-copilot` | GitHub Copilot cloud agent and CLI | https://github.com/atomicdotdev/atomic-copilot | `./install.sh` for local helper setup | Copy `.github/hooks/atomic-hooks.json`, `.github/copilot-instructions.md`, and `AGENTS.md` into the repository |
 | `atomic-cursor` | Cursor | https://github.com/atomicdotdev/atomic-cursor | `./install.sh` or `npx atomic-cursor` once published | Copy `rules/atomic.md` to `.cursor/rules/atomic.md` |
 | `atomic-opencode` | OpenCode | https://github.com/atomicdotdev/atomic-opencode | Add `atomic-opencode` to `~/.config/opencode/opencode.json`, then run `npx atomic-opencode`; or use `./install.sh` from source | No repo-local file is required by default; select the Atomic agent in OpenCode |
+
+## Antigravity CLI
+
+Use `atomic-agy` for Google's Antigravity CLI (`agy`), the successor to the deprecated Gemini CLI.
+
+```bash
+git clone https://github.com/atomicdotdev/atomic-agy
+cd atomic-agy
+./install.sh
+
+cd /path/to/my-project
+atomic init
+cp /path/to/atomic-agy/AGENTS.md .
+agy
+```
+
+The installer stages the Atomic plugin (hooks plus the `atomic-vault`, `atomic-vcs`, and `code-intelligence` skills) into `~/.gemini/config/plugins/atomic/` via agy's native `agy plugin install`, and links `AGENTS.md` into agy's global context slot. agy fires hooks on `PreInvocation`, `Stop`, and `PostToolUse`; turns record with provenance when the agent goes idle, and session attestations are created at that point. agy hook payloads do not include the user prompt, model name, or token usage, so attestations start sparse and can be enriched from the transcript later.
 
 ## Claude Code
 
