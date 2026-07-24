@@ -56,7 +56,7 @@ atomic init
 
 | Integration | Agent | Repository | Global install | Project files for existing repos |
 |-------------|-------|------------|----------------|----------------------------------|
-| `atomic-agy` | Antigravity CLI (`agy`) | https://github.com/atomicdotdev/atomic-agy | `atomic agent enable --agent agy` | None required — a managed section is written into `AGENTS.md` automatically |
+| `atomic-agy` | Antigravity CLI (`agy`) | https://github.com/atomicdotdev/atomic-agy | `atomic agent enable --agent agy` | Copy `AGENTS.md` to the project root |
 | `atomic-claude` | Claude Code | https://github.com/atomicdotdev/atomic-claude | `atomic agent enable --agent claude-code` (add `--global` for user-level) | Optional: copy `CLAUDE.md` to the project root |
 | `atomic-codex` | Codex | https://github.com/atomicdotdev/atomic-codex | `atomic agent enable --agent codex` (add `--global` for user-level) | Optional: copy `AGENTS.md` to the project root |
 | `atomic-cline` | Cline | https://github.com/atomicdotdev/atomic-cline | `./install.sh` or `npx atomic-cline` once published | Copy `rules/atomic.md` to `.clinerules/atomic.md` |
@@ -73,12 +73,11 @@ Use `atomic agent enable --agent agy` for Google's Antigravity CLI (`agy`), the 
 cd /path/to/my-project
 atomic init
 atomic agent enable --agent agy
+cp /path/to/atomic-agy/AGENTS.md .    # optional but recommended
 agy
 ```
 
-The enable command installs the Atomic plugin (hooks plus the `atomic-vault`, `atomic-vcs`, and `code-intelligence` skills) into `~/.gemini/config/plugins/atomic/` via agy's plugin mechanism, and writes a managed instruction section into the project's `AGENTS.md` — no file copying needed, and `atomic agent disable --agent agy` removes it cleanly. agy fires hooks on `PreInvocation`, `Stop`, and `PostToolUse`; turns record with provenance when the agent goes idle, and session attestations are created at that point. agy hook payloads do not include the user prompt, model name, or token usage, so attestations start sparse and can be enriched from the transcript later.
-
-The [atomic-agy](https://github.com/atomicdotdev/atomic-agy) repository holds the canonical instruction file, skills, and hook manifest if you want to review or contribute to the integration, or prefer the script-based install (`./install.sh`).
+The enable command installs the Atomic plugin (hooks plus the `atomic-vault`, `atomic-vcs`, and `code-intelligence` skills) into `~/.gemini/config/plugins/atomic/` via agy's plugin mechanism. The instruction file lives in the [atomic-agy](https://github.com/atomicdotdev/atomic-agy) repository — copy it to the project root like the other integrations, or link it globally with the repo's `./install.sh`. agy fires hooks on `PreInvocation`, `Stop`, and `PostToolUse`; turns record with provenance when the agent goes idle, and session attestations are created at that point. agy hook payloads do not include the user prompt, model name, or token usage, so attestations start sparse and can be enriched from the transcript later.
 
 ## Claude Code
 
