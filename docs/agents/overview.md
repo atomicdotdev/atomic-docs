@@ -78,6 +78,7 @@ Supported agents:
 | `atomic-copilot` | GitHub Copilot |
 | `atomic-cursor` | Cursor |
 | `atomic-devin` | Devin |
+| `atomic-grok` | Grok Build |
 | `atomic-kilo` | Kilo Code |
 | `atomic-kiro` | Kiro |
 | `atomic-opencode` | OpenCode |
@@ -137,6 +138,7 @@ The `+tag` is a short hash of the session ID — every agent turn traces back to
 |-------|---------------|
 | Claude Code | `claude+60f5 <lee@atomic.dev>` |
 | Gemini CLI | `gemini+abcd <lee@atomic.dev>` |
+| Grok Build | `grok+019f <lee@atomic.dev>` |
 | OpenCode | `opencode+9876 <lee@atomic.dev>` |
 
 ## Agent Isolation with Views
@@ -176,6 +178,7 @@ atomic view delete agent-ses_3781fc...
 | **atomic-copilot** | GitHub Copilot | Repository hook manifest | Session end |
 | **atomic-cursor** | Cursor | Cursor hooks | Turn end |
 | **atomic-devin** | Devin | Hook wiring | Session |
+| **atomic-grok** | Grok Build | Native Grok hooks (`~/.grok/hooks/`) | Turn end |
 | **atomic-kilo** | Kilo Code | Rules + agent config | Turn end |
 | **atomic-kiro** | Kiro | IDE steering + hook scripts | Turn end |
 | **atomic-opencode** | OpenCode | OpenCode plugin | Session idle / turn end |

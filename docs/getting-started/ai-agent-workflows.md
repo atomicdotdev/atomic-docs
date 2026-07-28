@@ -34,6 +34,7 @@ atomic agent enable
 | `atomic-copilot` | GitHub Copilot |
 | `atomic-cursor` | Cursor |
 | `atomic-devin` | Devin |
+| `atomic-grok` | Grok Build |
 | `atomic-kilo` | Kilo Code |
 | `atomic-kiro` | Kiro |
 | `atomic-opencode` | OpenCode |
@@ -223,6 +224,7 @@ The `+tag` is a short hash of the session ID — every agent turn traces back to
 |-------|---------------|
 | Claude Code | `claude+60f5 <lee@atomic.dev>` |
 | Gemini CLI | `gemini+abcd <lee@atomic.dev>` |
+| Grok Build | `grok+019f <lee@atomic.dev>` |
 | OpenCode | `opencode+9876 <lee@atomic.dev>` |
 
 ## Supported Agent Integrations
@@ -236,6 +238,7 @@ The `+tag` is a short hash of the session ID — every agent turn traces back to
 | **atomic-copilot** | GitHub Copilot | Repository hook manifest | Manifest must be on the default branch for the cloud agent |
 | **atomic-cursor** | Cursor | Hooks + rules | Follows the Atomic intent workflow in-project |
 | **atomic-devin** | Devin | Hook wiring | — |
+| **atomic-grok** | Grok Build | Global hooks + rules + skills | Installs to `~/.grok/`; requires CLI >= 0.12.0 |
 | **atomic-kilo** | Kilo Code | Rules + agent config | Reads `.kilo/` config |
 | **atomic-kiro** | Kiro | IDE steering + hooks | Configure hooks in the Kiro IDE panel |
 | **atomic-opencode** | OpenCode | Plugin + agent + skills | Select the Atomic agent in OpenCode |

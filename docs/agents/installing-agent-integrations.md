@@ -95,6 +95,7 @@ Every integration installs the same way — `atomic agent enable --agent <name>`
 | `atomic-copilot` | GitHub Copilot | `atomic agent enable --agent copilot` | https://github.com/atomicdotdev/atomic-copilot |
 | `atomic-cursor` | Cursor | `atomic agent enable --agent cursor` | https://github.com/atomicdotdev/atomic-cursor |
 | `atomic-devin` | Devin | `atomic agent enable --agent devin` | https://github.com/atomicdotdev/atomic-devin |
+| `atomic-grok` | Grok Build | `atomic agent enable --agent grok` | https://github.com/atomicdotdev/atomic-grok |
 | `atomic-kilo` | Kilo Code | `atomic agent enable --agent kilo` | https://github.com/atomicdotdev/atomic-kilo |
 | `atomic-kiro` | Kiro | `atomic agent enable --agent kiro` | https://github.com/atomicdotdev/atomic-kiro |
 | `atomic-opencode` | OpenCode | `atomic agent enable --agent opencode` | https://github.com/atomicdotdev/atomic-opencode |
@@ -163,6 +164,15 @@ atomic agent enable --agent devin
 ```
 
 Installs Devin's instruction and hook wiring so sessions record with provenance.
+
+### Grok Build
+
+```bash
+atomic agent enable --agent grok
+grok
+```
+
+Installs global hooks under `~/.grok/hooks/`, home rules at `~/.grok/rules/atomic.md`, and the three core skills into `~/.grok/skills/`. Global hooks are always trusted by Grok, so no project `/hooks-trust` step is required. Grok fires SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, and SessionEnd — the full six-event lifecycle. Requires Atomic CLI **>= 0.12.0**.
 
 ### Kilo Code
 
@@ -259,6 +269,7 @@ atomic agent disable --all
 | `atomic-copilot` | `atomic agent disable --agent copilot`, then remove the repo-local files from your default branch if they were added only for Copilot |
 | `atomic-cursor` | `atomic agent disable --agent cursor` |
 | `atomic-devin` | `atomic agent disable --agent devin` |
+| `atomic-grok` | `atomic agent disable --agent grok` |
 | `atomic-kilo` | `atomic agent disable --agent kilo` |
 | `atomic-kiro` | `atomic agent disable --agent kiro`, then remove hooks from the Kiro IDE panel |
 | `atomic-opencode` | `atomic agent disable --agent opencode` |

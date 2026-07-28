@@ -15,7 +15,7 @@ atomic agent <SUBCOMMAND>
 
 ## Description
 
-The `agent` command is the Atomic-side control plane for AI coding integrations. `atomic agent enable --agent <name>` fetches an agent-specific package — `atomic-agy`, `atomic-claude`, `atomic-cline`, `atomic-codex`, `atomic-copilot`, `atomic-cursor`, `atomic-devin`, `atomic-kilo`, `atomic-kiro`, `atomic-opencode`, or `atomic-pi` — from Atomic storage and installs its hooks, plugins, extensions, skills, and instruction files for the host agent. Those hooks call back into `atomic agent hooks <agent> <verb>` so Atomic can record turns and sessions with provenance.
+The `agent` command is the Atomic-side control plane for AI coding integrations. `atomic agent enable --agent <name>` fetches an agent-specific package — `atomic-agy`, `atomic-claude`, `atomic-cline`, `atomic-codex`, `atomic-copilot`, `atomic-cursor`, `atomic-devin`, `atomic-grok`, `atomic-kilo`, `atomic-kiro`, `atomic-opencode`, or `atomic-pi` — from Atomic storage and installs its hooks, plugins, extensions, skills, and instruction files for the host agent. Those hooks call back into `atomic agent hooks <agent> <verb>` so Atomic can record turns and sessions with provenance.
 
 When an integration is active, every supported turn or task is automatically recorded as an Atomic change with full provenance, and every session produces a provenance graph (causal decision DAG) and an attestation (session-level audit node).
 
@@ -262,6 +262,7 @@ Agent author:    claude+60f5 <lee@atomic.dev>
 |-------|---------------|
 | Claude Code | `claude+60f5 <lee@atomic.dev>` |
 | Gemini CLI | `gemini+abcd <lee@atomic.dev>` |
+| Grok Build | `grok+019f <lee@atomic.dev>` |
 | OpenCode | `opencode+9876 <lee@atomic.dev>` |
 
 ## Supported Integration Packages
@@ -275,6 +276,7 @@ Agent author:    claude+60f5 <lee@atomic.dev>
 | `atomic-copilot` | GitHub Copilot | [Installing Agent Integrations](/agents/installing-agent-integrations#github-copilot) |
 | `atomic-cursor` | Cursor | [Installing Agent Integrations](/agents/installing-agent-integrations#cursor) |
 | `atomic-devin` | Devin | [Installing Agent Integrations](/agents/installing-agent-integrations#devin) |
+| `atomic-grok` | Grok Build | [Installing Agent Integrations](/agents/installing-agent-integrations#grok-build) |
 | `atomic-kilo` | Kilo Code | [Installing Agent Integrations](/agents/installing-agent-integrations#kilo-code) |
 | `atomic-kiro` | Kiro | [Installing Agent Integrations](/agents/installing-agent-integrations#kiro) |
 | `atomic-opencode` | OpenCode | [Installing Agent Integrations](/agents/installing-agent-integrations#opencode) |
