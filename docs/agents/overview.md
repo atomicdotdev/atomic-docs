@@ -58,19 +58,32 @@ Each agent session follows a well-defined lifecycle managed by the **TurnOrchest
 
 ### 1. Install an Integration
 
-Choose the adapter for your agent and install it into the agent's normal configuration:
+Install the adapter for your agent with one command. `enable` fetches the integration package from Atomic storage and installs its hooks, plugins, skills, and instruction files for you — no clone, no `npm`/`npx`, no shell script:
+
+```bash
+atomic agent enable --agent opencode
+
+# Or let Atomic detect the agent from directories like .claude/ or .cursor/
+atomic agent enable
+```
+
+Supported agents:
 
 | Integration | Agent |
 |-------------|-------|
+| `atomic-agy` | Antigravity CLI |
 | `atomic-claude` | Claude Code |
-| `atomic-codex` | Codex |
 | `atomic-cline` | Cline |
-| `atomic-pi` | Pi |
+| `atomic-codex` | Codex |
 | `atomic-copilot` | GitHub Copilot |
 | `atomic-cursor` | Cursor |
+| `atomic-devin` | Devin |
+| `atomic-kilo` | Kilo Code |
+| `atomic-kiro` | Kiro |
 | `atomic-opencode` | OpenCode |
+| `atomic-pi` | Pi |
 
-Some adapters are global hooks or plugins. Others also require repo-local instruction files so the agent follows the Atomic intent workflow in each project.
+A few agents need one manual step afterward (for example, enabling hooks in an IDE panel). Removal is symmetric: `atomic agent disable --agent <name>` removes exactly what was installed and keeps files you edited.
 
 → [Installing Agent Integrations](installing-agent-integrations.md)
 
@@ -156,13 +169,17 @@ atomic view delete agent-ses_3781fc...
 
 | Integration | Agent | Hook or Extension Model | Recording Boundary |
 |-------------|-------|-------------------------|--------------------|
+| **atomic-agy** | Antigravity CLI | Plugin (hooks + skills) | Turn end (on idle) |
 | **atomic-claude** | Claude Code | Native Claude Code hooks | Turn end |
-| **atomic-codex** | Codex | Codex hooks | Turn end, with current hook limitations |
 | **atomic-cline** | Cline | Executable hook scripts | Task completion |
-| **atomic-pi** | Pi | Pi extension | Turn end |
+| **atomic-codex** | Codex | Codex hooks | Turn end, with current hook limitations |
 | **atomic-copilot** | GitHub Copilot | Repository hook manifest | Session end |
 | **atomic-cursor** | Cursor | Cursor hooks | Turn end |
+| **atomic-devin** | Devin | Hook wiring | Session |
+| **atomic-kilo** | Kilo Code | Rules + agent config | Turn end |
+| **atomic-kiro** | Kiro | IDE steering + hook scripts | Turn end |
 | **atomic-opencode** | OpenCode | OpenCode plugin | Session idle / turn end |
+| **atomic-pi** | Pi | Pi extension | Turn end |
 
 All integrations share the same Rust-side orchestrator. The only difference is how hooks are installed and how events are parsed — the adapter normalizes agent-specific events into common `TurnEvent` values before the orchestrator processes them.
 

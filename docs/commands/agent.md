@@ -15,7 +15,7 @@ atomic agent <SUBCOMMAND>
 
 ## Description
 
-The `agent` command is the Atomic-side control plane for AI coding integrations. Agent-specific packages such as `atomic-claude`, `atomic-codex`, `atomic-cline`, `atomic-pi`, `atomic-copilot`, `atomic-cursor`, and `atomic-opencode` install hooks, plugins, extensions, or project instructions for their host agent. Those hooks call back into `atomic agent hooks <agent> <verb>` so Atomic can record turns and sessions with provenance.
+The `agent` command is the Atomic-side control plane for AI coding integrations. `atomic agent enable --agent <name>` fetches an agent-specific package — `atomic-agy`, `atomic-claude`, `atomic-cline`, `atomic-codex`, `atomic-copilot`, `atomic-cursor`, `atomic-devin`, `atomic-kilo`, `atomic-kiro`, `atomic-opencode`, or `atomic-pi` — from Atomic storage and installs its hooks, plugins, extensions, skills, and instruction files for the host agent. Those hooks call back into `atomic agent hooks <agent> <verb>` so Atomic can record turns and sessions with provenance.
 
 When an integration is active, every supported turn or task is automatically recorded as an Atomic change with full provenance, and every session produces a provenance graph (causal decision DAG) and an attestation (session-level audit node).
 
@@ -27,21 +27,26 @@ For setup steps by agent, see [Installing Agent Integrations](/agents/installing
 
 ### `enable`
 
-Install built-in agent hooks for turn-level recording.
+Install an agent integration for turn-level recording.
 
-:::info
-Most users should install the agent-specific packages documented in [Installing Agent Integrations](/agents/installing-agent-integrations). Use `atomic agent enable` directly when you are working with a built-in adapter or developing an integration.
+For a registered agent, `enable` fetches the integration package from Atomic storage (caching it under `~/.atomic/integrations/<agent>/repo`), verifies the package's required CLI version, installs its files, hooks, and skills, and writes a receipt. Nothing from the package is executed. See [Installing Agent Integrations](/agents/installing-agent-integrations) for the per-agent guide.
+
+:::note
+The storage-based install flow is available as of Atomic **0.12.0**. Earlier releases only installed built-in adapter hooks.
 :::
 
 ```bash
-# Auto-detect which agent is present
+# Auto-detect which agent is present in this repo
 atomic agent enable
 
-# Specify the agent explicitly
-atomic agent enable --agent claude-code
+# Install a specific agent's integration
+atomic agent enable --agent opencode
 
-# Force reinstall (removes existing hooks first)
-atomic agent enable --force
+# Refresh to the latest package contents (overwrites even modified files)
+atomic agent enable --agent opencode --force
+
+# Install from a local package checkout (development / air-gapped)
+atomic agent enable --agent opencode --from /path/to/atomic-opencode
 
 # Install for all detected agents
 atomic agent enable --all
@@ -51,27 +56,33 @@ atomic agent enable --all
 
 | Option | Description |
 |--------|-------------|
-| `--agent <NAME>` | Target a specific agent: `claude-code`, `gemini-cli`, `opencode` |
-| `--force` | Remove existing Atomic hooks before reinstalling |
-| `--all` | Install hooks for all detected agents |
-| `--global` | Install hooks globally (all projects) |
+| `--agent <NAME>` | Target a specific agent (e.g. `opencode`, `claude-code`, `agy`, `codex`, `cursor`, `cline`, `copilot`, `devin`, `kilo`, `kiro`, `pi`) |
+| `--force` | Overwrite files even when they look user-owned or user-modified, and re-clone the package cache |
+| `--all` | Install for all detected agents |
+| `--from <PATH>` | Install from a local package directory instead of syncing from Atomic storage |
+| `--global` | For a built-in adapter, install hooks into user-level settings (all projects) |
+| `--hooks <FILE>` | Install from an integration-supplied hooks manifest file directly |
 
 **What it does:**
 
-- **Claude Code** — Writes hooks into `.claude/settings.json`
-- **Gemini CLI** — Writes hooks into `.gemini/settings.json`
-- **OpenCode** — Copies plugin to `.opencode/plugins/atomic/`
+- Resolves the agent to a package in the embedded registry (Atomic storage URL + view)
+- Clones the package on first run; reuses the cache afterward so `enable` works offline
+- Installs files (never symlinks) and merges settings via the manifest engine
+- Skips destinations you modified — unless `--force` — so your edits are safe
 
 ### `disable`
 
-Remove agent hooks while preserving non-Atomic hooks.
+Remove an agent integration, guided by its receipt. Files you modified after install are kept and reported; Atomic's hook commands are stripped from shared settings files while your own hooks are preserved. Non-Atomic hooks are never touched.
 
 ```bash
-# Disable for auto-detected agent
+# Disable for the auto-detected agent
 atomic agent disable
 
-# Disable for a specific agent
-atomic agent disable --agent claude-code
+# Disable a specific agent's integration
+atomic agent disable --agent opencode
+
+# Remove every integration that has a receipt
+atomic agent disable --all
 ```
 
 **Options:**
@@ -79,6 +90,9 @@ atomic agent disable --agent claude-code
 | Option | Description |
 |--------|-------------|
 | `--agent <NAME>` | Target a specific agent |
+| `--all` | Remove all installed integrations |
+| `--global` | Remove hooks from user-level settings |
+| `--hooks <FILE>` | Remove hooks described by an integration-supplied manifest file |
 
 ### `status`
 
@@ -254,13 +268,17 @@ Agent author:    claude+60f5 <lee@atomic.dev>
 
 | Integration | Agent | Setup Guide |
 |-------------|-------|-------------|
+| `atomic-agy` | Antigravity CLI | [Installing Agent Integrations](/agents/installing-agent-integrations#antigravity-cli) |
 | `atomic-claude` | Claude Code | [Installing Agent Integrations](/agents/installing-agent-integrations#claude-code) |
-| `atomic-codex` | Codex | [Installing Agent Integrations](/agents/installing-agent-integrations#codex) |
 | `atomic-cline` | Cline | [Installing Agent Integrations](/agents/installing-agent-integrations#cline) |
-| `atomic-pi` | Pi | [Installing Agent Integrations](/agents/installing-agent-integrations#pi) |
+| `atomic-codex` | Codex | [Installing Agent Integrations](/agents/installing-agent-integrations#codex) |
 | `atomic-copilot` | GitHub Copilot | [Installing Agent Integrations](/agents/installing-agent-integrations#github-copilot) |
 | `atomic-cursor` | Cursor | [Installing Agent Integrations](/agents/installing-agent-integrations#cursor) |
+| `atomic-devin` | Devin | [Installing Agent Integrations](/agents/installing-agent-integrations#devin) |
+| `atomic-kilo` | Kilo Code | [Installing Agent Integrations](/agents/installing-agent-integrations#kilo-code) |
+| `atomic-kiro` | Kiro | [Installing Agent Integrations](/agents/installing-agent-integrations#kiro) |
 | `atomic-opencode` | OpenCode | [Installing Agent Integrations](/agents/installing-agent-integrations#opencode) |
+| `atomic-pi` | Pi | [Installing Agent Integrations](/agents/installing-agent-integrations#pi) |
 
 ## Examples
 
