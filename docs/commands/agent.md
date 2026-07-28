@@ -31,6 +31,10 @@ Install an agent integration for turn-level recording.
 
 For a registered agent, `enable` fetches the integration package from Atomic storage (caching it under `~/.atomic/integrations/<agent>/repo`), verifies the package's required CLI version, installs its files, hooks, and skills, and writes a receipt. Nothing from the package is executed. See [Installing Agent Integrations](/agents/installing-agent-integrations) for the per-agent guide.
 
+:::note
+The storage-based install flow is available as of Atomic **0.12.0**. Earlier releases only installed built-in adapter hooks.
+:::
+
 ```bash
 # Auto-detect which agent is present in this repo
 atomic agent enable

@@ -21,6 +21,10 @@ atomic agent enable --agent <name>
 
 `enable` fetches the integration package from Atomic storage, installs its files, hooks, and skills into the right places, and records a receipt so it can be cleanly removed later. There is nothing to clone, no `npm`/`npx`, and no shell script to run.
 
+:::note
+The storage-based install flow described here is available as of Atomic **0.12.0**. On earlier releases, `atomic agent enable` only wired up built-in adapter hooks; integration packages were installed by cloning the repo and running `./install.sh`. Run `atomic --version` to check.
+:::
+
 ## Before You Start
 
 You need:
