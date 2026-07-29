@@ -37,6 +37,13 @@ const config: Config = {
           editUrl: "https://github.com/atomicdotdev/atomic/tree/main/docs/",
         },
         blog: false,
+        // Shared GA4 property with atomic.dev. Because both sites live under
+        // the atomic.dev root domain, GA4 unifies sessions across the
+        // subdomain automatically; split by the `hostname` dimension.
+        gtag: {
+          trackingID: "G-THEHP80942",
+          anonymizeIP: true,
+        },
         theme: {
           customCss: ["./src/css/fonts.css", "./src/css/custom.css"],
         },
