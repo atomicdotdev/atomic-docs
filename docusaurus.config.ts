@@ -38,7 +38,7 @@ const config: Config = {
         },
         blog: false,
         theme: {
-          customCss: "./src/css/custom.css",
+          customCss: ["./src/css/fonts.css", "./src/css/custom.css"],
         },
       } satisfies Preset.Options,
     ],
@@ -48,15 +48,15 @@ const config: Config = {
     image: "img/atomic-logo.png",
     colorMode: {
       defaultMode: "dark",
-      disableSwitch: false,
-      respectPrefersColorScheme: true,
+      disableSwitch: true,
+      respectPrefersColorScheme: false,
     },
     navbar: {
       title: "",
       logo: {
         alt: "Atomic",
-        src: "img/atomic-logo-horizontal-white.png",
-        srcDark: "img/atomic-logo-horizontal-white.png",
+        src: "img/atomic-logo-horizontal.png",
+        srcDark: "img/atomic-logo-horizontal.png",
         style: { height: "50px" },
       },
       items: [

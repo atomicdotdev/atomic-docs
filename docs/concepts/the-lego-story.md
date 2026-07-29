@@ -5,7 +5,7 @@ description: "Understanding Atomic's semantic change graph through a simple Lego
 keywords: [atomic, semantic change graph, DAG, semantic diff, lego analogy, merge conflicts]
 ---
 
-# 🧱 The Lego Story
+# The Lego Story
 
 *How Atomic thinks about your code—and why it changes everything*
 

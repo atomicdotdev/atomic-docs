@@ -5,7 +5,7 @@ description: "How Atomic achieves consistent sub-50ms performance regardless of 
 keywords: [atomic, performance, optimization, btree, scalability, enterprise]
 ---
 
-# ⚡ Performance at Scale
+# Performance at Scale
 
 *How Atomic stays fast no matter how big your repository grows*
 

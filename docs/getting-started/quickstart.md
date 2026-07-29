@@ -12,20 +12,6 @@ title: Quickstart
     Create an Ed25519 identity, register with Atomic Storage, create an
     organization workspace, initialize a project, and push your first change.
   </p>
-  <div className="quickstart-hero-cards">
-    <a className="quickstart-hero-card" href="/commands/identity">
-      <span>Identity</span>
-      <code>atomic identity register</code>
-    </a>
-    <a className="quickstart-hero-card" href="/teams/overview">
-      <span>Teams</span>
-      <code>atomic org · atomic team</code>
-    </a>
-    <a className="quickstart-hero-card" href="/commands/remote-operations">
-      <span>Remote repos</span>
-      <code>atomic clone</code>
-    </a>
-  </div>
 </div>
 
 ## Getting started

@@ -52,24 +52,24 @@ const sidebars: SidebarsConfig = {
     {
       type: "doc",
       id: "concepts/the-lego-story",
-      label: "🧱 The Lego Story",
+      label: "The Lego Story",
     },
     {
       type: "doc",
       id: "concepts/graph-model-explained",
-      label: "🔗 Graph Model & AI Attribution",
+      label: "Graph Model & AI Attribution",
     },
     "concepts/change-identity",
     "concepts/hunks-edit-replacement",
     {
       type: "doc",
       id: "concepts/dual-layer-diff",
-      label: "🔀 Dual-Layer Diff & Semantic Merge",
+      label: "Dual-Layer Diff & Semantic Merge",
     },
     {
       type: "doc",
       id: "concepts/performance-at-scale",
-      label: "⚡ Performance at Scale",
+      label: "Performance at Scale",
     },
     {
       type: "html",
@@ -140,6 +140,12 @@ const sidebars: SidebarsConfig = {
       label: "Views & Tags",
       collapsed: true,
       items: ["commands/view", "commands/stash", "commands/tag"],
+    },
+    {
+      type: "category",
+      label: "Intent & Memory",
+      collapsed: true,
+      items: ["commands/intent", "commands/memory"],
     },
     {
       type: "category",
