@@ -1,0 +1,51 @@
+# Atomic Documentation
+
+> Atomic is not a version control system — it is the evolution of version control: a semantic change graph. Instead of tracking snapshots of files, Atomic models the meaning of every change and the reasoning behind it, giving humans and machines a foundation of record where every change keeps its origin, its intent, and its evidence — signed, attested, and queryable.
+
+The semantic change graph is where agents derive richer context directly from change itself, rather than relying on brute-force loops or ever-larger prompts to drive outcomes. Where a traditional VCS records line diffs, Atomic records a typed graph of entities, intents, decisions, and provenance — so an agent can ask who changed the authentication library and why, and get a structured answer in a single traversal instead of re-navigating the repository every session.
+
+This site is the developer documentation for the Atomic CLI. It covers installation, day-to-day workflows, agent integration, the concepts behind the semantic change graph, and the full command reference.
+
+## Getting started
+
+- [Introduction](https://docs.atomic.dev/): What Atomic is and how the semantic change graph differs from a traditional VCS.
+- [Quickstart](https://docs.atomic.dev/getting-started/quickstart): From identity to a hosted project in five steps.
+- [Installation](https://docs.atomic.dev/getting-started/installation): Install the CLI on macOS, Linux, or WSL2.
+- [Your First Repository](https://docs.atomic.dev/getting-started/first-repository): Initialize a repository and record your first change.
+- [Migrating from Git](https://docs.atomic.dev/getting-started/migrating-from-git): Move an existing Git project onto Atomic.
+- [Git Shadow Sync](https://docs.atomic.dev/getting-started/git-shadow-sync): Keep a Git mirror in sync while adopting Atomic.
+- [Querying the Graph](https://docs.atomic.dev/getting-started/querying-the-graph): Ask structured questions of the semantic change graph.
+- [AI Agent Workflows](https://docs.atomic.dev/getting-started/ai-agent-workflows): Wire up provenance capture for the agents you already use.
+
+## Agents
+
+- [Overview](https://docs.atomic.dev/agents/overview): How Atomic works alongside Claude Code, Cursor, Copilot, Gemini CLI, and OpenCode.
+- [Installing Integrations](https://docs.atomic.dev/agents/installing-agent-integrations): Configure per-agent provenance capture.
+- [Provenance Graphs](https://docs.atomic.dev/agents/provenance): The causal record of what an agent explored, read, changed, and why.
+- [Attestations](https://docs.atomic.dev/agents/attestations): ed25519-signed, content-addressed change attestation.
+
+## Concepts
+
+- [The Lego Story](https://docs.atomic.dev/concepts/the-lego-story): An intuition for modeling change as composable, meaningful units.
+- [Graph Model & AI Attribution](https://docs.atomic.dev/concepts/graph-model-explained): The RDF-triple semantic change graph and how attribution is encoded.
+- [Change Identity](https://docs.atomic.dev/concepts/change-identity): Permanent, content-addressed change identities that survive rebases and squashes.
+- [Hunks — Edit and Replacement Calculations](https://docs.atomic.dev/concepts/hunks-edit-replacement): How Atomic computes edits below the line level.
+- [Dual-Layer Diff & Semantic Merge](https://docs.atomic.dev/concepts/dual-layer-diff): Token-level, semantics-aware diffing and automatic merge resolution.
+- [Performance at Scale](https://docs.atomic.dev/concepts/performance-at-scale): Why graph queries outperform grep/find for agents.
+
+## Command reference
+
+- [Commands Overview](https://docs.atomic.dev/commands/overview): The full `atomic` CLI surface.
+- [Repository Management](https://docs.atomic.dev/commands/repository-management): `init`, `clone`, `restore`, `split`.
+- [Working with Changes](https://docs.atomic.dev/commands/working-with-changes): `add`, `status`, `diff`, `record`, `log`, and more.
+- [Remote Operations](https://docs.atomic.dev/commands/remote-operations): `org`, `workspace`, `project`, `team`, `remote`, `push`, `pull`.
+
+## Teams & storage
+
+- [Team Collaboration](https://docs.atomic.dev/teams/overview): Shared vaults, hosted repositories, and working on shared intent.
+
+## More
+
+- [Atomic (platform)](https://atomic.dev): Product overview and background.
+- [Atomic Storage](https://atomic.storage): Hosted vaults and remote repositories.
+- [GitHub](https://github.com/atomicdotdev/atomic): Source and issues.
