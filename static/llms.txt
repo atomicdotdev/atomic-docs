@@ -1,10 +1,22 @@
 # Atomic Documentation
 
-> Atomic is not a version control system — it is the evolution of version control: a semantic change graph. Instead of tracking snapshots of files, Atomic models the meaning of every change and the reasoning behind it, giving humans and machines a foundation of record where every change keeps its origin, its intent, and its evidence — signed, attested, and queryable.
+> Atomic is source code management at the primitive level: a distributed, agent-native Git alternative, and the evolution of version control into a semantic change graph. Instead of tracking snapshots of files, Atomic models the meaning of every change and the reasoning behind it, giving humans and machines a foundation of record where every change keeps its origin, its intent, and its evidence: signed, attested, and queryable.
 
-The semantic change graph is where agents derive richer context directly from change itself, rather than relying on brute-force loops or ever-larger prompts to drive outcomes. Where a traditional VCS records line diffs, Atomic records a typed graph of entities, intents, decisions, and provenance — so an agent can ask who changed the authentication library and why, and get a structured answer in a single traversal instead of re-navigating the repository every session.
+The semantic change graph is where agents derive richer context directly from change itself, rather than relying on brute-force loops or ever-larger prompts to drive outcomes. Where a traditional VCS records line diffs, Atomic records a typed graph of entities, intents, decisions, and provenance, so an agent can ask who changed the authentication library and why, and get a structured answer in a single traversal instead of re-navigating the repository every session.
 
 This site is the developer documentation for the Atomic CLI. It covers installation, day-to-day workflows, agent integration, the concepts behind the semantic change graph, and the full command reference.
+
+## How Atomic compares to Git
+
+Git, along with other version control systems such as Mercurial, Fossil, Perforce/Helix Core, Subversion, Azure DevOps (TFVC), and Darcs, is optimized for code history: storing a repository and its diffs, branches, and pull requests. Git is excellent at storage and transport. The friction for AI agents is that the commit DAG captures *results*, not the reasoning behind them:
+
+- **Intent is missing.** A commit shows the change, not the hypothesis it tested or the problem it fixed.
+- **Provenance is indirect.** Multi-step agent workflows (generate → edit → verify → revise) need first-class provenance per step, not authorship inferred from PR comments.
+- **Context is hard to reconstruct.** History answers "what changed," not "what context was considered at that moment."
+- **Identity fragments.** A coherent unit of agent work scatters across commits, rebases, and squash merges; agents want stable work-item identity, not commit SHAs.
+- **Merge conflicts are textual, not semantic.** LLM edits are often semantically related but textually different.
+
+For agent-native workflows the commit DAG is the wrong *primary* abstraction, and encoding semantics as Git metadata by hand re-implements, by convention, an algebra the tool does not provide. Atomic changes that algebra. It is built on Darcs/Pijul-style patch theory plus a CRDT layer, where changes are structured patches the system reasons about (commutation, dependencies, conflicts) with native concurrent and offline merging, and a semantic change graph whose work-item identity and provenance stay stable under reordering and merging. Atomic runs alongside Git, so a content-hash DAG (Git) for byte-exact lineage and a semantic/work DAG (Atomic) for intent and provenance can coexist as two different correctness properties. See Change Identity, Graph Model & AI Attribution, Dual-Layer Diff & Semantic Merge, Migrating from Git, and Git Shadow Sync below.
 
 ## Getting started
 
@@ -29,7 +41,7 @@ This site is the developer documentation for the Atomic CLI. It covers installat
 - [The Lego Story](https://docs.atomic.dev/concepts/the-lego-story): An intuition for modeling change as composable, meaningful units.
 - [Graph Model & AI Attribution](https://docs.atomic.dev/concepts/graph-model-explained): The RDF-triple semantic change graph and how attribution is encoded.
 - [Change Identity](https://docs.atomic.dev/concepts/change-identity): Permanent, content-addressed change identities that survive rebases and squashes.
-- [Hunks — Edit and Replacement Calculations](https://docs.atomic.dev/concepts/hunks-edit-replacement): How Atomic computes edits below the line level.
+- [Hunks, Edit and Replacement Calculations](https://docs.atomic.dev/concepts/hunks-edit-replacement): How Atomic computes edits below the line level.
 - [Dual-Layer Diff & Semantic Merge](https://docs.atomic.dev/concepts/dual-layer-diff): Token-level, semantics-aware diffing and automatic merge resolution.
 - [Performance at Scale](https://docs.atomic.dev/concepts/performance-at-scale): Why graph queries outperform grep/find for agents.
 
