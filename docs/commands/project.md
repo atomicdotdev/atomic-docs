@@ -70,6 +70,14 @@ atomic project init api --workspace platform --kind rust --org acme
 atomic remote -v
 ```
 
+The name argument also accepts a `<workspace>/<project>` reference, so you can
+name the workspace inline instead of passing `--workspace` (an explicit
+`--workspace` still wins):
+
+```bash
+atomic project init platform/api --kind rust
+```
+
 The remote URL has this shape:
 
 ```text
