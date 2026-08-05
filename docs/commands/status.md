@@ -10,42 +10,30 @@ Show the status of the working copy.
 ## Synopsis
 
 ```bash
-atomic status [OPTIONS]
+atomic status [OPTIONS] [PATH]
 ```
 
 ## Description
 
-The `status` command displays a summary of the current state of your working copy compared to the last recorded state. It shows:
+The `status` command displays a summary of the current state of your working copy compared to the last recorded state. It shows which files have been added, modified, deleted, or renamed, along with untracked files.
 
-- The current view name
-- The view's merkle state hash
-- Files that have been added, modified, deleted, or renamed
-- Untracked files (with the `-u` flag)
-- Any active conflicts
+This command is designed to give you a quick overview of what has changed before you record. Unlike `atomic diff`, which shows the actual content changes, `status` provides a concise summary of which files are affected.
 
-This command is designed to give you a quick overview of what has changed before you record, similar to `git status`. Unlike `atomic diff` which shows the actual content changes, `status` provides a concise summary of which files are affected.
+## Arguments
+
+### `[PATH]`
+
+Show status for a specific path only.
+
+```bash
+atomic status src/
+```
 
 ## Options
 
-### `--repository <PATH>`
-
-Specify the repository path if not running from within the repository directory.
-
-```bash
-atomic status --repository /path/to/repo
-```
-
-### `--view <VIEW>`
-
-Show status relative to a specific view instead of the current view.
-
-```bash
-atomic status --view feature-branch
-```
-
 ### `-s, --short`
 
-Show status in short format. Similar to `git status -s`, this provides a compact output with two-letter status codes.
+Show short/porcelain output. This provides a compact listing with two-character status codes.
 
 ```bash
 atomic status -s
@@ -57,31 +45,40 @@ A  new_file.rs        # Added
 M  modified_file.rs   # Modified
 D  deleted_file.rs    # Deleted
 MV renamed_file.rs    # Moved/Renamed
-?? untracked.txt      # Untracked (with -u)
+?? untracked.txt      # Untracked
 ```
 
-### `-u, --untracked`
+### `--no-untracked`
 
-Include untracked files in the output. These are files in the working directory that are not being tracked by Atomic.
+Don't show untracked files. By default, untracked files are included in the output.
 
 ```bash
-atomic status -u
+atomic status --no-untracked
 ```
 
-### `--json`
+### `--reindex`
 
-Output status in JSON format for programmatic consumption.
+Rebuild the FILE_INDEX before computing status.
 
 ```bash
-atomic status --json
+atomic status --reindex
 ```
+
+### Global Options
+
+These options are available on all commands:
+
+- `-v, --verbose` - Emit extra diagnostic output
+- `--no-color` - Disable ANSI color in output
+- `-h, --help` - Print help
+- `-V, --version` - Print version
 
 ## Examples
 
 ### Basic Usage
 
 ```bash
-# Show status of working copy
+# Show status of the working copy
 atomic status
 ```
 
@@ -127,72 +124,23 @@ M  src/main.rs
 D  src/deprecated.rs
 ```
 
-### With Untracked Files
+### Hiding Untracked Files
 
 ```bash
-atomic status -u
+atomic status --no-untracked
 ```
 
-Output:
-```
-On view main
-State: ABCD1234EFGH5678
-
-Changes to be recorded:
-  (use "atomic restore <file>..." to discard changes)
-
-	modified:   src/main.rs
-
-Untracked files:
-  (use "atomic add <file>..." to include in what will be recorded)
-
-	temp.log
-	build/
-	.env.local
-```
-
-### Short Format with Untracked Files
+### Status for a Specific Path
 
 ```bash
-atomic status -s -u
+atomic status src/
 ```
 
-Output:
-```
-M  src/main.rs
-?? temp.log
-?? build/
-?? .env.local
-```
-
-### JSON Output
+### Rebuilding the File Index
 
 ```bash
-atomic status --json
-```
-
-Output:
-```json
-{
-  "view": "main",
-  "state": "ABCD1234EFGH5678IJKL9012MNOP3456QRST7890UVWXYZAB",
-  "changes": {
-    "added": ["src/new_feature.rs"],
-    "modified": ["src/main.rs"],
-    "deleted": ["src/deprecated.rs"],
-    "renamed": [],
-    "other": []
-  },
-  "untracked": [],
-  "conflicts": [],
-  "clean": false
-}
-```
-
-### Check Status of Different View
-
-```bash
-atomic status --view develop
+# Force a rebuild of the FILE_INDEX before computing status
+atomic status --reindex
 ```
 
 ## Status Codes
@@ -207,12 +155,6 @@ In the default long format, changes are grouped by type with descriptive labels:
 | `modified:` | File contents changed |
 | `deleted:` | File removed |
 | `renamed:` | File moved or renamed |
-| `undeleted:` | Previously deleted file restored |
-| `solve name conflict:` | Name conflict resolved |
-| `unsolve name conflict:` | Name conflict introduced |
-| `solve order conflict:` | Order conflict resolved |
-| `unsolve order conflict:` | Order conflict introduced |
-| `resurrect zombies:` | Deleted content restored |
 
 ### Short Format
 
@@ -224,142 +166,7 @@ In short format (`-s`), two-character codes are used:
 | `M` | Modified |
 | `D` | Deleted |
 | `MV` | Moved/Renamed |
-| `R` | Replacement |
-| `UD` | Undeleted |
-| `SC` | Solve Conflict |
-| `UC` | Unsolve Conflict |
-| `RZ` | Resurrect Zombies |
 | `??` | Untracked |
-
-## Colored Output
-
-By default, `atomic status` uses colors to make the output easier to read:
-
-- **Cyan (bold)**: View name
-- **Yellow**: State hash
-- **Green**: New files
-- **Yellow**: Modified files
-- **Red**: Deleted files
-- **Blue**: Renamed files
-- **Magenta**: Other changes
-- **Red**: Untracked files
-- **Gray/Dimmed**: Help text hints
-
-Colors are automatically disabled when output is piped or redirected. You can also control colors through your configuration:
-
-```toml
-# In .atomic/config.toml or ~/.config/atomic/config.toml
-[colors]
-enabled = "auto"  # "auto", "always", or "never"
-```
-
-## Use Cases
-
-### Pre-Record Review
-
-```bash
-# Make some changes
-vim src/main.rs
-echo "new module" > src/new.rs
-
-# Quick status check
-atomic status
-
-# Detailed diff if needed
-atomic diff
-
-# Record changes
-atomic record -m "Add new module"
-```
-
-### Finding Untracked Files
-
-```bash
-# See what's not being tracked
-atomic status -u
-
-# Add files you want to track
-atomic add src/new_module.rs
-
-# Verify
-atomic status
-```
-
-### Scripting and Automation
-
-```bash
-# Check if working tree is clean
-if atomic status --json | jq -e '.clean' > /dev/null; then
-    echo "Working tree is clean"
-else
-    echo "There are uncommitted changes"
-fi
-```
-
-### CI/CD Integration
-
-```bash
-# In a CI script, ensure no uncommitted changes
-atomic status --json > status.json
-if [ "$(jq '.clean' status.json)" != "true" ]; then
-    echo "ERROR: Uncommitted changes detected"
-    atomic status
-    exit 1
-fi
-```
-
-### Comparing Views
-
-```bash
-# Check status on current view
-atomic status
-
-# Check status on another view
-atomic status --view feature-branch
-```
-
-## Differences from `atomic diff`
-
-| Feature | `atomic status` | `atomic diff` |
-|---------|-----------------|---------------|
-| Purpose | Summary of changes | Detailed content changes |
-| Output | File list with status codes | Line-by-line diff |
-| Speed | Faster | Slower (computes diffs) |
-| Default | Grouped by change type | Full diff output |
-| Use case | Quick overview | Code review |
-
-Use `status` for a quick check of what's changed, and `diff` when you need to see the actual content changes.
-
-## Exit Codes
-
-- `0` - Success
-- `1` - Error (e.g., not in a repository)
-
-## Notes
-
-- **No Staging Area**: Unlike Git, Atomic doesn't have a staging area. All changes shown in status will be included when you run `atomic record`.
-- **View State**: The "State" hash shown is the merkle hash of the current view state, useful for verifying repository integrity.
-- **Performance**: Status is computed by comparing the working copy against the pristine state, which is generally very fast.
-- **Untracked Detection**: The `-u` flag scans the working directory for files not in the tracking database, respecting `.ignore` patterns.
-
-## Configuration
-
-Relevant configuration options in `.atomic/config.toml` or `~/.config/atomic/config.toml`:
-
-```toml
-[colors]
-# Control colored output
-enabled = "auto"  # "auto", "always", or "never"
-
-[pager]
-# Use pager for long output
-enabled = "auto"
-```
-
-## Environment Variables
-
-- `NO_COLOR` - Disable colored output if set
-- `PAGER` - Pager program for long output (e.g., `less -R`)
 
 ## See Also
 
@@ -368,11 +175,3 @@ enabled = "auto"
 - [`atomic add`](./add.md) - Add untracked files to tracking
 - [`atomic restore`](./restore.md) - Discard working copy changes
 - [`atomic log`](./log.md) - View history of recorded changes
-
-## Related Concepts
-
-- **Working Copy** - Your editable files on disk
-- **Pristine** - The recorded repository state
-- **View** - Atomic's term for a branch/channel of development
-- **Merkle State** - Cryptographic hash representing the view's state
-- **Untracked Files** - Files in the working directory not managed by Atomic

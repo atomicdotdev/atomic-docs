@@ -103,11 +103,25 @@ atomic stash drop
 atomic stash drop stash@{1}
 ```
 
+To delete **all** stashes at once, use [`clear`](#clear) instead of `drop`.
+
+### `clear`
+
+Delete all stashes.
+
+```bash
+# Delete every stash (prompts for confirmation)
+atomic stash clear
+
+# Skip the confirmation prompt
+atomic stash clear --force
+```
+
 **Options:**
 
 | Option | Description |
 |--------|-------------|
-| `--all` | Drop all stashes |
+| `-f`, `--force` | Skip confirmation prompt |
 
 ### `show`
 
@@ -121,14 +135,14 @@ atomic stash show
 atomic stash show stash@{2}
 
 # Show full diff
-atomic stash show --diff
+atomic stash show --patch
 ```
 
 **Options:**
 
 | Option | Description |
 |--------|-------------|
-| `--diff` | Show full diff instead of just file list |
+| `-p`, `--patch` | Show full diff output instead of just the file list |
 
 ## How It Works
 
@@ -184,7 +198,7 @@ atomic stash drop
 atomic stash list
 
 # Drop everything
-atomic stash drop --all
+atomic stash clear
 ```
 
 ## Differences from Git
