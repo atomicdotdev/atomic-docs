@@ -100,6 +100,11 @@ const sidebars: SidebarsConfig = {
       label: "Overview",
     },
     {
+      type: "doc",
+      id: "commands/completions",
+      label: "Shell Completions",
+    },
+    {
       type: "category",
       label: "Repository Management",
       collapsed: true,
@@ -160,6 +165,7 @@ const sidebars: SidebarsConfig = {
         "commands/workspace",
         "commands/project",
         "commands/team",
+        "commands/server",
         "commands/remote",
         "commands/push",
         "commands/pull",

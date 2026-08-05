@@ -10,35 +10,70 @@ Insert changes into a view.
 ## Synopsis
 
 ```bash
-atomic insert [OPTIONS] <CHANGE>
-atomic insert from-view <SOURCE> [OPTIONS]
+atomic insert                          # promote current view → its parent
+atomic insert <CHANGE>                 # insert a single change into the current view
+atomic insert view <SOURCE> [OPTIONS]  # insert all changes from another view
+atomic insert change <CHANGES>... [OPTIONS]
 atomic insert tag <TAG> [OPTIONS]
-atomic insert pick <CHANGES>... [OPTIONS]
 atomic insert preview <SOURCE> [OPTIONS]
 ```
 
 ## Description
 
-The `insert` command adds change references to a view's `VIEW_CHANGES`, making those changes visible through the view's filter. This is Atomic's mechanism for incorporating changes — whether from the same repository or received from a remote.
+The `insert` command adds change references to a view's `VIEW_CHANGES`, making those changes visible through the view's filter. This is Atomic's mechanism for incorporating changes — whether from another view in the same repository or received from a remote.
 
 **Key concept:** Because all edges are already stored in the canonical GRAPH, insert is an **O(1) metadata operation** per change. It only writes entries to `VIEW_CHANGES` — no edge copying is needed. Atomic automatically computes and inserts the full transitive dependency closure so the view remains consistent.
 
-When you insert a change, Atomic:
+:::tip Tab-completion
+With [shell completions](./completions.md) enabled, `atomic insert view <TAB>` completes live **view names** and `atomic insert change <TAB>` completes recent **change hashes** (annotated with their commit messages).
+:::
 
-1. Computes the change's transitive dependencies
-2. Filters out dependencies already present in the target view
-3. Adds missing dependency references to `VIEW_CHANGES` in dependency order
-4. Adds the change itself to `VIEW_CHANGES`
-5. Updates the view's Merkle state
-6. Optionally updates the working copy
+## Promote the current view (no arguments)
 
-## Arguments
+Running `atomic insert` with no arguments **promotes the current view's changes into its parent view** — the "I'm done with this draft, land it" gesture.
 
-### `<CHANGE>`
+```bash
+# On draft view `snow-cat-1234` (parent: dev)
+atomic insert
+# → Inserting 3 change(s): snow-cat-1234 → dev
+#   ✓ Inserted 3 change(s)
+```
 
-The hash of the change to insert (when not using subcommands). Can be:
-- Full hash (53 characters)
-- Abbreviated hash (minimum 2 characters)
+- The source is always the current view; the target defaults to its parent.
+- Use `--to <view>` to target a different view than the immediate parent.
+- The working copy is **not** rematerialized — the target view isn't checked out, so your current view's files are untouched.
+
+This inverts the direction of `atomic insert <hash>` (which brings a change *into* the current view), so the output always states the direction explicitly.
+
+### Options for the promotion form
+
+| Option | Description |
+|--------|-------------|
+| `--to <VIEW>` | Target view to promote into (default: the current view's parent). Alias: `--to-view`. |
+| `-n`, `--dry-run` | Show what would be inserted without inserting. |
+| `--confirm` | Skip the confirmation prompt when promoting between two **shared** views. |
+| `--allow-conflicts` | Allow conflicts during insert. |
+
+**Edge cases:**
+
+- **Root view (no parent):** errors clearly — there is nothing to promote into.
+- **Nothing to promote:** a friendly no-op ("Already even with `<parent>`").
+- **Shared → shared:** requires interactive confirmation; pass `--confirm` to proceed non-interactively (e.g. in scripts).
+
+```bash
+# Preview the promotion first
+atomic insert --dry-run
+
+# Promote into a specific view
+atomic insert --to release
+
+# Promote between shared views without a prompt
+atomic insert --confirm
+```
+
+## Insert a single change (`<CHANGE>`)
+
+The hash of a change to insert into the current view (or `--view`). Accepts a full hash (53 characters) or an abbreviated prefix (minimum 2 characters).
 
 ```bash
 # Full hash
@@ -46,70 +81,74 @@ atomic insert MNYNGT2VGEQZX4QA43FWBDVYQY7CGXN4J2CGE5FDFIHOWQFKFIJQC
 
 # Abbreviated hash
 atomic insert MNYNGT2V
+
+# Into a specific view
+atomic insert --view feature-auth MNYNGT2V
 ```
 
-## Options
-
-### `--view <VIEW>`
-
-Insert the change into a specific view instead of the current view.
-
-```bash
-atomic insert --view feature-auth ABCD1234...
-```
-
-### `--deps`
-
-Insert dependencies automatically (enabled by default).
-
-```bash
-atomic insert --deps ABCD1234...
-```
-
-### `--allow-conflicts`
-
-Allow conflicts during insert instead of aborting.
-
-```bash
-atomic insert --allow-conflicts ABCD1234...
-```
-
-### `-R`, `--repository <PATH>`
-
-Specify the repository path.
-
-```bash
-atomic insert --repository /path/to/repo ABCD1234...
-```
+Options: `--view <VIEW>` (alias `--to`), `--deps` (on by default), `--allow-conflicts`, `-R`/`--repository <PATH>`.
 
 ## Subcommands
 
-### `from-view` — Insert changes from one view to another
+### `view` — Insert all changes from another view
 
-Inserts all changes present in a source view that are missing from the target view.
+Inserts every change present in a source view that is missing from the target view. (Formerly `from-view`, which is kept as an alias.)
 
 ```bash
-atomic insert from-view <SOURCE> [OPTIONS]
+atomic insert view <SOURCE> [OPTIONS]
 ```
 
 **Arguments:**
 - `<SOURCE>` — Source view to copy changes from
 
 **Options:**
-- `--to-view <VIEW>` — Target view (default: current view)
+- `--to <VIEW>` — Target view (default: current view). Alias: `--to-view`.
 - `--deps` — Insert dependencies automatically (default: true)
 - `--allow-conflicts` — Allow conflicts during insert
-- `--dry-run` — Show what would be inserted without making changes
+- `-n`, `--dry-run` — Show what would be inserted without making changes
 
 ```bash
-# Insert all changes from feature-auth into current view
-atomic insert from-view feature-auth
+# From dev, pull all of a draft's changes into dev
+atomic insert view snow-cat-1234
 
-# Insert from feature into dev
+# Insert from feature into dev explicitly
+atomic insert view feature --to dev
+
+# Preview first
+atomic insert view feature --to dev --dry-run
+
+# Backward-compatible alias
 atomic insert from-view feature --to-view dev
+```
 
-# Preview what would happen
-atomic insert from-view feature --to-view dev --dry-run
+### `change` — Insert specific change(s) by hash
+
+Insert one or more specific changes by hash, pulling in their transitive dependencies automatically. (Formerly `pick`, which is kept as an alias.)
+
+```bash
+atomic insert change <CHANGES>... [OPTIONS]
+```
+
+**Arguments:**
+- `<CHANGES>...` — One or more change hashes (required)
+
+**Options:**
+- `--to <VIEW>` — Target view (default: current view). Alias: `--to-view`.
+- `--deps` — Insert dependencies automatically (default: true)
+- `--allow-conflicts` — Allow conflicts during insert
+
+```bash
+# A single change
+atomic insert change ABCD1234
+
+# Multiple changes
+atomic insert change ABCD1234 EFGH5678
+
+# Into a specific view
+atomic insert change ABCD1234 --to dev
+
+# Backward-compatible alias
+atomic insert pick ABCD1234 --to-view dev
 ```
 
 ### `tag` — Insert changes up to a specific tag
@@ -125,44 +164,14 @@ atomic insert tag <TAG> [OPTIONS]
 
 **Options:**
 - `--from-view <VIEW>` — Source view containing the tag
-- `--to-view <VIEW>` — Target view (default: current view)
+- `--to <VIEW>` — Target view (default: current view). Alias: `--to-view`.
 - `--deps` — Insert dependencies automatically (default: true)
 - `--allow-conflicts` — Allow conflicts during insert
-- `--dry-run` — Show what would be inserted without making changes
+- `-n`, `--dry-run` — Show what would be inserted without making changes
 
 ```bash
-# Insert changes up to tag v1.0.0
-atomic insert tag v1.0.0
-
-# Insert tagged changes from release view into dev
-atomic insert tag v1.0.0 --from-view release --to-view dev
-```
-
-### `pick` — Cherry-pick specific changes
-
-Insert one or more specific changes by hash, pulling in their transitive dependencies automatically.
-
-```bash
-atomic insert pick <CHANGES>... [OPTIONS]
-```
-
-**Arguments:**
-- `<CHANGES>...` — One or more change hashes to cherry-pick (required)
-
-**Options:**
-- `--to-view <VIEW>` — Target view (default: current view)
-- `--deps` — Insert dependencies automatically (default: true)
-- `--allow-conflicts` — Allow conflicts during insert
-
-```bash
-# Pick a single change
-atomic insert pick ABCD1234...
-
-# Pick multiple changes
-atomic insert pick ABCD1234... EFGH5678...
-
-# Pick into a specific view
-atomic insert pick ABCD1234... --to-view dev
+# Insert tagged changes from release into dev
+atomic insert tag v1.0.0 --from-view release --to dev
 ```
 
 ### `preview` — Show what would be inserted (dry run)
@@ -177,33 +186,25 @@ atomic insert preview <SOURCE> [OPTIONS]
 - `<SOURCE>` — Source view to preview changes from
 
 **Options:**
-- `--to-view <VIEW>` — Target view (default: current view)
+- `--to <VIEW>` — Target view (default: current view). Alias: `--to-view`.
 - `--up-to-tag <TAG>` — Limit preview to changes up to a specific tag
 
 ```bash
-# Preview all changes from feature
-atomic insert preview feature
-
-# Preview changes up to a tag
+atomic insert preview feature --to dev
 atomic insert preview release --up-to-tag v1.0.0
-
-# Preview into a specific target
-atomic insert preview feature --to-view dev
 ```
 
 ## Examples
 
-### Basic Insert
+### Land a draft / session view
 
 ```bash
-# Insert a change into the current view
-atomic insert MNYNGT2VGEQZX4QA43FWBDVYQY7CGXN4J2CGE5FDFIHOWQFKFIJQC
-
-# Insert with abbreviated hash
-atomic insert MNYNGT2V
+# You're on a draft view forked from dev; you've recorded some changes.
+atomic insert --dry-run    # look first
+atomic insert              # promote them into dev
 ```
 
-### Cross-View Workflow
+### Cross-view workflow
 
 ```bash
 # Create a feature view as a draft off dev
@@ -211,29 +212,33 @@ atomic view create feature-auth --draft --parent dev
 
 # ... do work and record changes on feature-auth ...
 
-# Preview what would be inserted into dev
-atomic insert preview feature-auth --to-view dev
-
-# Insert all changes from feature-auth into dev
-atomic insert from-view feature-auth --to-view dev
+# Preview, then insert into dev
+atomic insert preview feature-auth --to dev
+atomic insert view feature-auth --to dev
 ```
 
-### Release Workflow with Tags
+### Release workflow with tags
 
 ```bash
-# Tag the current state of the release view
 atomic tag create v1.0.0 -m "Release 1.0"
-
-# Insert everything up to the release tag into main
-atomic insert tag v1.0.0 --from-view release --to-view main
+atomic insert tag v1.0.0 --from-view release --to main
 ```
 
-### Cherry-Pick Specific Changes
+### Cherry-pick a hotfix
 
 ```bash
-# Pick a hotfix change into the release view
-atomic insert pick ABCD1234... --to-view release
+atomic insert change ABCD1234 --to release
 ```
+
+## Command changes and aliases
+
+The subcommand names were unified for consistency. Old names still work:
+
+| Canonical | Alias (still supported) |
+|-----------|-------------------------|
+| `atomic insert view <SOURCE>` | `atomic insert from-view <SOURCE>` |
+| `atomic insert change <HASH>` | `atomic insert pick <HASH>` |
+| `--to <VIEW>` | `--to-view <VIEW>` |
 
 ## How It Works
 
@@ -254,16 +259,15 @@ Because Atomic uses a single canonical GRAPH with view filters, inserting a chan
 - **Dependencies**: Transitive dependencies are computed and inserted automatically. A change cannot be inserted without every change it depends on already present in the target view.
 - **Idempotent**: Inserting a change that already exists in the view is a no-op.
 - **Source unchanged**: The source view is never modified by an insert operation.
-- **Working copy**: Use `atomic restore` after insert to update the working copy if needed.
 - **Conflicts**: True conflicts only arise when changes modify the same graph region in incompatible ways.
 
 ## See Also
 
+- [Shell Completions](./completions.md) — tab-complete view names and change hashes
 - [`atomic record`](./record.md) — Record new changes
 - [`atomic view`](./view.md) — Manage views (create, switch, list, delete)
 - [`atomic pull`](./pull.md) — Pull and insert changes from remotes
 - [`atomic tag`](./tag.md) — Manage tags for marking states
-- [`atomic change`](./change.md) — Inspect change files
 - [`atomic log`](./log.md) — View change history
 
 ## Related Concepts

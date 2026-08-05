@@ -38,6 +38,18 @@ archive, verifies checksums when available, and installs the `atomic` binary.
 atomic --version
 ```
 
+### Enable Shell Completions (optional)
+
+Turn on tab-completion for subcommands, flags, and live values like view names
+and change hashes. For zsh, add this to your `~/.zshrc`:
+
+```bash
+source <(COMPLETE=zsh atomic)
+```
+
+See [Shell Completions](../commands/completions) for other shells, the static
+`atomic completions <shell>` script, and troubleshooting.
+
 ### Source Install (Development)
 
 Use a source install when you need to test unreleased changes.
