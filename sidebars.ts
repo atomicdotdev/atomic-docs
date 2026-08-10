@@ -19,6 +19,7 @@ const sidebars: SidebarsConfig = {
     "getting-started/git-shadow-sync",
     "getting-started/querying-the-graph",
     "getting-started/ai-agent-workflows",
+    "getting-started/train-tracks-demo",
     {
       type: "html",
       value: '<div class="sidebar-section-label">AGENTS</div>',
@@ -65,6 +66,11 @@ const sidebars: SidebarsConfig = {
       type: "doc",
       id: "concepts/dual-layer-diff",
       label: "Dual-Layer Diff & Semantic Merge",
+    },
+    {
+      type: "doc",
+      id: "concepts/merging-and-conflicts",
+      label: "Merging & Conflicts",
     },
     {
       type: "doc",
@@ -132,6 +138,7 @@ const sidebars: SidebarsConfig = {
         "commands/remove",
         "commands/move",
         "commands/status",
+        "commands/conflicts",
         "commands/diff",
         "commands/record",
         "commands/revise",
@@ -145,6 +152,12 @@ const sidebars: SidebarsConfig = {
       label: "Views & Tags",
       collapsed: true,
       items: ["commands/view", "commands/stash", "commands/tag"],
+    },
+    {
+      type: "category",
+      label: "Diagnostics",
+      collapsed: true,
+      items: ["commands/doctor"],
     },
     {
       type: "category",

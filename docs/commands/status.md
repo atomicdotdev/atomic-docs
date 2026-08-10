@@ -45,6 +45,7 @@ A  new_file.rs        # Added
 M  modified_file.rs   # Modified
 D  deleted_file.rs    # Deleted
 MV renamed_file.rs    # Moved/Renamed
+C  conflicted.rs      # Conflicted (unresolved merge)
 ?? untracked.txt      # Untracked
 ```
 
@@ -155,6 +156,7 @@ In the default long format, changes are grouped by type with descriptive labels:
 | `modified:` | File contents changed |
 | `deleted:` | File removed |
 | `renamed:` | File moved or renamed |
+| `conflicted:` | File has unresolved conflict markers |
 
 ### Short Format
 
@@ -166,10 +168,16 @@ In short format (`-s`), two-character codes are used:
 | `M` | Modified |
 | `D` | Deleted |
 | `MV` | Moved/Renamed |
+| `C` | Conflicted (unresolved merge) |
 | `??` | Untracked |
+
+A `C` entry supersedes any `M` for the same file: a conflicted file is never
+reported as merely modified. See [Merging & Conflicts](../concepts/merging-and-conflicts.md)
+for how conflicts are surfaced and resolved.
 
 ## See Also
 
+- [Merging & Conflicts](../concepts/merging-and-conflicts.md) - Understand conflicted (`C`) files
 - [`atomic diff`](./diff.md) - Show detailed content differences
 - [`atomic record`](./record.md) - Record changes after reviewing status
 - [`atomic add`](./add.md) - Add untracked files to tracking

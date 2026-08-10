@@ -15,6 +15,7 @@ Every command listed here corresponds to a real subcommand in the `atomic` CLI b
 |---------|-------------|
 | [`init`](init.md) | Initialize a new Atomic repository |
 | [`status`](status.md) | Show working copy status |
+| [`conflicts`](conflicts.md) | List files in a conflicted state |
 | [`add`](add.md) | Add files to be tracked |
 | [`remove`](remove.md) | Remove files from tracking |
 | [`move`](move.md) | Move or rename tracked files |
@@ -39,6 +40,7 @@ Every command listed here corresponds to a real subcommand in the `atomic` CLI b
 | [`team`](team.md) | Manage organization teams and team members |
 | [`identity`](identity.md) | Manage user identities and signing keys |
 | [`agent`](agent.md) | Manage AI agent integration |
+| [`doctor`](doctor.md) | Verify working-copy consistency and repair indexes |
 
 ## Command Categories
 
@@ -58,6 +60,7 @@ atomic log                        # View history
 - **[`remove`](remove.md)** / `rm` — Remove files from tracking
 - **[`move`](move.md)** / `mv` — Move or rename tracked files
 - **[`status`](status.md)** — Show modified, added, deleted, and untracked files
+- **[`conflicts`](conflicts.md)** — List files in a conflicted state on the current view
 - **[`diff`](diff.md)** — Show differences between working copy and last recorded state
 - **[`record`](record.md)** — Create a new change from tracked file modifications
 - **[`revise`](revise.md)** — Modify a previously recorded change in-place
@@ -156,6 +159,18 @@ atomic agent explain <session-id> --all --save
 ```
 
 - **[`agent`](agent.md)** — Enable, disable, and manage AI agent hooks for Claude Code, Gemini CLI, and OpenCode
+
+### Diagnostics
+
+Inspect and verify repository state:
+
+```bash
+atomic conflicts                  # List files in a conflicted state
+atomic doctor check               # Verify the working copy matches the graph
+```
+
+- **[`conflicts`](conflicts.md)** — List conflicted files, with the kind and line of each conflict
+- **[`doctor`](doctor.md)** — Verify working-copy consistency (materialization drift + conflict honesty) and repair derived indexes
 
 ## Global Options
 
