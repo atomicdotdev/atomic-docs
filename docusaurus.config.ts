@@ -34,7 +34,10 @@ const config: Config = {
         docs: {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/",
-          editUrl: "https://github.com/atomicdotdev/atomic/tree/main/docs/",
+          // Docusaurus appends the site-relative source path (which already
+          // starts with `docs/`), so this base must be the REPO ROOT of this
+          // repo — not the atomic repo, and not a path ending in `docs/`.
+          editUrl: "https://github.com/atomicdotdev/atomic-docs/tree/release/",
         },
         blog: false,
         // Shared GA4 property with atomic.dev. Because both sites live under
