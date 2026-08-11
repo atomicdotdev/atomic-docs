@@ -23,6 +23,25 @@ Atomic's push operation is conflict-free due to the mathematical properties of
 patch theory: the remote can accept pushes from multiple sources without merge
 conflicts.
 
+### Draft views push their complete graph
+
+When you push a **draft** view, `push` uploads the view's **full effective
+change set** — the draft's own changes **plus** every change it inherits from
+its shared base — in dependency order, not just the draft's delta. This
+guarantees the remote ends up with a complete, self-contained graph for that
+view, even on a fresh remote that has never seen the base.
+
+Changes the remote already has are skipped automatically: they're deduplicated
+by hash and, when they exist on the remote under another view, adopted as a
+cheap metadata operation rather than re-uploaded. So re-including the shared
+base is idempotent — nothing is transferred twice.
+
+> This is why the remote stores every pushed view as a self-contained (shared)
+> view: the draft/parent relationship is a local concept and isn't transmitted,
+> but the view's content is always complete. See
+> [`atomic clone --all-views`](./clone.md) for reconstructing sibling views on
+> the receiving side.
+
 ## Arguments
 
 ### `[REMOTE]`
@@ -53,7 +72,9 @@ atomic push origin --to-view main
 
 ### `--from-view <FROM_VIEW>`
 
-Local view to push from.
+Local view to push from. For a draft view this pushes its full effective change
+set (own changes plus the inherited shared base), so the remote receives a
+complete graph.
 
 ```bash
 atomic push --from-view feature-new-ui

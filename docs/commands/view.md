@@ -13,7 +13,7 @@ Manage views (filtered perspectives on the repository graph).
 atomic view <SUBCOMMAND>
 atomic view create <NAME> [OPTIONS]
 atomic view switch <NAME>
-atomic view list [--verbose]
+atomic view list [--verbose] [--remote [<REMOTE>]]
 atomic view delete <NAME> [--force]
 ```
 
@@ -173,7 +173,9 @@ When you switch views:
 
 **Note**: Switching views updates your working copy files. Unrecorded changes may be affected.
 
-### `view list` — List All Views
+### `view list` — List Views
+
+Lists views locally by default, or on a remote with `--remote`.
 
 #### Synopsis
 
@@ -185,7 +187,11 @@ atomic view list [OPTIONS]
 
 | Option | Description |
 |--------|-------------|
+| `--short`, `-s` | Show only view names (no metadata) |
 | `--verbose`, `-v` | Show scope, parent, change count, and state hash |
+| `--remote [<REMOTE>]` | List views on a remote instead of locally. Pass `--remote` alone to use the default remote, or `--remote <name\|url>` to target a specific one |
+| `--identity <IDENTITY>` | Identity to authenticate to the remote (only with `--remote`) |
+| `--insecure`, `-k` | Skip TLS verification when querying a remote (only with `--remote`) |
 
 #### Examples
 
@@ -207,6 +213,26 @@ $ atomic view list --verbose
   service-auth   [draft]   (15 changes)  state: 123456789...  parent: dev
   feature-login  [draft]   (2 changes)   state: ABCDEFGHI...  parent: service-auth
 ```
+
+```bash
+# List the views available on a remote (default remote)
+$ atomic view list --remote
+Views on origin (https://acme.atomic.storage/workspaces/demos/projects/app/code)
+  dev            [shared]  (12 changes)  state: 2AAAAAAAA...
+  feature-auth   [shared]  (3 changes)   state: XYZABCDEF...
+  release-1.0    [shared]  (8 changes)   state: QRSTUVWXY...
+
+# Target a specific remote by name or URL
+atomic view list --remote origin
+atomic view list --remote https://acme.atomic.storage/workspaces/demos/projects/app/code
+```
+
+:::note Remote views appear as shared
+The server stores every pushed view as a self-contained **shared** view, so
+remote listings report every view as `[shared]` with no parent, regardless of
+how it was scoped locally. Use [`atomic clone --all-views`](./clone.md) to
+reconstruct the full set of remote views locally.
+:::
 
 ### `view delete` — Delete a View
 

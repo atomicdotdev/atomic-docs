@@ -105,6 +105,30 @@ Bootstrap Atomic inside an existing Git checkout without materializing Atomic
 content over the Git working tree. Requires a `[PATH]` pointing at the Git
 worktree root.
 
+### `--all-views`
+
+Also clone **every other view** the remote exposes, not just `--view`. Each
+additional view is created locally and populated from the remote. Because
+changes are content-addressed and shared across views, this mostly adds view
+references without re-downloading content.
+
+Without this flag, `clone` fetches only the requested `--view`, but prints a
+hint listing the other views available on the remote so you know they exist.
+
+```bash
+# Clone every view, not just dev
+atomic clone hello-world --all-views
+```
+
+:::note Views arrive as shared
+The server stores every pushed view as a self-contained **shared** view, so a
+draft's original parent relationship isn't transmitted and can't be
+reconstructed on clone. `--all-views` recreates the sibling views by name (each
+with its complete graph); it does not restore draft scope or parent links.
+Requires a server that supports the view-inventory endpoint — older servers are
+treated as single-view.
+:::
+
 ## Examples
 
 ### Clone by project reference
@@ -140,6 +164,15 @@ atomic clone hello-world --download-only
 atomic insert <hash>
 ```
 
+### Clone all views
+
+```bash
+# Reconstruct every view the remote exposes, each fully populated
+atomic clone hello-world --all-views
+cd hello-world
+atomic view list        # shows all remote views, not just dev
+```
+
 ## Authentication
 
 Atomic authenticates with your configured **identity** (an Ed25519 key), not
@@ -158,8 +191,13 @@ See [`atomic identity`](./identity.md) and [`atomic server`](./server.md).
 cd hello-world
 atomic log            # inspect history
 atomic status         # working copy state
-atomic view list      # available views
+atomic view list      # available local views
+atomic view list --remote   # views available on the remote
 ```
+
+By default `clone` pulls only the requested `--view`. To bring down every view
+the remote has, use [`--all-views`](#--all-views), or inspect what's available
+first with [`atomic view list --remote`](./view.md).
 
 The remote is saved as `origin` in `.atomic/config.toml`, so `atomic push` /
 `atomic pull` work without re-specifying the URL.

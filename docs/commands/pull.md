@@ -22,6 +22,13 @@ missing locally, downloads them, and applies them to the target view.
 Atomic's pull operation is mathematically guaranteed to be conflict-free: patch
 theory ensures that changes can be applied in any order with consistent results.
 
+If the target local view doesn't exist yet, `pull` **creates it automatically**
+rather than failing — so pulling a teammate's view (or a brand-new view named
+with `--to-view`) just works. When the target view is also your current view,
+the working copy is materialized to reflect the pulled changes; when it's a
+different view, the changes are applied to that view's change log and `pull`
+prints a hint to `atomic view switch <view>` to check it out.
+
 ## Arguments
 
 ### `[REMOTE]`
@@ -44,7 +51,10 @@ atomic pull ssh://user@host/path/to/repo
 
 ### `--to-view <TO_VIEW>`
 
-Local view to pull into.
+Local view to pull into. If not specified, defaults to the **remote view being
+pulled** (`--from-view`), so `atomic pull --from-view X` pulls into a local
+view named `X`. The view is **created automatically** if it doesn't already
+exist locally.
 
 ```bash
 atomic pull origin --to-view feature-new-ui
@@ -52,7 +62,7 @@ atomic pull origin --to-view feature-new-ui
 
 ### `--from-view <FROM_VIEW>`
 
-Remote view to pull from.
+Remote view to pull from. If not specified, defaults to your **current view**.
 
 ```bash
 atomic pull origin --from-view develop
@@ -133,9 +143,21 @@ atomic pull upstream
 # Pull the remote develop view into the current view
 atomic pull origin --from-view develop
 
-# Pull the remote feature view into a local feature view
-atomic pull origin --from-view feature-auth --to-view feature-auth
+# Pull a remote view into a local view of the same name.
+# --to-view defaults to --from-view, and the local view is created if missing.
+atomic pull origin --from-view feature-auth
+
+# Pull a remote view into a differently named local view
+atomic pull origin --from-view feature-auth --to-view my-local-copy
 ```
+
+:::note View defaults and auto-creation
+`--from-view` defaults to your current view, and `--to-view` defaults to
+`--from-view`. If the target local view doesn't exist, `pull` creates it
+instead of erroring with "View not found." Pulling into a view other than the
+current one updates that view's change log without touching your working copy —
+run `atomic view switch <view>` to check it out.
+:::
 
 ### Previewing and Downloading
 
