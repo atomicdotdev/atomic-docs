@@ -22,6 +22,12 @@ const config: Config = {
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
 
+  markdown: {
+    mermaid: true,
+  },
+
+  themes: ["@docusaurus/theme-mermaid"],
+
   i18n: {
     defaultLocale: "en",
     locales: ["en"],
@@ -180,6 +186,48 @@ const config: Config = {
       apiKey: "YOUR_SEARCH_API_KEY",
       indexName: "atomic-vcs",
       contextualSearch: true,
+    },
+    mermaid: {
+      // "base" is the only Mermaid theme that accepts custom variables;
+      // map it onto the atomic.dev Midnight + Atomic Pink palette.
+      theme: { light: "base", dark: "base" },
+      options: {
+        fontSize: 15,
+        themeVariables: {
+          fontFamily: "var(--font-mono, ui-monospace, monospace)",
+          // Surfaces
+          background: "#07041a",
+          primaryColor: "#130a36",
+          primaryTextColor: "#f4eefe",
+          primaryBorderColor: "#ff0a8c",
+          secondaryColor: "#0c0726",
+          tertiaryColor: "#0a0620",
+          // Flowchart
+          clusterBkg: "#0c0726",
+          clusterBorder: "rgba(255, 255, 255, 0.14)",
+          titleColor: "#f4eefe",
+          nodeTextColor: "#f4eefe",
+          lineColor: "#ff4ea8",
+          edgeLabelBackground: "#0c0726",
+          // Sequence diagram
+          actorBkg: "#130a36",
+          actorBorder: "#ff0a8c",
+          actorTextColor: "#f4eefe",
+          actorLineColor: "rgba(244, 238, 254, 0.42)",
+          signalColor: "#f4eefe",
+          signalTextColor: "#f4eefe",
+          noteBkgColor: "#130a36",
+          noteTextColor: "#f4eefe",
+          noteBorderColor: "#c9006a",
+          labelBoxBkgColor: "#0c0726",
+          labelBoxBorderColor: "#ff0a8c",
+          labelTextColor: "#f4eefe",
+          loopTextColor: "#f4eefe",
+          activationBkgColor: "#c9006a",
+          activationBorderColor: "#ff0a8c",
+          sequenceNumberColor: "#07041a",
+        },
+      },
     },
   } satisfies Preset.ThemeConfig,
 };

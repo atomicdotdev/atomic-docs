@@ -241,15 +241,24 @@ atomic record -m "test: add auth integration tests"
 ### Day 3: Push to Git for review
 
 ```bash
-# Insert your changes into the dev view
-atomic view switch dev
-atomic insert from-view feature-auth
-
-# Push to Git and open a PR
+# Still on the draft view — push straight to Git
 atomic git push -m "feat: OAuth2 authentication"
+# → Pushed to origin/feature-auth
 ```
 
-This creates a single Git commit with all the Atomic changes materialized, then pushes to the remote. Open a PR on GitHub or GitLab as usual.
+Because `feature-auth` is a **draft view**, the push targets a Git branch named after the view and creates `origin/feature-auth` on the first push. Open a PR from `feature-auth` into `dev` on GitHub or GitLab as usual — no `insert` into `dev` needed before review.
+
+If you also collaborate through atomic.storage, publish the draft with full identity too:
+
+```bash
+atomic push        # declares the draft's manifest (scope, parent, change log)
+```
+
+See [Draft Views Across Both Remotes](#draft-views-across-both-remotes) for how the two remotes relate.
+
+:::tip Shared views
+On a shared view like `dev`, `atomic git push` keeps the classic behavior: the commit is pushed to the currently checked-out Git branch. The older flow — `atomic insert from-view feature-auth` into `dev`, then pushing `dev` — still works and remains useful when you want to batch several drafts into one commit.
+:::
 
 ### Day 4: After the PR merges
 
@@ -263,29 +272,151 @@ atomic git import --incremental
 
 ### The full cycle
 
+```mermaid
+flowchart TD
+    subgraph ATOMIC["Atomic (primary)"]
+        FA["Draft view feature-auth<br/>3 changes"]
+        DEV["View dev<br/>squash + ReviewGate"]
+    end
+    subgraph GH["Git / GitHub"]
+        BR["origin/feature-auth"]
+        PR["PR #42 (review)"]
+        SQ["squash merge to dev"]
+    end
+    FA -->|"atomic git push"| BR
+    BR --> PR
+    PR --> SQ
+    SQ -->|"atomic git import --incremental"| DEV
+    FA -.->|"same change objects,<br/>linked via ReviewGate"| DEV
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Atomic (primary)                      │
-│                                                         │
-│  feature-auth ──insert──▶ dev ──import──▶ dev           │
-│  (3 changes)              │               (squash       │
-│                           │                + ReviewGate)│
-│                           ▼                             │
-│                      atomic git push                    │
-│                           │                             │
-└───────────────────────────┼─────────────────────────────┘
-                            │
-┌───────────────────────────┼─────────────────────────────┐
-│                    Git / GitHub                          │
-│                           ▼                             │
-│                   PR #42 (review)                       │
-│                           │                             │
-│                     squash merge                        │
-│                           │                             │
-│                    atomic git import                    │
-│                      --incremental                     │
-└─────────────────────────────────────────────────────────┘
+
+---
+
+## Draft Views Across Both Remotes
+
+A draft view lives in **three places at once**, and each replica carries a different amount of information. The view **name is the mapping key** across all three:
+
+| Replica | What it holds | Sync command |
+|---------|---------------|--------------|
+| **Local Atomic** (`.atomic/`) | Full patch identity: scope (`draft`), parent (`dev`), ordered change log, Merkle state | — |
+| **atomic.storage** | The same identity, declared as a **view manifest** (lossless) | `atomic push` / `atomic clone` |
+| **Git remote** | A **snapshot branch named after the view** — materialized files plus provenance trailers (lossy by design) | `atomic git push` |
+
+So draft view `feature-auth` ⇄ storage view `feature-auth` ⇄ `origin/feature-auth`. You never create the remote counterparts by hand — both are created on first push.
+
+```mermaid
+flowchart TD
+    SV["atomic.storage<br/>view: feature-auth"]
+    DV["Local Atomic<br/>draft view: feature-auth"]
+    RB["Git remote<br/>branch: origin/feature-auth"]
+    DV <==>|"atomic push / clone<br/>lossless manifest"| SV
+    DV ==>|"atomic git push<br/>materialized snapshot"| RB
 ```
+
+### Why two remotes
+
+- **atomic.storage is lossless.** The view manifest declares the draft's scope, parent name, exact ordered change log (including the prefix inherited from its parent at fork time), and Merkle state. A teammate who clones gets the draft back byte-for-byte — still a draft, still parented on `dev`.
+- **The Git branch is lossy on purpose.** Reviewers see an ordinary branch and open an ordinary PR. Draft identity (scope, parent, patch structure) never exists in Git — the provenance trailers on each commit are the thread that links the branch back to the Atomic view and state that produced it.
+
+### The end-to-end flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant W as Working copy (draft feature-auth)
+    participant S as atomic.storage
+    participant G as Local Git shadow
+    participant F as GitHub (origin)
+
+    Note over W: atomic record -m "feat: ..."
+
+    Note over W,S: Leg 1 — native sync (lossless)
+    W->>S: fetch view manifests (dev, then feature-auth)
+    S-->>W: remote logs + merkle states
+    W->>S: store missing change files (?store)
+    W->>S: declare manifest (scope=draft, parent=dev, log, state)
+    S->>S: verify merkle fold — fast-forward only
+
+    Note over W,F: Leg 2 — Git bridge (snapshot)
+    W->>G: atomic git push
+    G->>G: commit on current local branch, Atomic trailers
+    G->>F: git push HEAD:refs/heads/feature-auth
+    Note over F: branch created if absent — never forced
+
+    Note over F,W: Leg 3 — review lands
+    F->>F: PR from feature-auth, squash merge to dev
+    F->>G: git pull on dev
+    G->>W: post-merge hook - atomic git import --incremental
+    Note over W: squash linked to originals via ReviewGate
+```
+
+Step by step:
+
+1. **Record on the draft.** Work happens on `feature-auth` as usual. Nothing syncs until you push.
+2. **`atomic push` → atomic.storage.** The parent chain is synced **root → leaf** (`main` → `dev` → `feature-auth`), so a draft's parent always exists on the server before the draft's manifest references it. For each view, the client fetches the remote manifest, uploads only the missing change files, then declares the local manifest. The server creates the view (with the declared scope and parent) if it's absent, fast-forwards its log, and verifies the Merkle state against the actual change bytes — it never trusts the client's claims.
+3. **`atomic git push` → Git.** Because the current view is a draft and no `--branch` was given, the target defaults to the view name. The commit is created **on the current local Git branch** (Atomic never checks out or switches Git branches — Atomic owns the working copy) and pushed as `HEAD:refs/heads/feature-auth`. The first push creates `origin/feature-auth`; subsequent pushes fast-forward it. Force-pushes are never issued.
+4. **Review and merge on the forge.** The PR is opened from `feature-auth` exactly as with any Git branch. On squash merge, the `Atomic-Changes` trailer makes [squash detection](#squash-merge-detection) exact.
+5. **Import closes the loop.** The merge lands on `origin/dev`, a `git pull` fires the `post-merge` hook, and `atomic git import --incremental` records the squash into the `dev` view with a ReviewGate tag linking it to the original draft changes. Commits that `atomic git push` itself created are recognized by their trailers and skipped — no circular import.
+
+### How the branch mapping works
+
+The local Git branch and the remote branch are deliberately **decoupled**:
+
+```mermaid
+flowchart LR
+    LB["Local branch dev<br/>one shared commit chain"]
+    LB -->|"HEAD:refs/heads/feature-auth"| B1["origin/feature-auth"]
+    LB -->|"HEAD:refs/heads/feature-billing"| B2["origin/feature-billing"]
+    LB -->|"HEAD:refs/heads/dev (shared view)"| B3["origin/dev"]
+```
+
+- Every bridge commit chains onto the **one local branch**, whatever it's named. `atomic git push` only redirects the **push refspec** — it never renames, creates, or checks out local Git branches, and never writes upstream-tracking config.
+- The `Atomic-View` trailer on each commit records which view produced it. That's how the bridge finds, per view, which Atomic changes are already pushed (it walks local history for the last commit with a matching trailer and reads its `Atomic-State`).
+- "Unpushed" detection for a draft compares local `HEAD` against `refs/remotes/origin/<view>` — so a failed network push is retried correctly on the next run, and pushing a draft with nothing new still creates the remote branch if it's missing.
+
+:::warning Interleaving multiple drafts
+Because all bridge commits share one local chain, a PR opened from a draft branch can list snapshot commits from *other* drafts in its commit list (the **diff** against the base is always correct — it's the draft's materialized state). If your team reads PR commit lists, prefer landing one draft at a time, or squash-merge PRs (the default in this workflow).
+:::
+
+### Rules that keep the three replicas in sync
+
+| Rule | Enforced by |
+|------|-------------|
+| Storage sync is fast-forward only; divergence is a hard error (`--force` exists, identity conflicts still rejected) | server-side manifest verification |
+| Parents sync before children (root → leaf) | `atomic push` chain walk |
+| Scope and parent cannot silently change on the remote | manifest identity check |
+| Git branch is never force-pushed; divergence surfaces as a normal Git rejection | `atomic git push` |
+| The local Git branch and working copy are never touched by the bridge | `atomic git push` (refspec redirection only) |
+| A draft view name that isn't a valid Git refname is a hard error, never a silent rename | `atomic git push` |
+
+### Picking up a teammate's draft
+
+```bash
+# Full fidelity — the draft arrives as a draft, parented on dev:
+atomic clone https://acme.atomic.storage/workspace/ws/project/proj my-checkout
+atomic view switch feature-auth
+
+# Snapshot only — ordinary git, no Atomic identity:
+git fetch origin feature-auth
+```
+
+`atomic clone` walks the manifest chain (leaf → root to discover, applied root → leaf) and reconstructs scope, parent, and the exact change log. The Git branch alone gives you files and trailers — enough to review, not enough to continue the draft natively.
+
+:::note
+`atomic pull` does not yet apply view manifests for drafts — draft identity currently round-trips through `push` and `clone`. Refreshing an existing checkout's drafts via `pull` is a known follow-up.
+:::
+
+### Landing and cleaning up
+
+```bash
+# After the PR merges and the import closes the loop:
+atomic view switch dev
+atomic view delete feature-auth      # local draft
+# origin/feature-auth — delete on the forge (or automatically with the PR)
+# storage view feature-auth — keep for audit, or delete via the storage API
+```
+
+Nothing is lost by cleanup: the changes live on in `dev` (they were the same objects all along — views are filters, not copies), the ReviewGate tag preserves the link to the squash commit, and atomic.storage retains the full provenance graph.
 
 ---
 
@@ -295,10 +426,11 @@ Materializes your Atomic state into a Git commit and optionally pushes it.
 
 **What it does:**
 
-1. Stages all files (`git add -A` — new files, modifications, and deletions)
-2. Compares against Git HEAD — skips commit if nothing changed
-3. Creates a commit with Atomic provenance trailers
-4. Pushes to the Git remote (unless `--no-push`)
+1. Resolves the target Git branch — `--branch` if given; otherwise the **draft view's name** when the current view is a draft; otherwise the current Git branch
+2. Stages all files (`git add -A` — new files, modifications, and deletions)
+3. Compares against Git HEAD — skips commit if nothing changed
+4. Creates a commit with Atomic provenance trailers (always on the current local branch — it never checks out or switches Git branches)
+5. Pushes `HEAD:refs/heads/<target>` to the Git remote (unless `--no-push`), creating the remote branch if it doesn't exist — never force-pushed
 
 ### Provenance trailers
 
@@ -327,6 +459,7 @@ These trailers enable audit trails, sync verification, and exact squash-merge de
 | `-m "message"` | Set the Git commit message |
 | `--no-push` | Create the commit but don't push to the remote |
 | `--remote origin` | Specify which Git remote to push to (default: `origin`) |
+| `--branch <name>`, `-b` | Push to a specific remote branch. Defaults to the **view name** on draft views, or the current Git branch on shared views |
 
 ### Examples
 
@@ -334,13 +467,26 @@ These trailers enable audit trails, sync verification, and exact squash-merge de
 # Push with a custom message
 atomic git push -m "feat: add user dashboard"
 
+# On a draft view: publishes to a remote branch named after the view,
+# creating it on the first push
+atomic view switch feature-auth
+atomic git push -m "feat: OAuth2 authentication"
+# → Pushed to origin/feature-auth
+
 # Create a commit without pushing (inspect first)
 atomic git push --no-push
 git log -1 --format="%B"    # inspect trailers
 
 # Push to a specific remote
 atomic git push --remote upstream
+
+# Override the target branch explicitly
+atomic git push --branch pr-42
 ```
+
+:::info Draft view names must be valid Git refnames
+When a draft view's name can't be used as a Git branch name (spaces, `~`, `^`, `:`, etc.), `atomic git push` fails with a clear error instead of silently renaming. Pass `--branch` to choose an explicit target.
+:::
 
 ---
 
@@ -637,10 +783,14 @@ git reset
 atomic git push --no-push -m "sync"    # align working trees
 atomic git hooks install               # auto-sync
 
-# ── Day-to-day ─────────────────────────────────────
+# ── Day-to-day ─────────────────────────────────
 # Git commits auto-import via hooks
 atomic git push                        # push Atomic → Git
+                                       #   draft view → origin/<view-name>
+                                       #   shared view → current git branch
+atomic git push --branch pr-42         # explicit target branch
 atomic git import --incremental        # manual Git → Atomic
+atomic push                            # draft identity → atomic.storage
 
 # ── Hook management ────────────────────────────────
 atomic git hooks install               # idempotent
