@@ -36,11 +36,11 @@ by hash and, when they exist on the remote under another view, adopted as a
 cheap metadata operation rather than re-uploaded. So re-including the shared
 base is idempotent — nothing is transferred twice.
 
-> This is why the remote stores every pushed view as a self-contained (shared)
-> view: the draft/parent relationship is a local concept and isn't transmitted,
-> but the view's content is always complete. See
-> [`atomic clone --all-views`](./clone.md) for reconstructing sibling views on
-> the receiving side.
+> The remote therefore holds a complete, self-contained graph for the view. Push
+> also transmits the view's identity — its scope and parent — in a manifest, so a
+> draft stays a draft with its parent chain on the receiving side, not just its
+> content. See [`atomic clone --all-views`](./clone.md) to reconstruct the full
+> set of views locally.
 
 ## Arguments
 

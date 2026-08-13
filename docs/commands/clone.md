@@ -120,13 +120,14 @@ hint listing the other views available on the remote so you know they exist.
 atomic clone hello-world --all-views
 ```
 
-:::note Views arrive as shared
-The server stores every pushed view as a self-contained **shared** view, so a
-draft's original parent relationship isn't transmitted and can't be
-reconstructed on clone. `--all-views` recreates the sibling views by name (each
-with its complete graph); it does not restore draft scope or parent links.
-Requires a server that supports the view-inventory endpoint — older servers are
-treated as single-view.
+:::note Views keep their scope and parent
+Each view is cloned from a **view manifest** carrying its full identity (name,
+scope, parent, ordered change log, and merkle state), applied with the same
+primitive as the primary view, so a draft comes back as a draft with its parent
+chain intact. `--all-views` walks each view's parent chain and applies parents
+before children. Requires a server that supports the `?view-manifest` endpoint;
+servers that predate it cannot be cloned from (a hard error, not a lossy
+fallback).
 :::
 
 ## Examples

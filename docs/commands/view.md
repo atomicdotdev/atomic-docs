@@ -219,19 +219,20 @@ $ atomic view list --verbose
 $ atomic view list --remote
 Views on origin (https://acme.atomic.storage/workspaces/demos/projects/app/code)
   dev            [shared]  (12 changes)  state: 2AAAAAAAA...
-  feature-auth   [shared]  (3 changes)   state: XYZABCDEF...
-  release-1.0    [shared]  (8 changes)   state: QRSTUVWXY...
+  feature-auth   [draft]   (3 changes)   state: XYZABCDEF...  parent: dev
+  release-1.0    [shared]  (8 changes)   state: QRSTUVWXY...  parent: main
 
 # Target a specific remote by name or URL
 atomic view list --remote origin
 atomic view list --remote https://acme.atomic.storage/workspaces/demos/projects/app/code
 ```
 
-:::note Remote views appear as shared
-The server stores every pushed view as a self-contained **shared** view, so
-remote listings report every view as `[shared]` with no parent, regardless of
-how it was scoped locally. Use [`atomic clone --all-views`](./clone.md) to
-reconstruct the full set of remote views locally.
+:::note Remote views preserve their scope and parent
+The server records each pushed view with its scope and parent, so remote
+listings report the real `[shared]` / `[draft]` scope and the parent chain,
+matching how the view was scoped locally. Use
+[`atomic clone --all-views`](./clone.md) to reconstruct the full set of remote
+views locally.
 :::
 
 ### `view delete` — Delete a View
