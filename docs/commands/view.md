@@ -12,6 +12,7 @@ Manage views (filtered perspectives on the repository graph).
 ```bash
 atomic view <SUBCOMMAND>
 atomic view create <NAME> [OPTIONS]
+atomic view split <NAME> [CHANGES]... [OPTIONS]
 atomic view switch <NAME>
 atomic view list [--verbose] [--remote [<REMOTE>]]
 atomic view delete <NAME> [--force]
@@ -139,6 +140,86 @@ atomic view create feature-oauth --draft --parent service-auth
 #   VIEW_CHANGES[feature-login]     ← my changes
 #   ∪ VIEW_CHANGES[service-auth]    ← parent's changes
 #   ∪ VIEW_CHANGES[dev]             ← grandparent's changes (and up)
+```
+
+### `view split` — Split Changes into a New Draft View
+
+:::info Requires Atomic CLI **>= 0.15.3**
+`atomic view split` was added in Atomic **0.15.3**. On earlier versions the
+subcommand is unavailable — check yours with `atomic --version`.
+:::
+
+Pull a set of changes **out of** a view and into a new draft view. Because
+changes are content-addressed and every edge already lives in the canonical
+`GRAPH`, split is a pure **metadata** operation: no change is re-applied, no hash
+is rewritten, and the changes that stay behind are left byte-identical.
+
+The new view is created as a **draft** parented on the source, so it inherits the
+source's state and holds the split-out changes in its own `VIEW_CHANGES`. The
+source keeps everything else.
+
+This is the inverse of [`atomic insert`](./insert.md): insert brings a change's
+dependency closure *into* a view; split lifts a change and its dependents *out*.
+
+#### Synopsis
+
+```bash
+atomic view split <NAME> [CHANGES]... [OPTIONS]
+```
+
+#### Arguments
+
+**`<NAME>`** — Name for the new draft view.
+
+**`[CHANGES]...`** — One or more change hashes (or unambiguous prefixes) to split out. Mutually exclusive with `--last`.
+
+#### Options
+
+| Option | Description |
+|--------|-------------|
+| `--from <VIEW>` | Source view to split out of (defaults to the current view) |
+| `--last <N>` | Split the last `N` changes of the source view instead of naming them |
+| `--cascade` | Also move any changes that depend on the split-out set |
+| `--dry-run`, `-n` | Preview the split (and any blocking dependents) without performing it |
+| `--switch`, `-s` | Switch to the new draft after creating it |
+
+#### Dependency safety
+
+Before moving anything, Atomic computes the **reverse-dependency closure** of the
+requested changes within the source view: does any change that stays behind
+depend on one you're pulling out?
+
+- **Nothing depends on them** → clean split.
+- **Something depends on them** → the split is **refused** unless you pass
+  `--cascade`, which moves the dependents along too. Preview it with `--dry-run`.
+
+This guarantees the source view is never left with a dangling reference, and the
+changes that remain are provably independent of what left.
+
+#### Working copy
+
+When you split out of the **current** view, Atomic reconciles the working copy to
+the source's new state (files whose only remaining change left are removed;
+reverted files are rewritten). With `--switch`, the working copy is materialized
+to the new draft instead.
+
+#### Examples
+
+```bash
+# Split two specific changes out of the current view into a new draft "wip"
+atomic view split wip ABCDEF12 34567890
+
+# Split the last 3 changes of dev, previewing first
+atomic view split wip --from dev --last 3 --dry-run
+
+# Pull out a change and everything that depends on it, then switch to it
+atomic view split experiment 9F3C21AA --cascade --switch
+```
+
+```
+$ atomic view split wip --from dev --last 2
+✓ Split 2 change(s) out of dev into draft wip
+ℹ 'dev' now has 5 change(s); draft 'wip' has 2 own change(s).
 ```
 
 ### `view switch` — Switch to a Different View
@@ -422,6 +503,7 @@ View operations are fast because they only manipulate metadata (`VIEW_CHANGES` e
 | Operation | Time | Notes |
 |-----------|------|-------|
 | Create | < 10ms | Writes view metadata |
+| Split | O(n) | Metadata move; recomputes the source view's Merkle + reverse-dependency closure |
 | Switch | 100ms–5s | Depends on working copy size (materializing the view) |
 | List | < 10ms | Scans `VIEWS` table |
 | Delete (draft) | < 50ms | Removes `VIEW_CHANGES` entries; GC cleans orphaned edges |

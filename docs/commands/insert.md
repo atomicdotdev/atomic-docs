@@ -260,12 +260,14 @@ Because Atomic uses a single canonical GRAPH with view filters, inserting a chan
 - **Idempotent**: Inserting a change that already exists in the view is a no-op.
 - **Source unchanged**: The source view is never modified by an insert operation.
 - **Conflicts**: True conflicts only arise when changes modify the same graph region in incompatible ways.
+- **Pulling changes out**: Insert only *adds* references to a view. To lift changes *out* of a view into a new draft (the inverse operation), use [`atomic view split`](./view.md#view-split--split-changes-into-a-new-draft-view) (Atomic **>= 0.15.3**).
 
 ## See Also
 
 - [Shell Completions](./completions.md) — tab-complete view names and change hashes
 - [`atomic record`](./record.md) — Record new changes
 - [`atomic view`](./view.md) — Manage views (create, switch, list, delete)
+- [`atomic view split`](./view.md#view-split--split-changes-into-a-new-draft-view) — Split changes out of a view into a new draft (the inverse of insert)
 - [`atomic pull`](./pull.md) — Pull and insert changes from remotes
 - [`atomic tag`](./tag.md) — Manage tags for marking states
 - [`atomic log`](./log.md) — View change history
