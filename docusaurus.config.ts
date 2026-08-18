@@ -19,6 +19,15 @@ const config: Config = {
   projectName: "atomic-docs",
   trailingSlash: false,
 
+  // AttriFast analytics — injected into the <head> of every page.
+  scripts: [
+    {
+      src: "https://api.attrifast.com/af.js",
+      defer: true,
+      "data-tracking-id": "af_TqLkS1bL5WTnDiNe",
+    },
+  ],
+
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
 
