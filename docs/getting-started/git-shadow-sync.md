@@ -33,11 +33,54 @@ Both systems share the same working directory. Each ignores the other's internal
 │  └── hooks/                    └── config.toml               │
 │      ├── post-commit ──────▶ atomic git import --incremental │
 │      ├── post-merge  ──────▶ atomic git import --incremental │
-│      └── post-rewrite ─────▶ atomic git import --incremental │
+│      ├── post-rewrite ─────▶ atomic git import --incremental │
+│      └── post-checkout ────▶ warn if HEAD ≠ current view     │
 │                                                             │
-│  Atomic → Git:  atomic git push                             │
+│  Atomic → Git:  atomic git push  (validated before commit)  │
+│  Atomic → Git:  atomic view switch  (repoints Git branch)   │
 │  Git → Atomic:  automatic (hooks) or manual (git import)    │
 └─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Prefer Atomic over raw Git
+
+**Git shadows Atomic — not the other way around.** Atomic is the source of truth for content and provenance; the Git repo is a downstream mirror that Atomic generates (materialize + `atomic git push`). Keep work flowing **Atomic → Git**:
+
+| Instead of… | Use | Why |
+|---|---|---|
+| `git checkout <branch>` | `atomic view switch <view>` | Atomic materializes the view **and** repoints the Git branch to match |
+| `git commit` of hand-edits | `atomic record`, then `atomic git push` | The shadow commit reflects a *recorded* Atomic state |
+| pulling Git branches in by hand | `atomic git import` | The one deliberate Git → Atomic bridge (onboarding external commits) |
+
+`atomic view switch` moves Git's `HEAD` to the matching branch automatically — a lightweight ref move that never re-renders your working copy — so `git branch` always agrees with your current view.
+
+### You can't corrupt shared history
+
+Raw Git commands aren't forbidden. If you use them and drift, the **shadow push refuses to publish an incoherent state**, so the mistake stays local. `atomic git push` validates the working copy *before* it ever creates a commit:
+
+| Check | Refuses to commit when… | Fix |
+|---|---|---|
+| Conflict markers | a file still has `>>>>>>>` / `=======` / `<<<<<<<` | resolve them (or `atomic record --allow-conflict-markers` if they're real content) |
+| Tree ↔ view coherence | the working copy diverges from the current view's recorded content | `atomic record` your changes first |
+| Git ↔ Atomic lineage | the branch was last published from a state your view can't reach (drift) | reconcile — see below |
+| Provenance paths | `.atomic/`, `.vault/`, or `.atomicignore` were about to be committed | automatic — they're never staged |
+
+Every refusal leaves Git, the working copy, and the Atomic graph untouched, and — when run from a hook — logs a `shadow-validate:<rule>` line to `.atomic/hook-errors.log`.
+
+### Reconcile-then-push (never force)
+
+There is no `--force` that commits a drifted state — that escape hatch is what leads to corruption loops. To recover from drift, make the state coherent first, then push:
+
+```bash
+# Re-shadow: discard the drifted Git tip and regenerate from Atomic (the usual fix)
+git reset --hard <last-good-shadow-commit>
+atomic git push
+
+# Or onboard: if the Git side has genuinely new authored work, import it first
+atomic git import --incremental
+atomic git push
 ```
 
 ---
@@ -500,13 +543,21 @@ Git hooks keep Atomic automatically in sync with Git. Every `git commit`, `git m
 atomic git hooks install
 ```
 
-This installs three hooks:
+This installs four hooks:
 
 | Git event | Hook | Action |
 |-----------|------|--------|
 | `git commit` | `post-commit` | `atomic git import --incremental` |
 | `git merge` / `git pull` | `post-merge` | `atomic git import --incremental` |
 | `git rebase` / `git commit --amend` | `post-rewrite` | `atomic git import --incremental` |
+| `git checkout <branch>` | `post-checkout` | **warn-only**: if Git HEAD no longer matches the Atomic view, print a resync hint |
+
+The first three import new Git commits into Atomic. The `post-checkout` hook is **advisory only** — it mutates nothing (no switch, no import, no commit); it just reminds you when a raw `git checkout` moved Git off your current Atomic view:
+
+```text
+atomic: git is on 'feature-x' but the Atomic view is 'dev';
+        run 'atomic view switch feature-x' to resync (or 'atomic git import' to onboard git-side work).
+```
 
 All hooks fail silently (`|| true`) so Git operations never break, even if Atomic has an issue.
 
@@ -730,7 +781,7 @@ Content from the other branch
 <<<<<<< 1
 ```
 
-**Do not `atomic git push` in this state** — it commits the conflict markers into git.
+`atomic git push` **refuses to commit in this state** — the shadow-push validator (conflict-marker check) aborts with no commit and points you at the offending file and line. Your Git history is never polluted with markers.
 
 **To recover:**
 
