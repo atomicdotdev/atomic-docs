@@ -15,6 +15,11 @@ const sidebars: SidebarsConfig = {
     "getting-started/quickstart",
     "getting-started/installation",
     "getting-started/first-repository",
+    {
+      type: "doc",
+      id: "getting-started/atomic-vault",
+      label: "Atomic Vault",
+    },
     "getting-started/migrating-from-git",
     "getting-started/git-shadow-sync",
     "getting-started/querying-the-graph",
