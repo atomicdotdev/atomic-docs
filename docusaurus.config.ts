@@ -19,12 +19,26 @@ const config: Config = {
   projectName: "atomic-docs",
   trailingSlash: false,
 
-  // AttriFast analytics — injected into the <head> of every page.
+  // Analytics scripts — injected into the <head> of every page.
   scripts: [
     {
       src: "https://api.attrifast.com/af.js",
       defer: true,
       "data-tracking-id": "af_TqLkS1bL5WTnDiNe",
+    },
+    {
+      src: "https://www.googletagmanager.com/gtag/js?id=G-NWP8LGDP27",
+      async: true,
+    },
+  ],
+  headTags: [
+    {
+      tagName: "script",
+      attributes: {},
+      innerHTML: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-NWP8LGDP27');`,
     },
   ],
 
@@ -55,10 +69,7 @@ const config: Config = {
           editUrl: "https://github.com/atomicdotdev/atomic-docs/tree/release/",
         },
         blog: false,
-        gtag: {
-          trackingID: "G-NWP8LGDP27",
-          anonymizeIP: true,
-        },
+
         theme: {
           customCss: ["./src/css/fonts.css", "./src/css/custom.css"],
         },
