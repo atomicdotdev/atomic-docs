@@ -38,6 +38,35 @@ archive, verifies checksums when available, and installs the `atomic` binary.
 atomic --version
 ```
 
+## Connect to Atomic Storage (optional)
+
+To create or clone hosted projects, first create an Ed25519 identity and register
+it with your Atomic Storage server. Registration creates your personal
+organization on the server and stores the server URL and default organization in
+your global Atomic configuration.
+
+```bash
+atomic identity new alice-acme --email alice@acme.com --set-default
+atomic identity register https://atomic.storage
+atomic org show
+```
+
+To create a hosted project for your team, select an organization, then create a
+workspace and project:
+
+```bash
+atomic org create acme --email dev@acme.com
+atomic org set acme
+
+atomic workspace create platform --visibility private
+atomic workspace set platform
+atomic project create api --kind rust
+```
+
+Organizations contain members and teams, workspaces group projects, and projects
+map to hosted Atomic repositories. For access rules and team management, see
+[Team Collaboration](../teams/overview).
+
 ### Enable Shell Completions (optional)
 
 Turn on tab-completion for subcommands, flags, and live values like view names
@@ -203,12 +232,9 @@ rustup update stable
 
 ## Next Steps
 
-Now that you have Atomic installed, you're ready to:
-
-1. Follow the [Quickstart](./quickstart) to register with Atomic Storage and push a hosted project
-2. Create [your first local repository](./first-repository)
-3. Learn the [team collaboration model](../teams/overview)
-4. Explore the [command reference](../commands/overview)
+Now that Atomic is installed, create or clone [your first repository](./first-repository).
+Then explore [AI Agent Workflows](./ai-agent-workflows), or learn the
+[team collaboration model](../teams/overview).
 
 ## Uninstalling
 

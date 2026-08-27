@@ -89,7 +89,7 @@ With 100 changes, traditional version control systems create **5,050 dependencie
 
 ## Getting Started
 
-Ready to get started? Head to the [Quickstart](./getting-started/quickstart) to install Atomic, register with Atomic Storage, create a workspace and project, and push your first change.
+Ready to get started? Start with [Installation](./getting-started/installation), then create or clone [your first repository](./getting-started/first-repository).
 
 ### New to Atomic?
 
@@ -131,7 +131,7 @@ See our [Migration Guide](./getting-started/migrating-from-git) for a complete w
 
 ## Next Steps
 
-- **New to Atomic?** Start with the [Quickstart](./getting-started/quickstart)
+- **New to Atomic?** Start with [Installation](./getting-started/installation)
 - **Working with a team?** Read the [Team Collaboration overview](./teams/overview)
 - **Coming from Git?** Check out our [Migration Guide](./getting-started/migrating-from-git)
 - **Want to dive deep?** Explore the [Command Reference](./commands/overview)

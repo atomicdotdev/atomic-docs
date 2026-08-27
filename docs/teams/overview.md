@@ -180,7 +180,8 @@ https://acme.atomic.storage/workspaces/platform/projects/api/code
 
 ## See also
 
-- [Quickstart](/getting-started/quickstart)
+- [Installation](/getting-started/installation)
+- [Your First Repository](/getting-started/first-repository)
 - [Team command reference](/commands/team)
 - [Organization command reference](/commands/org)
 - [Workspace command reference](/commands/workspace)

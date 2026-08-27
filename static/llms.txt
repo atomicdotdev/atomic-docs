@@ -21,13 +21,14 @@ For agent-native workflows the commit DAG is the wrong *primary* abstraction, an
 ## Getting started
 
 - [Introduction](https://docs.atomic.dev/): What Atomic is and how the semantic change graph differs from a traditional VCS.
-- [Quickstart](https://docs.atomic.dev/getting-started/quickstart): From identity to a hosted project in five steps.
-- [Installation](https://docs.atomic.dev/getting-started/installation): Install the CLI on macOS, Linux, or WSL2.
-- [Your First Repository](https://docs.atomic.dev/getting-started/first-repository): Initialize a repository and record your first change.
-- [Migrating from Git](https://docs.atomic.dev/getting-started/migrating-from-git): Move an existing Git project onto Atomic.
-- [Git Shadow Sync](https://docs.atomic.dev/getting-started/git-shadow-sync): Keep a Git mirror in sync while adopting Atomic.
-- [Querying the Graph](https://docs.atomic.dev/getting-started/querying-the-graph): Ask structured questions of the semantic change graph.
+- [Installation](https://docs.atomic.dev/getting-started/installation): Install the CLI and optionally connect it to Atomic Storage.
+- [Your First Repository](https://docs.atomic.dev/getting-started/first-repository): Create or clone a repository and record your first change.
 - [AI Agent Workflows](https://docs.atomic.dev/getting-started/ai-agent-workflows): Wire up provenance capture for the agents you already use.
+- [Atomic Vault](https://docs.atomic.dev/getting-started/atomic-vault): Record, validate, sign, and review work intent and durable knowledge.
+- [Querying the Graph](https://docs.atomic.dev/getting-started/querying-the-graph): Ask structured questions of the semantic change graph.
+- [Migrating from Git](https://docs.atomic.dev/getting-started/migrating-from-git): Move an existing Git project onto Atomic.
+- [Git Shadow](https://docs.atomic.dev/getting-started/git-shadow-sync): Keep a Git mirror in sync while adopting Atomic.
+- [Train Tracks Demo](https://docs.atomic.dev/getting-started/train-tracks-demo): Tour a live Atomic project built end-to-end by an AI agent.
 
 ## Agents
 

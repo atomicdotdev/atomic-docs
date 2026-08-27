@@ -867,103 +867,6 @@ details summary:hover {
     box-shadow: none !important;
 }
 
-/* ============================================
-   QUICKSTART — Atomic Storage inspired cards
-   ============================================ */
-.quickstart-hero {
-    padding: 2.5rem 0 1.5rem;
-    text-align: center;
-}
-
-.quickstart-eyebrow {
-    margin-bottom: 0.75rem;
-    color: var(--color-accent);
-    font-family: var(--ifm-font-family-monospace);
-    font-size: var(--text-label);
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-.quickstart-hero h1 {
-    margin-bottom: 1rem;
-    font-size: clamp(var(--text-display-sm), 5vw, var(--text-display-lg));
-    letter-spacing: -0.04em;
-}
-
-.quickstart-hero > p:not(.quickstart-eyebrow) {
-    max-width: 42rem;
-    margin: 0 auto 1.75rem;
-    color: var(--color-text-secondary);
-    font-size: var(--text-body-lg);
-}
-
-.quickstart-hero-cards {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-    margin-top: 1.5rem;
-}
-
-.quickstart-hero-card,
-.quickstart-card {
-    border: 1px solid var(--color-border);
-    background: var(--color-bg-raised);
-}
-
-.quickstart-hero-card {
-    display: block;
-    padding: 1rem;
-    text-align: left;
-    color: inherit;
-}
-
-.quickstart-hero-card:hover {
-    border-color: var(--color-accent);
-    color: inherit;
-    text-decoration: none;
-}
-
-.quickstart-hero-card span {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--color-accent);
-    font-weight: 600;
-    font-size: var(--text-body);
-}
-
-/* Single, self-contained command box (no fragmented borders on wrap). */
-.quickstart-hero-card code {
-    display: block;
-    white-space: normal;
-    margin: 0;
-    padding: 0.45rem 0.6rem;
-    background: var(--color-bg-inset);
-    border: 1px solid var(--color-border);
-    border-radius: 2px;
-    color: var(--color-accent-soft);
-    font-size: var(--text-sm);
-    line-height: 1.5;
-}
-
-.quickstart-steps {
-    display: grid;
-    gap: 1.5rem;
-    margin: 2rem 0;
-}
-
-.quickstart-card {
-    padding: 1.5rem;
-}
-
-.quickstart-card h3 {
-    margin-top: 0;
-}
-
-.quickstart-step-number {
-    color: var(--color-accent);
-    font-family: var(--ifm-font-family-monospace);
-}
 
 /* ============================================
    DOCUSAURUS CARDS & BUTTONS
@@ -1093,9 +996,7 @@ details summary:hover {
     article {
         padding: 1rem 0.75rem;
     }
-    .quickstart-hero-cards {
-        grid-template-columns: 1fr;
-    }
+
 }
 
 /* ============================================

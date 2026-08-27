@@ -5,11 +5,16 @@ title: Your First Repository
 
 # Creating Your First Repository
 
-This guide will walk you through creating your first Atomic repository, adding files, and recording your first changes. By the end, you'll understand the basic workflow of using Atomic.
+This guide walks you through creating or cloning an Atomic repository, tracking
+files, and recording your first change. By the end, you'll understand the basic
+local workflow. If you want a hosted project, first complete the optional
+[Atomic Storage setup](./installation#connect-to-atomic-storage-optional).
 
-## Initializing a Repository
+## Create or Clone a Repository
 
-To start using Atomic in a new project, navigate to your project directory and run:
+### Create a local repository
+
+Initialize a repository in a new or existing project directory:
 
 ```bash
 atomic init
@@ -34,6 +39,28 @@ You should see output like:
 ```
 ✓ Initialized empty Atomic repository in /path/to/myproject/.atomic
 ```
+
+### Clone a hosted repository
+
+If you created a project on Atomic Storage during installation, clone it and
+initialize Vault for AI-agent context:
+
+```bash
+atomic clone https://acme.atomic.storage/workspaces/platform/projects/api/code
+cd api
+atomic vault init
+```
+
+The clone configures `origin` automatically and authenticates as the identity
+matching the URL's subdomain. Continue with the tracking and recording steps
+below, then publish your first change with:
+
+```bash
+atomic push
+```
+
+Use the organization, workspace, and project names you chose in place of the
+example values.
 
 ## Understanding the Working Environment
 
@@ -337,12 +364,11 @@ atomic record -m "Remove old file"
 
 ## Next Steps
 
-Now that you understand the basics:
+Now that you understand the local workflow:
 
-1. Learn about collaborating with others (coming soon)
-2. Explore tag consolidation for better performance
-3. Understand views for managing branches
-4. Set up workflows for team development
+1. Set up [AI Agent Workflows](./ai-agent-workflows) to automatically capture agent work.
+2. Learn how [Atomic Vault](./atomic-vault) records work intent and durable knowledge.
+3. Explore the [command reference](../commands/overview) for everyday operations.
 
 ## Common Questions
 

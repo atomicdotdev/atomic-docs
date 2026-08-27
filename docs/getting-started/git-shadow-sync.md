@@ -1,9 +1,9 @@
 ---
 sidebar_position: 4
-title: Git Shadow Sync
+title: Git Shadow
 ---
 
-# Git Shadow Sync
+# Git Shadow
 
 Git Shadow Sync lets you run Atomic alongside Git so every commit, rebase, squash, and force-push is captured as immutable Atomic provenance. Git stays your primary collaboration platform — Atomic is a sidecar that observes, records, and preserves the true history that Git rewrites away.
 
