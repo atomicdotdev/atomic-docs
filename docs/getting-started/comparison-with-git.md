@@ -1,467 +1,194 @@
 ---
 sidebar_position: 2
-title: Comparison with Git
+title: Is Git Good Enough for AI Coding Agents?
+description: A practical comparison of Git and Atomic for recording, reviewing, auditing, and integrating AI-generated code.
+keywords: [git, AI coding agents, version control, provenance, code review, atomic]
 ---
 
-# Atomic vs Git: Key Differences
+# Is Git Good Enough for AI Coding Agents?
 
-This guide explains the fundamental differences between Atomic and Git, helping Git users understand Atomic's unique approach to tracking changes.
+Git is good enough to store and review AI-generated code, especially when a team already depends on GitHub or GitLab. Git alone does not record the agent session, model usage, observed tool activity, or the reason a change was made; Atomic adds those AI-native records and a change-graph workflow while remaining compatible with Git.
 
-## Core Philosophy
+## The short answer
 
-### Git: Content-Addressed Snapshots
-Git stores complete repository snapshots and computes diffs on-demand for display purposes.
+| If you need… | Git alone | Atomic |
+|---|---|---|
+| A mature hosting and pull-request ecosystem | Excellent | Use [Git Shadow](/getting-started/git-shadow-sync) to keep it |
+| Source history and line diffs | Yes | Yes, plus token-level semantic operations |
+| Automatic turn-level agent recording | Requires custom hooks or wrappers | Built into supported agent integrations |
+| A trace from a change to observed prompts, tools, edits, and checks | Not a native object | Content-addressed provenance graph |
+| Session model, token, and cost attribution | Not a native object | Session attestation when the integration supplies the data |
+| Isolated units of agent work | Branches and separate worktrees | Draft views; separate working directories are still needed for simultaneous file writers |
+| Promotion based on intent, evidence, and dependency closure | Usually implemented in CI and PR conventions | Native triage and change insertion |
 
+The practical choice is not always “Git or Atomic.” Teams can develop and record work in Atomic, then publish a Git shadow for existing forge and pull-request workflows.
+
+## Where Git works well for AI-generated code
+
+Git remains a strong choice when the main problem is storing a resulting patch:
+
+- Every developer and most coding agents already understand its commands.
+- GitHub, GitLab, and Bitbucket provide mature review, CI, permissions, and release workflows.
+- Branches, worktrees, and disposable clones can isolate concurrent agents.
+- A diff can show exactly which lines changed between two states.
+
+If a human already knows the task context and only needs to review a small patch, Git may be sufficient.
+
+## What Git does not record by default
+
+A Git commit describes a repository state and includes author, message, and parent information. It does not natively answer these questions:
+
+1. Which model and agent session were reported as associated with this edit?
+2. Which files, symbols, and tests did the agent inspect before editing?
+3. Which observed events led from the prompt to this specific change?
+4. How many tokens did the session use, and what did it cost?
+5. Which acceptance criterion was the change meant to satisfy?
+6. Did an independent reviewer evaluate the exact state being promoted?
+
+Teams can put some of this information in commit messages, PR templates, CI logs, or vendor traces. The result is usually spread across systems and is not cryptographically bound to the code change.
+
+## What Atomic adds for AI coding agents
+
+Atomic records several connected objects rather than treating the final diff as the whole history.
+
+| Object | Question it answers |
+|---|---|
+| **Intent** | What outcome, scope, constraints, and checks were required? |
+| **Change** | What graph and semantic operations were recorded? |
+| **Provenance graph** | Which observed goal, tools, edits, and verification preceded the change? |
+| **Session attestation** | Which agent/model attribution was reported for the session, and what usage data was captured? |
+| **Review intent / triage report** | Was the exact candidate state independently reviewed and ready to promote? |
+| **Memory** | What lesson or constraint should affect future work? |
+
+See [How Atomic Records What Your AI Coding Agent Did](/agents/overview) for the recording lifecycle.
+
+## Snapshots versus changes
+
+Git commits identify logical tree snapshots and efficiently reuse unchanged objects. Diffs are computed between trees when needed.
+
+Atomic stores content-addressed changes containing graph operations, semantic operations, dependencies, and hashed metadata. A view materializes a selected, dependency-closed set of those changes from the canonical graph.
+
+That distinction affects identity:
+
+- A Git commit hash changes when its parent, tree, or commit metadata changes.
+- The same serialized Atomic change keeps its hash when it moves between repositories or views.
+- Two independently recorded edits that look equivalent can still have different Atomic hashes when their graph context or hashed metadata differs.
+
+Atomic therefore deduplicates the *same change artifact*. It does not claim that every independently authored textual equivalent must receive the same identity.
+
+## Branches versus views
+
+A Git branch points to a commit. An Atomic view is a named change-set filter with an optional parent chain.
+
+```text
+main
+└── dev
+    ├── agent-auth
+    └── agent-payments
 ```
-Git Model:
-Commit A (tree snapshot) → Commit B (tree snapshot) → Commit C (tree snapshot)
-                 ↓                     ↓                     ↓
-            (compute diff)        (compute diff)        (compute diff)
-```
 
-### Atomic: Semantic Change Graph
-Atomic stores transformations (changes/patches) alongside memories, intents, provenance, and attestations — computing repository state when needed.
-
-```
-Atomic Model:
-Change ABC (patch) + Change DEF (patch) + Change GHI (patch) = Repository State
-        ↓                  ↓                    ↓
-   (apply hunks)      (apply hunks)       (apply hunks)
-```
-
-**Key Insight**: Git stores states and computes diffs. Atomic stores diffs and computes states.
-
-## Major Differences
-
-### 1. Change Identity
-
-| Aspect | Git | Atomic |
-|--------|-----|--------|
-| **What's identified** | Commit (snapshot + metadata) | Change (patch content only) |
-| **Hash includes** | Tree, parent, author, date, message | Patch hunks only |
-| **Stability** | Changes with rebase/amend | Stays same across repositories |
-| **Same change, different commit?** | Yes (different hashes) | No (same hash) |
-
-**Example:**
+A draft agent view sees its parent changes plus its own changes. Promoting work inserts change references and their required dependency closure into the target view; it does not replay a textual patch.
 
 ```bash
-# Git: Same patch, different hashes
-Repository A: abc123 (commit hash)
-Repository B: def456 (different hash for SAME patch after rebase)
+# Create and enter a draft view
+atomic view create feature-auth --draft --parent dev --switch
 
-# Atomic: Same patch, same hash
-Repository A: XYZ789 (change hash)
-Repository B: XYZ789 (same hash, it's the SAME change)
+# Preview what the target would receive
+atomic insert preview feature-auth --to dev
+
+# Review the candidate set and evidence
+atomic triage review feature-auth --into dev --walkthrough
+
+# Insert the reviewed view
+atomic insert view feature-auth --to dev
 ```
 
-**Why this matters**: 
-- ✅ No lost work when independently creating same fix
-- ✅ Automatic deduplication across repositories
-- ✅ Change references never break
+Atomic still has one materialized working directory per checkout. Switching views updates that directory to the target view's visible state; a view is not a virtual filesystem for concurrent writers.
 
-### 2. Merge Semantics
+## Does Atomic eliminate merge conflicts?
 
-| Aspect | Git | Atomic |
-|--------|-----|--------|
-| **Merge model** | Three-way merge (find common ancestor) | Commutative merge (order-independent) |
-| **Result depends on order?** | Yes | No |
-| **Cherry-pick changes order?** | Yes | No |
-| **Conflict potential** | High (order matters) | Lower (order doesn't matter) |
+No version-control system can merge incompatible intent automatically. Atomic is designed so independent, dependency-complete graph operations compose without replay-order dependence, including many edits to different tokens on the same line.
 
-**Example:**
+A real conflict still appears when changes assign incompatible content to the same token or structural position. Atomic materializes conflict markers and keeps repository state honest:
 
 ```bash
-# Git: Order matters
-git cherry-pick A  # Result: state₁
-git cherry-pick B  # Result: state₂
-# vs
-git cherry-pick B  # Result: state₁'
-git cherry-pick A  # Result: state₂' (potentially different!)
-
-# Atomic: Order doesn't matter
-atomic insert ABC
-atomic insert DEF
-# Same result as:
-atomic insert DEF
-atomic insert ABC
+atomic status --short
+atomic conflicts --short
 ```
 
-**Why this matters**:
-- ✅ Parallel development without coordination
-- ✅ No "merge commits" needed
-- ✅ Same changes = same result everywhere
+See [Merging & Conflicts](/concepts/merging-and-conflicts) for the supported cases and current limitations.
 
-### 3. Branches vs Views
+## How AI auditability differs
 
-| Feature | Git Branches | Atomic Views |
-|---------|-------------|---------------|
-| **Model** | Pointers to commits | Named sequences of changes |
-| **Working copy** | Separate per branch | Shared across views |
-| **Switching** | Changes entire filesystem | Applies/unapplies changes |
-| **Untracked files** | Removed when switching | Persist across views |
-| **Rebasing** | Required for updates | Not needed |
-| **Independence** | Must choose merge or rebase | Commutative by design |
-
-**Example:**
+A conventional execution trace can show API requests, spans, and tool events. Atomic connects observed agent activity to the recorded change and can project that relationship as W3C PROV:
 
 ```bash
-# Git: Switching branches changes filesystem
-git checkout feature-a
-ls  # Output: Files from feature-a
-
-git checkout feature-b
-ls  # Output: Different files (feature-b)
-
-# Atomic: Switching views keeps working copy
-atomic view switch feature-a
-ls  # Output: Current files
-
-atomic view switch feature-b
-ls  # Output: Same files + changes applied/unapplied
+atomic change <HASH>
+atomic provenance trace <HASH>
+atomic provenance show <HASH> --sign > provenance.signed.json
+atomic agent attest --view <VIEW>
 ```
 
-**Why this matters**:
-- ✅ Faster view switching (no filesystem churn)
-- ✅ Unrecorded work persists across views
-- ⚠️ Must be aware of working copy state
+The default `atomic change` view renders the inline AI metadata and Change Ledger beside the file and graph summary. The dedicated provenance graph contains observed events and inferred causal links. It does not expose or claim to reconstruct a model's private chain-of-thought, and hook-reported attribution is not independent authentication of the model provider. Signed exports use local development keys that are currently unencrypted at rest; see [How to Build an Audit Trail for AI-Generated Code](/guides/audit-trail-for-ai-generated-code).
 
-### 4. Rebasing
+## Use Git and Atomic together
 
-| Aspect | Git | Atomic |
-|--------|-----|--------|
-| **Purpose** | Update commit history | Not needed |
-| **Changes commit hashes?** | Yes | N/A |
-| **Required for dependent changes?** | Yes | No |
-| **Conflict resolution** | During rebase | During apply |
-| **Interactive mode** | `git rebase -i` | `atomic unrecord` + `atomic insert` |
-
-**Example:**
+[Git Shadow](/getting-started/git-shadow-sync) keeps Git as the collaboration surface while Atomic remains the source of change provenance:
 
 ```bash
-# Git: Must rebase to update base
-git checkout feature-branch
-git rebase main  # Required to get main's updates
-# Commit hashes change, conflicts possible
+# Bring an existing Git history into Atomic
+atomic git import
 
-# Atomic: Updates happen automatically
-atomic view switch feature
-atomic pull  # Gets updates from main
-# Change hashes stay same, dependencies handled automatically
+# Record and review work in Atomic
+atomic record -m "Reject expired refresh tokens"
+
+# Publish the resulting state to the Git shadow
+atomic git push
 ```
 
-**Why this matters**:
-- ✅ No rebasing required — dependencies are in the causal graph
-- ✅ Change identity preserved
-- ✅ Simpler mental model
-
-### 5. History Model
-
-| Aspect | Git | Atomic |
-|--------|-----|--------|
-| **Structure** | Directed Acyclic Graph (DAG) of commits | Dependency graph of changes |
-| **Immutability** | History can be rewritten | Changes are immutable |
-| **Rewrite operations** | `commit --amend`, `rebase`, `filter-branch` | Create new change, old stays in store |
-| **Linear history** | Enforced via rebase | Not a goal |
-| **Merge commits** | Required for non-linear history | Not needed |
-
-**Example:**
-
-```bash
-# Git: Rewrite history
-git commit --amend  # Changes commit hash
-git rebase -i HEAD~3  # Rewrites 3 commits
-
-# Atomic: Create new versions
-atomic unrecord ABC  # Remove from view
-atomic record -m "Updated version"  # New change ABC'
-# Old change ABC still exists in store
-```
-
-**Why this matters**:
-- ✅ Can always recover old versions
-- ✅ Audit trail preserved
-- ✅ No "force push" dangers
-
-### 6. Remote Repositories
-
-| Feature | Git | Atomic |
-|---------|-----|--------|
-| **Push/Pull model** | Branch-based | Change-based |
-| **Force push** | Sometimes required | Rarely needed |
-| **Conflict detection** | During push | During insert |
-| **Selective sync** | Branch or commit range | Individual changes |
-| **Deduplication** | Local only | Global (same hash = same change) |
-
-**Example:**
-
-```bash
-# Git: Push branches
-git push origin feature-branch
-
-# Atomic: Push changes
-atomic push ABC DEF GHI  # Push specific changes
-atomic push --view feature-work  # Or push entire view
-```
-
-**Why this matters**:
-- ✅ Fine-grained control over what to share
-- ✅ No lost work from force pushes
-- ✅ Better collaboration patterns
-
-## Workflow Comparisons
-
-### Basic Development Cycle
-
-```bash
-# Git
-git checkout -b feature
-# Edit files
-git add .
-git commit -m "Message"
-git push origin feature
-# Code review
-git checkout main
-git merge feature
-
-# Atomic
-atomic view create feature
-# Edit files
-atomic record . -m "Message"
-atomic push
-# Code review
-atomic view switch main
-atomic insert <change-hash>
-```
-
-### Dependent Changes Workflow
-
-```bash
-# Git (requires rebasing)
-git checkout -b feature-1
-git commit -m "Step 1"
-git checkout -b feature-2
-git commit -m "Step 2"
-
-# Update step 1 after review:
-git checkout feature-1
-git commit --amend
-git checkout feature-2
-git rebase feature-1  # Required!
-
-# Atomic (no rebasing)
-atomic view create feature
-atomic record -m "Step 1"  # Change ABC
-atomic record -m "Step 2"  # Change DEF (depends on ABC)
-
-# Update step 1 after review:
-atomic unrecord ABC
-atomic record -m "Step 1 (updated)"  # New change ABC'
-# Step 2 (DEF) still works, no action needed!
-```
-
-### Cherry-Picking
-
-```bash
-# Git
-git cherry-pick abc123
-# May need conflict resolution
-# Creates new commit with different hash
-
-# Atomic
-atomic pull ABC123
-# Automatically handles dependencies
-# Same change, same hash
-```
-
-### Undoing Changes
-
-```bash
-# Git
-git revert abc123      # Creates new commit
-git reset --hard HEAD~1  # Removes from history
-
-# Atomic
-atomic unrecord ABC    # Removes from view
-atomic insert ABC      # Reinsert later if needed
-# Original change always in store
-```
-
-## What Atomic Does Better
-
-### ✅ Change-Based Workflows
-- No rebasing required — the causal graph tracks dependencies automatically
-- Changes maintain identity across views
-- Parallel development without conflicts
-
-### ✅ Change Identity
-- Same change = same hash everywhere
-- No lost work from duplicate fixes
-- Better collaboration across teams
-
-### ✅ Commutative Merges
-- Order-independent results
-- Fewer merge conflicts
-- Parallel development scales better
-
-### ✅ Mathematical Correctness
-- Patch theory foundations
-- Provably correct merge semantics
-- Conflict detection is precise
-
-### ✅ AI Agent Workflows
-- Virtual working copies for headless agents
-- Massive parallelism (1000+ agents)
-- Native change construction without filesystem
-
-## What Git Does Better
-
-### ✅ Ecosystem
-- 15+ years of tools, integrations, documentation
-- Native support in all major platforms (GitHub, GitLab, Bitbucket)
-- Massive community knowledge base
-
-### ✅ Performance (for now)
-- Highly optimized C implementation
-- Pack files for efficient storage
-- Shallow clones for large repositories
-
-### ✅ Flexibility
-- Rewrite history when needed
-- Submodules for monorepo management
-- Extensive configuration options
-
-### ✅ Adoption
-- Industry standard
-- Universal knowledge among developers
-- Lower onboarding friction
-
-## When to Use Atomic vs Git
-
-### Use Atomic When:
-- ✅ Building focused, reviewable changes with automatic dependency tracking
-- ✅ Working with AI agents (especially headless/swarms)
-- ✅ Need mathematical correctness guarantees
-- ✅ Parallel development with many contributors
-- ✅ Change identity matters (cross-repo collaboration)
-- ✅ Want to avoid rebasing
-
-### Use Git When:
-- ✅ Need GitHub/GitLab integration (for now)
-- ✅ Working with existing Git-based workflows
-- ✅ Team is Git-expert and resistant to change
-- ✅ Need specific Git tools/integrations
-- ✅ Large binary assets (Git LFS is mature)
-
-### Use Both:
-Many teams use Atomic for development and Git for integration:
-```bash
-# Develop with Atomic
-atomic record -m "Feature work"
-atomic push
-
-# Export to Git for GitHub PR
-atomic export --git
-git push origin feature-branch
-```
-
-## Migration Path
-
-### From Git to Atomic
-
-```bash
-# Initialize Atomic in Git repository
-cd my-git-repo
-atomic init
-
-# Atomic and Git coexist
-git log  # Git history
-atomic log  # Atomic changes
-
-# Gradually adopt Atomic workflows
-atomic record -m "New work"
-atomic view create feature
-```
-
-### Key Differences to Remember
-
-1. **Views share working copy** (not like Git branches)
-2. **Changes are immutable** (unrecord removes from view, not from store)
-3. **No rebasing needed** (dependency handling is automatic)
-4. **Hashes mean different things** (content only, not metadata)
-5. **Conflict resolution is different** (during insert, not merge)
-
-## Learning Curve
-
-### Familiar Concepts
-- Recording changes (`atomic record` ≈ `git commit`)
-- Viewing history (`atomic log` ≈ `git log`)
-- Remote repositories (`atomic push/pull` ≈ `git push/pull`)
-- Branching (`atomic view` ≈ `git branch`)
-
-### New Concepts to Learn
-- **Change identity** vs commit identity
-- **Commutative merges** vs three-way merges
-- **Views vs branches** (shared working copy)
-- **Dependency graphs** vs commit DAGs
-- **Unrecord vs revert/reset** (different semantics)
-
-## Performance Considerations
-
-### Git Advantages
-- ✅ Mature pack file optimization
-- ✅ Optimized C implementation
-- ✅ Shallow clones for large repos
-
-### Atomic Advantages
-- ✅ Change-based model reduces duplicates
-- ✅ Virtual working copies (memory vs disk)
-- ✅ Lazy loading of pristine state
-- ✅ Better for AI agent parallelism
-
-**Benchmark Example** (100 AI agents):
-- Git: 50GB disk space (100 working copies)
-- Atomic: 500MB RAM (virtual working copies)
-
-## Common Misconceptions
-
-### ❌ "Atomic is just Git with a different UI"
-**False**. Atomic uses fundamentally different data structures (patches vs trees) and merge semantics (commutative vs three-way).
-
-### ❌ "Atomic views are like Git branches"
-**False**. Views share the same working copy and changes maintain identity across views.
-
-### ❌ "You can't rewrite history in Atomic"
-**Partially true**. You can't rewrite changes (they're immutable), but you can create new versions and remove old ones from views.
-
-### ❌ "Atomic requires learning everything from scratch"
-**False**. Many concepts map directly from Git. Core differences are around merge semantics and change identity.
-
-### ❌ "Atomic makes Git obsolete"
-**Not yet**. Git has massive ecosystem advantage. Atomic excels in specific workflows (change-based development, AI agents) but isn't a complete replacement today.
-
-## Summary
-
-| Aspect | Git | Atomic |
-|--------|-----|--------|
-| **Data Model** | Content-addressed snapshots | Change-based patches |
-| **Identity** | Commit (snapshot + metadata) | Change (patch content) |
-| **Merge** | Three-way (order-dependent) | Commutative (order-independent) |
-| **Branching** | Separate working copies | Shared working copy |
-| **Rebasing** | Required for dependent changes | Not needed |
-| **History** | Rewritable DAG | Immutable dependency graph |
-| **Best For** | Traditional workflows | Change-based development, AI agents |
-
-**The Bottom Line**: Atomic isn't "better Git" - it's a different approach based on patch theory that excels in modern workflows (change-based development, AI code generation, parallel development).
-
-## Next Steps
-
-- [Installation](installation.md) - Get started with Atomic
-- [First Repository](first-repository.md) - Create your first Atomic repository  
-- [Git Shadow Sync](git-shadow-sync) - Run Atomic alongside Git
-- [Migrating from Git](migrating-from-git.md) - Transition from Git to Atomic
-
-## References
-
-- [Pijul's Patch Theory](https://pijul.org/posts/2020-11-07-rethinking-patch-theory/) - Mathematical foundations
-- [Change Identity Blog Post](https://nest.pijul.com/pijul/pijul/changes/hash) - Why content-based hashing matters
-- [Commutative Merge Semantics](https://pijul.org/manual/theory.html) - Deep dive into merge theory
+This lets teams keep pull requests, CI, releases, and existing permissions while adding durable agent provenance and audit records.
+
+## Decision guide
+
+### Git is probably enough when
+
+- AI changes are small and a human stays in the loop for every edit.
+- Commit/PR prose is an acceptable record of intent.
+- Model, token, cost, and tool-use attribution are not required.
+- Existing forge integrations matter more than structured AI provenance.
+
+### Add Atomic when
+
+- Agents make multi-turn or multi-file changes that are hard to reconstruct from a diff.
+- Reviewers need to connect code to observed agent activity and verification.
+- Teams need signed intents, review evidence, or session-level model attribution.
+- Multiple streams of work need dependency-aware promotion between isolated views.
+- Lessons and constraints should be retrievable by future agents.
+
+### Use both when
+
+- GitHub or GitLab must remain the external collaboration system.
+- Atomic should record the development and audit trail behind the Git commits.
+- Adoption needs to be incremental rather than a repository migration event.
+
+## Frequently asked questions
+
+### Does Atomic replace pull requests?
+
+Atomic's native review operation is [triage](/getting-started/atomic-vault#triage-review-before-promotion): review the candidate changes, dependency closure, intent coverage, evidence, and exact view state before insertion. Teams can also publish the reviewed state to a conventional Git pull request.
+
+### Does Atomic require a specific coding agent?
+
+No. Atomic has integrations for multiple agents; support and recording boundaries vary by integration. See [Installing Agent Integrations](/agents/installing-agent-integrations).
+
+### Is usage data always available?
+
+No. Session attestations include model, token, and cost data only when the agent integration reports it. Missing usage data is represented as missing data, not estimated.
+
+## Next steps
+
+- [Version Control for AI Agents: A Technical Guide](/guides/version-control-for-ai-agents)
+- [How to Trace What Your AI Coding Agent Changed and Why](/guides/track-ai-agent-changes-and-reasoning)
+- [AI Agent Workflows](/getting-started/ai-agent-workflows)
+- [Migrating from Git](/getting-started/migrating-from-git)
+- [Git Shadow](/getting-started/git-shadow-sync)

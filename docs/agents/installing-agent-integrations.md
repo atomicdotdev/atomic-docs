@@ -229,14 +229,13 @@ atomic log
 atomic agent attest
 ```
 
-For a specific change:
+For a specific change, including its inline AI metadata and Change Ledger:
 
 ```bash
-atomic change -p <hash>
-atomic change -a <hash>
+atomic change <hash>
 ```
 
-`atomic change -p` shows the causal provenance graph. `atomic change -a` shows inline AI attestation data such as model, provider, tokens, and cost when the agent reports usage metrics.
+The default output shows the file and graph summary, provider/model/tool attribution, available tokens and cost, session metadata, and the observed goals, tool activity, edits, decisions, and verification associated with the change. Use `atomic provenance trace <hash>` only when you need a separate standards-oriented provenance projection. Use `atomic agent attest` for separate session-level attestations that can cover multiple changes.
 
 ## What Gets Introduced into the Project
 

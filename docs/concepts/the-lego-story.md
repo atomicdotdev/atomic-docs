@@ -1,317 +1,197 @@
 ---
 sidebar_position: 1
-title: "The Lego Story: How Atomic Thinks Differently"
-description: "Understanding Atomic's semantic change graph through a simple Lego analogy"
-keywords: [atomic, semantic change graph, DAG, semantic diff, lego analogy, merge conflicts]
+title: "Why Changes Compose: The Atomic Data Model"
+description: How Atomic combines content-addressed graph operations, semantic line and token data, dependencies, and view filters.
+keywords: [atomic, change graph, patch theory, semantic diff, views, merge conflicts]
 ---
 
-# The Lego Story
+# Why Changes Compose: The Atomic Data Model
 
-*How Atomic thinks about your code—and why it changes everything*
+Atomic represents a repository as content-addressed changes over a graph, with a semantic layer for files, lines, and tokens. Independent changes can compose because each operation carries explicit graph context and dependencies; incompatible edits remain visible as conflicts instead of being silently discarded.
 
----
+## What “changes compose” means
 
-## The Photo Album Problem
+Composition means incorporating several recorded changes into one visible repository state.
 
-Imagine you're building an elaborate Lego spaceship with your friends. You want to track every change so you can go back in time, share your work, and collaborate without stepping on each other's bricks.
-
-**Traditional version control (like Git) works like a photo album.**
-
-Every time someone makes a change, Git takes a photograph of the entire spaceship. Want to see what changed? Compare two photos pixel by pixel. Want to merge two people's work? Overlay the photos and hope the differences don't clash.
+For independent, dependency-complete changes:
 
 ```text
-📸 Photo 1        📸 Photo 2        📸 "What changed?"
-┌─────────┐      ┌─────────┐      
-│  🔴     │      │  🔴     │       "Hmm, comparing
-│  🟢     │  →   │  🟡     │   →    millions of pixels...
-│  🔵     │      │  🟢     │        something moved?"
-└─────────┘      │  🔵     │      
-                 └─────────┘      
+materialize(A + B) = materialize(B + A)
 ```
 
-This works, but it has problems:
+This does **not** mean every edit is conflict-free or that view history order is irrelevant. It means Atomic can combine independent graph operations without replaying one textual diff onto the output of another.
 
-- **Comparing photos is expensive** — especially for large projects
-- **Photos don't understand structure** — they just see pixels (text lines)
-- **Merging is guesswork** — when two photos differ, Git tries to blend them like Photoshop
+## The data model in one diagram
 
----
+```mermaid
+flowchart TD
+    I[Intent and constraints] --> C[Content-addressed change]
+    C --> G[Graph operations]
+    C --> S[Semantic operations]
+    C --> D[Dependencies]
+    C --> P[Agent provenance]
+    G --> V[Canonical graph]
+    D --> F[View filter and dependency closure]
+    V --> M[Materialized files]
+    F --> M
+    S --> R[Line and token review]
+    P --> A[Audit and explanation]
+```
 
-## The Atomic Way: Smart Bricks
+The graph and semantic layers describe the same work for different purposes.
 
-**Atomic doesn't take photos. Instead, each Lego brick knows its neighbors.**
+| Layer | Stores | Used for |
+|---|---|---|
+| **Graph storage** | Immutable content ranges and directed edges | Persistence, ordering, merge context, materialization |
+| **Semantic overlay** | File, line, and token identities and operations | Human-readable diff, token review, blame, conflict classification |
 
-When you snap a brick into place, it remembers:
-- **What's above me?** (`up_context`)
-- **What's below me?** (`down_context`)
+## Graph storage: vertices and edges
+
+A graph vertex identifies an immutable byte range from a recorded change. Edges describe ordering and structural relationships between vertices.
 
 ```text
-┌─────────────────────────────────────────────┐
-│                                             │
-│    🔴  "I'm connected to the base plate"    │
-│     │                                       │
-│     ▼                                       │
-│    🟢  "🔴 is above me, 🔵 is below me"     │
-│     │                                       │
-│     ▼                                       │
-│    🔵  "🟢 is above me"                     │
-│                                             │
-└─────────────────────────────────────────────┘
+vertex A ──before──▶ vertex B ──before──▶ vertex C
 ```
 
-The structure **understands itself**. No photos needed.
+An insertion records its context in the graph rather than only a line number in a temporary file snapshot. A deletion records graph state that marks content as deleted while preserving enough context for other changes to be interpreted.
 
----
+This matters because line numbers drift. Graph positions and dependencies identify *which recorded content* an operation relates to.
 
-## Adding a Brick: The Magic of Context
+## Semantic overlay: trunks, branches, and leaves
 
-When you want to add a new yellow brick between the red and green ones, you don't update a photo. You simply declare:
+Raw byte ranges are efficient storage, but reviewers think in files, lines, and tokens. Atomic therefore maintains a required semantic overlay:
 
-> *"This yellow brick connects below 🔴 and above 🟢"*
+| Semantic object | Represents |
+|---|---|
+| **Trunk** | A file with stable identity |
+| **Branch** | A line in that file |
+| **Leaf** | A token or meaningful segment within a line |
 
-```text
-Before                      After
-                           
-  🔴                         🔴
-   │                          │
-   ▼                          ▼
-  🟢          →              🟡 ← NEW! "I go between 🔴 and 🟢"
-   │                          │
-   ▼                          ▼
-  🔵                         🟢
-                              │
-                              ▼
-                             🔵
-```
-
-Atomic records this as a **change with context**:
-
-```rust
-NewVertex {
-    up_context: [🔴],      // "I connect below the red brick"
-    down_context: [🟢],    // "I connect above the green brick"  
-    content: 🟡            // "I am the yellow brick"
-}
-```
-
-The existing bricks don't need to change. The structure naturally relinks.
-
----
-
-## Removing a Brick: Ghost Connections
-
-What happens when you remove a brick? In Git, the photo just shows it's gone. In Atomic, something more elegant happens.
-
-When you remove the green brick, Atomic doesn't just delete it. It creates a **"ghost edge"** — a memory that something *used to be there*.
-
-```text
-Before                      After
-                           
-  🔴                         🔴
-   │                          │
-   ▼                          │
-  🟢          →              ···  (ghost: 🟢 was here)
-   │                          │
-   ▼                          ▼
-  🔵                         🔵
-```
-
-Why does this matter?
-
-1. **You can always undo** — the connection history is preserved
-2. **Merges understand deletions** — if Alice deletes 🟢 while Bob modifies it, Atomic knows exactly what happened
-3. **No orphaned changes** — everything maintains its context
-
----
-
-## The Merge Magic: Structural Conflicts
-
-Here's where Atomic truly shines.
-
-**Scenario**: Alice and Bob both want to add a brick between 🔴 and 🟢.
-
-### What Git Does (Photo Comparison)
-
-Git compares photos and sees two different images. It tries to guess how to blend them:
-
-```text
-Alice's Photo     Bob's Photo       Git's Confusion
-                                    
-    🔴               🔴             "Two different photos...
-     │                │              let me try to merge
-     ▼                ▼              the pixels...
-    🟡               🟣              
-     │                │              CONFLICT! Which color
-     ▼                ▼              goes where?!"
-    🟢               🟢             
-```
-
-Git sees text that differs and tries to interleave lines. Sometimes it works. Sometimes you get a jumbled mess of conflict markers.
-
-### What Atomic Does (Graph Structure)
-
-Atomic doesn't compare photos. It looks at what each person *declared*:
-
-```text
-Alice's Change:                    Bob's Change:
-                                   
-NewVertex {                        NewVertex {
-    up_context: [🔴],                  up_context: [🔴],
-    down_context: [🟢],                down_context: [🟢],
-    content: 🟡                        content: 🟣
-}                                  }
-```
-
-Both changes say: *"I belong between 🔴 and 🟢."*
-
-Atomic recognizes this as a **structural conflict** — not a text-munging problem:
-
-```text
-    🔴
-     │
-     ├──────┬──────┐
-     │      │      │
-     ▼      ▼      │
-    🟡  ←→ 🟣      │  "Both claim the same spot.
-     │      │      │   User decides the order."
-     └──────┴──────┘
-            │
-            ▼
-           🟢
-```
-
-The conflict is **explicit and structural**. You're not deciphering garbled text — you're deciding: *"Should Alice's brick or Bob's brick come first?"*
-
----
-
-## Why Order Doesn't Matter: Commutativity
-
-Here's the mathematical magic of Atomic.
-
-**In Git**, the order you receive changes matters:
-- Apply Alice's change, then Bob's → might get one result
-- Apply Bob's change, then Alice's → might get a different result (or conflict!)
-
-**In Atomic**, order doesn't matter:
-- Apply Alice's change, then Bob's → same graph
-- Apply Bob's change, then Alice's → same graph
-
-```text
-Alice first, then Bob:          Bob first, then Alice:
-
-    🔴                              🔴
-     │                               │
-     ├───────┐                       ├───────┐
-     ▼       ▼                       ▼       ▼
-    🟡      🟣          ===         🟡      🟣
-     │       │                       │       │
-     └───┬───┘                       └───┬───┘
-         │                               │
-         ▼                               ▼
-        🟢                              🟢
-
-        IDENTICAL RESULT!
-```
-
-This is called **commutativity** — the order of operations doesn't change the outcome. It's why Atomic can handle 100+ AI agents making changes simultaneously without chaos.
-
----
-
-## From Bricks to Code
-
-Let's translate the Lego analogy back to real code:
-
-| Lego Concept | Code Equivalent |
-|--------------|-----------------|
-| A brick | A line (or chunk) of code |
-| Brick above (`up_context`) | The line(s) before this one |
-| Brick below (`down_context`) | The line(s) after this one |
-| Adding a brick | Inserting new code |
-| Removing a brick | Deleting code (with ghost edges) |
-| Two bricks claiming same spot | Two people editing the same location |
-
-When you write this code:
-
-```javascript
-function greet(name) {
-    console.log("Hello, " + name);
-}
-```
-
-Atomic doesn't snapshot the file. It records:
-
-```text
-Line 1: "function greet(name) {"
-        up_context: [start of file]
-        down_context: [line 2]
-
-Line 2: "    console.log("Hello, " + name);"
-        up_context: [line 1]
-        down_context: [line 3]
-
-Line 3: "}"
-        up_context: [line 2]
-        down_context: [end of file]
-```
-
-Each line knows its neighbors. The structure is the truth.
-
----
-
-## The Big Picture
-
-| Traditional VCS (Git) | Atomic |
-|-----------------------|--------|
-| 📸 Takes photos (snapshots) | 🔗 Tracks connections (graph) |
-| 🔍 Compares pixels (text diff) | 🧠 Understands structure (context) |
-| 🎲 Guesses merges (heuristics) | ✓ Knows exactly what happened |
-| ⚠️ Order-dependent operations | ♾️ Commutative operations |
-| 😰 Conflict markers in text | 🎯 Structural conflict resolution |
-
----
-
-## Try It Yourself
-
-Ready to experience the difference? The best way to understand Atomic is to use it:
+The semantic layer enables a token-level diff such as “the operator changed from `>` to `>=`” instead of only reporting that an entire line changed.
 
 ```bash
-# Create a new repository
-atomic init my-project
-cd my-project
-
-# Create a file
-echo "Hello World" > greeting.txt
-
-# Add and record
-atomic add greeting.txt
-atomic record -m "Add greeting"
-
-# See the graph structure
-atomic log --graph
+atomic diff --word-diff
 ```
 
-When you make your first merge with Atomic, you'll feel the difference. No more deciphering `<<<<<<<` conflict markers. Just clear, structural understanding of what changed.
+The graph remains the persistence and merge layer; the semantic model makes its operations reviewable by humans.
 
----
+## A small Lego analogy
 
-## Summary
+Think of graph context as connection points on bricks:
 
-🧱 **Traditional VCS**: Takes photos, compares pixels, guesses at merges
+- A brick is recorded with the pieces it connects between.
+- Two bricks attached at independent connection points can be added in either order.
+- Two different bricks claiming one incompatible connection point require a decision.
 
-🔗 **Atomic**: Each piece knows its neighbors, structure is explicit, merges are mathematical
+The analogy stops there. Atomic vertices are byte ranges, edges encode relationships, and the semantic layer—not the graph vertex itself—represents lines and tokens.
 
-The Lego analogy captures Atomic's core insight: **code isn't just text to be photographed — it's a structure to be understood.** By tracking *connections* instead of *snapshots*, Atomic transforms software development from pixel-comparison guesswork into graph-based certainty.
+## Changes and dependencies
 
----
+An Atomic change is a content-addressed artifact. It contains the operations and metadata needed to identify what was recorded, plus references to changes it depends on.
 
-<div style={{textAlign: 'center', marginTop: '2rem'}}>
+```text
+change C depends on change B
+change B depends on change A
 
-**Next Steps**
+insert C ⇒ include A, then B, then C in the dependency closure
+```
 
-[Get Started with Atomic →](/getting-started/installation)
+When a change is inserted into another view, Atomic computes the missing transitive dependencies. The source view is not modified, and the graph operations do not need to be copied because they already live in the canonical graph.
 
-[Understand Change Identity →](/concepts/change-identity)
+```bash
+atomic insert change <HASH> --to <TARGET_VIEW>
+```
 
-[Learn About Hunks & Edits →](/concepts/hunks-edit-replacement)
+The same serialized change keeps its identity across views and repositories. Two separately recorded edits that look alike can still have different identities when their graph context or hashed metadata differs.
 
-</div>
+## Views are filters, not copies of the graph
+
+All recorded graph edges live in one canonical graph. A view selects which changes are visible through its own change set, its parent chain, and dependency closure.
+
+```text
+main
+└── dev
+    ├── feature-auth
+    └── feature-payments
+```
+
+`feature-auth` sees changes from `main`, `dev`, and itself. It does not duplicate those ancestors' graph data.
+
+Promoting a feature is therefore a metadata operation over change references:
+
+```bash
+atomic insert preview feature-auth --to dev
+atomic insert view feature-auth --to dev
+```
+
+Switching views still materializes the selected state into the checkout's working directory. A view is not a separate filesystem.
+
+## When changes compose cleanly
+
+| Situation | Expected result |
+|---|---|
+| Different files | Clean composition |
+| Different regions of one file | Clean composition |
+| Different tokens on one line | Often a clean token-level composition |
+| The same recorded change arrives by two paths | Included once by identity |
+| Rename in one view, content edit in another | File identity allows the edit to follow the rename |
+
+These results depend on valid graph context and the required dependency closure.
+
+## When Atomic records a conflict
+
+Atomic does not claim that incompatible intent can be merged automatically.
+
+| Situation | Result |
+|---|---|
+| Different content at the same structural position | Order/content conflict |
+| Different replacements for the same token | Conflict |
+| Two files created at the same path | Name conflict |
+| Incompatible binary edits | Whole-file conflict |
+
+A genuine conflict is materialized with markers and reported consistently:
+
+```bash
+atomic status --short
+atomic conflicts --short
+```
+
+The user edits the file to the intended result and records the resolution. See [Merging & Conflicts](/concepts/merging-and-conflicts) for conflict formats, guarantees, and current limitations.
+
+## Why the model matters for AI agents
+
+AI coding agents create many small operations, often across parallel tasks. Atomic connects each recorded change to additional structured evidence:
+
+- the intent and acceptance criteria that defined the task;
+- observed exploration, edit, and verification events;
+- model and session attribution;
+- line and token-level semantic operations;
+- dependencies and the exact view state reviewed before promotion.
+
+This lets a reviewer inspect the file and graph summary, inline AI metadata, Change Ledger, and related graph evidence:
+
+```bash
+atomic change <HASH>
+atomic provenance trace <HASH>
+atomic vault query neighbors change:<HASH> --depth 2
+```
+
+The provenance trace is an audit trail of observed activity and inferred causal links. It is not a model's private chain-of-thought.
+
+## Key definitions
+
+- **Change**: a content-addressed set of graph and semantic operations with metadata and dependencies.
+- **Canonical graph**: the repository-wide store containing graph operations from all views.
+- **View**: a named change-set filter over that graph.
+- **Dependency closure**: every transitive prerequisite required by a selected change.
+- **Materialization**: rendering one view's visible graph state into files.
+- **Semantic operation**: a file-, line-, or token-level interpretation used for review.
+- **Conflict**: an explicit record that two operations cannot be combined without a decision.
+
+## Next steps
+
+- [Graph Model & AI Attribution](/concepts/graph-model-explained)
+- [Dual-Layer Diff & Semantic Merge](/concepts/dual-layer-diff)
+- [Change Identity](/concepts/change-identity)
+- [Merging & Conflicts](/concepts/merging-and-conflicts)
+- [How to Run Multiple AI Coding Agents Without Merge Conflicts](/guides/multiple-ai-agents-without-merge-conflicts)

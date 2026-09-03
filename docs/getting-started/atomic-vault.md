@@ -514,7 +514,7 @@ Its verdict is `blocked`, `stale`, or `ready`. Blocking findings win; without bl
 A conforming intent is not proof that the code is good. Inspect each candidate and run the checks required by its criteria:
 
 ```bash
-atomic change <HASH> --show-hunks
+atomic change <HASH>
 atomic diff -c <HASH> --word-diff
 atomic vault query neighbors change:<HASH> --depth 2
 ```

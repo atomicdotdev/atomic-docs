@@ -1,22 +1,25 @@
 ---
 sidebar_position: 3
-title: Attestations
+title: "AI Agent Session Audit Trails: Cost, Tokens, and Model Attribution"
+description: Inspect the model, token, cost, and change-coverage metadata reported for an AI coding session.
 ---
 
-# Attestations
+# AI Agent Session Audit Trails: Cost, Tokens, and Model Attribution
 
-Attestations are graph-level audit nodes that summarize an AI agent session — cost, token usage, model breakdown, code change statistics, and which changes are covered. They are created automatically when a session ends and travel with the changes they cover on push.
+Atomic session attestations summarize which changes an AI coding session recorded, which model metadata was reported, and—when the integration supplies usage—its tokens and cost. When Atomic receives a supported session-end event, it attempts to create this audit node for sessions that recorded at least one change, and the attestation travels with its covered changes on push.
+
+Content addressing makes an attestation tamper-evident under its hash; it does not authenticate the model provider or the origin of hook-reported metadata. Treat agent and model fields as captured attribution unless a separate signed artifact establishes a stronger claim.
 
 ## What Is an Attestation?
 
-When an agent session ends (the user closes the conversation, or the session is deleted), Atomic creates an attestation covering all the changes recorded during that session. The attestation aggregates data from the **provenance entries** embedded in each covered change:
+When a supported agent session ends, Atomic attempts to create an attestation covering the changes that session actually recorded. The attestation aggregates data from the **provenance entries** embedded in each covered change:
 
 ```
 Session: agent-ses_3781fc7a6ffet5c6r1ILy1BEbv
   │
-  ├── Turn 1: Change ABC123 (provenance: claude-sonnet-4-5, 3.2k tokens, $0.04)
-  ├── Turn 2: Change DEF456 (provenance: claude-sonnet-4-5, 5.1k tokens, $0.06)
-  └── Turn 3: Change GHI789 (provenance: claude-sonnet-4-5, 4.1k tokens, $0.05)
+  ├── Turn 1: Change ABCD23EF (provenance: claude-sonnet-4-5, 3.2k tokens, $0.04)
+  ├── Turn 2: Change DEFG45HJ (provenance: claude-sonnet-4-5, 5.1k tokens, $0.06)
+  └── Turn 3: Change JKLM67NP (provenance: claude-sonnet-4-5, 4.1k tokens, $0.05)
                     │
                     ▼
               Attestation XMJZ3IPF
@@ -25,12 +28,22 @@ Session: agent-ses_3781fc7a6ffet5c6r1ILy1BEbv
                 ├── Models: claude-sonnet-4-5 (12.4k tokens, $0.15)
                 ├── Code: +116 lines, -8 lines
                 ├── Wall time: 3m 42s
-                └── Changes covered: ABC123, DEF456, GHI789
+                └── Changes covered: ABCD23EF, DEFG45HJ, JKLM67NP
 ```
 
 ## Viewing Attestations
 
-### List All Attestations
+### Inspect One Change's Embedded Provenance
+
+```bash
+atomic change <change-hash>
+```
+
+The default change view renders the first embedded provenance entry as `=== Attestation ===`, with that change's provider, model, tool, suggestion type, available tokens and cost, session identifier, and turn metadata. It also includes `=== Change Ledger ===` with the observed goals, tools, edits, decisions, and verification associated with the change.
+
+Despite its display heading, this inline block is embedded provenance attached to one change. `atomic agent attest` lists and inspects separate session-level attestation artifacts that can aggregate several covered changes.
+
+### List All Session Attestations
 
 ```bash
 $ atomic agent attest
@@ -42,10 +55,10 @@ $ atomic agent attest
 Total: $0.27 · 4 changes covered · 20.5k tokens
 ```
 
-### Inspect a Specific Attestation
+### Inspect a Specific Session Attestation
 
 ```bash
-$ atomic agent attest --hash MBV7MPERY4WO
+$ atomic agent attest --hash XMJZ3IPF
 
 Attestation XMJZ3IPF
 
@@ -61,9 +74,9 @@ Model Breakdown:
   claude-sonnet-4-5: 3.2k in / 9.2k out · $0.15
 
 Changes Covered (3):
-  ABC12345
-  DEF45678
-  GHI78901
+  ABCD23EF
+  DEFG45HJ
+  JKLM67NP
 
 Coverage:
   dev                  ████████████░░░░░░░░ 3/5 (60%)
@@ -87,9 +100,9 @@ Shows per-model token breakdown and per-change details for every attestation.
 
 ### Automatic Creation at Session End
 
-When the TurnOrchestrator receives a `session-end` event and the session had at least one turn:
+When the TurnOrchestrator receives a `session-end` event and the session recorded at least one change:
 
-1. **Query the agent view history** — get all change hashes on the agent's view
+1. **Read the session's recorded changes** — use the change hashes recorded by this session, excluding inherited parent-view history
 2. **Check for existing attestations** — find which changes are already covered by prior attestations from the same session (for resumed sessions)
 3. **Determine new changes** — filter to changes not yet attested
 4. **Load each change** — read provenance entries (model, tokens, cost) and file operations (lines added/removed)
@@ -110,11 +123,11 @@ The attestation pulls data from two places:
 | **Cost** | `change.provenance[].cost` | Set by `build_turn_provenance()` at record time |
 | **Lines added/removed** | `change.file_ops[].line_ops[]` | Generated by the CRDT semantic layer during recording |
 | **Wall duration** | `session.started_at` / `session.ended_at` | Tracked by the TurnOrchestrator |
-| **Agent identity** | `session.agent_name` / `session.agent_vendor` | Set from hook events (OpenCode sends provider/model) |
+| **Agent attribution** | `session.agent_name` / `session.agent_vendor` | Captured from hook events (OpenCode sends provider/model) |
 
 ### Fallback Behavior
 
-If no provenance data is found in the changes (e.g., changes recorded without the agent hooks), but the session knows the model name, the attestation still creates a minimal model entry. This ensures the attestation always names the model, even when token/cost data is unavailable.
+If no provenance usage data is found in the changes but the session payload includes a model name, the attestation creates a minimal model entry. Token and cost fields can remain unavailable when the integration does not report them.
 
 ## Resumed Sessions
 
@@ -136,7 +149,7 @@ Notes:     Resumed session (1 new change, 4 total in session)
 ...
 ```
 
-This ensures every change is covered by exactly one attestation, with a clear chain showing the session's history.
+Automatic resumed-session generation avoids covering the same change twice within that session chain, while the `previous_attestation` link preserves the session's segmented history.
 
 ## On-Demand Generation
 
@@ -159,17 +172,13 @@ This reads the provenance entries from every change on a view, aggregates them, 
 Attestations are stored in the same two-level directory structure as changes:
 
 ```
-.atomic/changes/
-├── AB/
-│   ├── ABCDEF1234567890.change       # A change
-│   └── ABCDEF1234567890.attest       # An attestation
-└── XM/
-    └── XMJZ3IPF...........attest     # Another attestation
+.atomic/changes/{change-hash[0:2]}/{full-change-hash}.change
+.atomic/changes/{attestation-hash[0:2]}/{full-attestation-hash}.attest
 ```
 
 ### Content Addressing
 
-Like all Atomic artifacts, attestations are content-addressed:
+Attestations are content-addressed:
 
 ```
 data = postcard::serialize(attestation)
@@ -198,7 +207,7 @@ An attestation is only uploaded when **all** of its covered changes have been pu
 |-------|------|-------------|
 | `version` | `u8` | Schema version for forward compatibility |
 | `timestamp` | `i64` | Unix epoch seconds when created |
-| `agent` | `AttestAgent` | Agent identity (name, display name, vendor) |
+| `agent` | `AttestAgent` | Hook-reported agent attribution (name, display name, vendor) |
 | `session_id` | `String` | Session this attestation covers |
 | `cost_usd` | `f64` | Total cost across all models |
 | `duration_api_ms` | `u64` | API processing time |
@@ -238,6 +247,6 @@ The Atomic web UI renders attestations on the **Attestations** tab of each proje
 
 ## See Also
 
-- [Provenance Graphs](provenance.md) — How agent reasoning is captured as causal DAGs
-- [Agent Integration Overview](overview.md) — How the full agent lifecycle works
+- [How to See Why an AI Agent Changed Your Code](provenance.md) — How observed agent activity is captured as a causal DAG
+- [How Atomic Records What Your AI Coding Agent Did](overview.md) — How the full agent lifecycle works
 - [`atomic agent attest` command reference](/commands/agent#attest) — CLI documentation

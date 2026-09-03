@@ -30,13 +30,26 @@ const sidebars: SidebarsConfig = {
     "getting-started/train-tracks-demo",
     {
       type: "html",
+      value: '<div class="sidebar-section-label">GUIDES</div>',
+      defaultStyle: true,
+    },
+    "guides/overview",
+    "guides/reduce-ai-agent-rework",
+    "guides/version-control-for-ai-agents",
+    "guides/track-ai-agent-changes-and-reasoning",
+    "guides/review-large-ai-generated-pull-request",
+    "guides/audit-trail-for-ai-generated-code",
+    "guides/root-cause-ai-agent-bug",
+    "guides/multiple-ai-agents-without-merge-conflicts",
+    {
+      type: "html",
       value: '<div class="sidebar-section-label">AGENTS</div>',
       defaultStyle: true,
     },
     {
       type: "doc",
       id: "agents/overview",
-      label: "Overview",
+      label: "How Atomic Records What Your AI Coding Agent Did",
     },
     {
       type: "doc",
@@ -46,12 +59,12 @@ const sidebars: SidebarsConfig = {
     {
       type: "doc",
       id: "agents/provenance",
-      label: "Provenance Graphs",
+      label: "How to See Why an AI Agent Changed Your Code",
     },
     {
       type: "doc",
       id: "agents/attestations",
-      label: "Attestations",
+      label: "AI Agent Session Audit Trails: Cost, Tokens, and Model Attribution",
     },
     {
       type: "html",
@@ -61,7 +74,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "doc",
       id: "concepts/the-lego-story",
-      label: "The Lego Story",
+      label: "Why Changes Compose: The Atomic Data Model",
     },
     {
       type: "doc",
@@ -83,7 +96,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "doc",
       id: "concepts/performance-at-scale",
-      label: "Performance at Scale",
+      label: "Atomic Performance: Benchmarks at Agent Scale",
     },
     {
       type: "html",

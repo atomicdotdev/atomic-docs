@@ -1,11 +1,12 @@
 ---
 sidebar_position: 2
-title: Provenance Graphs
+title: How to See Why an AI Agent Changed Your Code
+description: Trace the prompts, tool activity, edits, and verification that led to an AI-generated code change.
 ---
 
-# Provenance Graphs
+# How to See Why an AI Agent Changed Your Code
 
-Provenance graphs are causal decision DAGs that capture **why** an agent made each change — not just what changed. Every tool call is classified, linked to the agent's goal, and stored as a content-addressed artifact alongside the changes it explains.
+Use an Atomic provenance graph to connect an AI-generated change to the goal, observed tool activity, edits, and verification that preceded it. The graph records auditable events and **inferred causal links**; it explains the evidence behind a change without claiming to expose a model's private chain-of-thought.
 
 ## What Is a Provenance Graph?
 
@@ -26,11 +27,11 @@ Goal: "Fix the authentication bug"
   └──led_to──▶ Goal: "Add test coverage" (next turn)
 ```
 
-Each node has a timestamp, tool name, duration, and summary. Each edge has a kind that describes the causal relationship. The graph is built incrementally as tool calls arrive and saved at the end of each turn.
+Each node has a timestamp, tool name, duration, and summary. Each edge has a kind that describes the inferred causal relationship. The graph is built incrementally as tool calls arrive; when a turn records a change, Atomic saves that turn's provenance as a content-addressed artifact.
 
 ## Node Types
 
-Tool calls are classified into node types by a rule-based classifier that examines the tool name, input, and output:
+Tool calls are classified into node types by a rule-based classifier that examines status, tool name, input, and output. A failed operation is classified as an Error before the remaining rules are applied:
 
 | Node Type | Description | Example Tools |
 |-----------|-------------|---------------|
@@ -48,8 +49,8 @@ Tool calls are classified into node types by a rule-based classifier that examin
 
 The classifier uses the tool name as the primary signal, with input/output inspection for disambiguation:
 
-- **`read`**, **`grep`**, **`glob`**, **`list_directory`** → always Exploration
-- **`edit`**, **`write`**, **`edit_file`**, **`create_file`** → always Commitment
+- **`read`**, **`grep`**, **`glob`**, **`list_directory`** → Exploration when successful
+- **`edit`**, **`write`**, **`edit_file`**, **`create_file`** → Commitment when successful
 - **`bash`** / **`terminal`** → inspects the command string:
   - Contains `test`, `check`, `lint`, `clippy`, `pytest`, `jest`, `cargo test` → Verification
   - Contains `install`, `build`, `compile`, `run`, `start` → Execution
@@ -81,7 +82,7 @@ append_tool_call("bash", "cargo test")  → Verification, edge: Commitment --ver
 append_patch_proposal("XMJZ3IPF", ...) → PatchProposal, edge: Commitment --committed_via-→ PatchProposal
 ```
 
-The pending explorations list is cleared when a commitment arrives, so each commitment captures exactly which explorations informed it.
+The pending explorations list is cleared when a commitment arrives, so each commitment links to the observed explorations that preceded it. Those temporal links are review evidence, not proof of a model's hidden reasoning.
 
 ## How Provenance Graphs Are Built
 
@@ -103,17 +104,17 @@ The **ProvenanceAccumulator** maintains an in-memory graph for each session. Bec
    - Saved to repository via `repo.save_provenance_graph()`
    - `last_provenance_hash` updated for chaining
    - Accumulator saved back to disk
-5. **`session-end`** — Attestation created (provenance graph data is already saved)
+5. **`session-end`** — If the session recorded changes, Atomic attempts to create an attestation (the provenance graph data is already saved)
 
 ### Multi-Turn Chaining
 
 Each turn's `ProvenanceGraph` is a self-contained artifact with a `previous` field pointing to the prior turn's graph hash. This creates a chain:
 
 ```
-Turn 1 graph (hash: ABC123)  ←  Turn 2 graph (hash: DEF456, previous: ABC123)  ←  Turn 3 graph (...)
+Turn 1 graph (hash: ABCD23EF)  ←  Turn 2 graph (hash: DEFG45HJ, previous: ABCD23EF)  ←  Turn 3 graph (...)
 ```
 
-The accumulator maintains the full session graph across turns. Each turn's saved `ProvenanceGraph` contains the complete graph up to that point, not just the delta.
+The accumulator maintains session context across turns, but each saved `ProvenanceGraph` contains the nodes and edges added since the previous save. The `previous` hash links the per-turn artifacts into a session chain.
 
 ## Storage
 
@@ -122,13 +123,9 @@ The accumulator maintains the full session graph across turns. Each turn's saved
 Provenance graphs are stored alongside changes in the two-level directory structure:
 
 ```
-.atomic/changes/
-├── AB/
-│   ├── ABCDEF1234567890.change      # A change file
-│   ├── ABCDEF1234567890.attest       # An attestation
-│   └── AB9876FEDCBA5432.provenance   # A provenance graph
-└── XM/
-    └── XMJZ3IPF...........provenance # Another provenance graph
+.atomic/changes/{change-hash[0:2]}/{full-change-hash}.change
+.atomic/changes/{attestation-hash[0:2]}/{full-attestation-hash}.attest
+.atomic/changes/{provenance-hash[0:2]}/{full-provenance-hash}.provenance
 ```
 
 The `.provenance` extension distinguishes them from `.change` and `.attest` files.
@@ -144,7 +141,7 @@ path = .atomic/changes/{hash[0:2]}/{hash}.provenance
 
 The graph is serialized with [postcard](https://docs.rs/postcard) for compact binary representation.
 
-### Push and Pull
+### Push
 
 Provenance graphs travel with the changes they explain. When you push:
 
@@ -166,21 +163,26 @@ The server stores them and serves them to the web UI for visualization.
 
 ### CLI
 
-Provenance data is embedded in changes and visible through existing commands:
+Start with `atomic change`, whose default output already includes the causal Change Ledger when a provenance graph is available:
 
 ```bash
-# See provenance metadata on each change
-atomic log --verbose
+# Files, graph summary, inline AI metadata, and Change Ledger
+atomic change <hash>
 
-# Inspect a specific change's provenance
-atomic change -p <hash>
+# Optional: project the ledger as a human-readable provenance chain
+atomic provenance trace <hash>
+
+# Optional: export and retain signed W3C PROV JSON-LD
+atomic provenance show <hash> --sign > provenance.signed.json
 ```
+
+The `=== Attestation ===` block above it is the first embedded provenance entry rendered for display, not a separate attestation artifact. The Change Ledger records observed activity and inferred causal links directly beside the change it explains. Signed W3C PROV output uses local development keys that are currently unencrypted at rest. See [How to Build an Audit Trail for AI-Generated Code](/guides/audit-trail-for-ai-generated-code) before treating the export as a trust artifact.
 
 ## Data Model
 
-### ProvenanceGraph (atomic-core)
+### Selected `ProvenanceGraph` Fields
 
-The content-addressed artifact stored in the repository:
+The content-addressed artifact stored in the repository includes:
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -238,6 +240,6 @@ This keeps the agent oriented about what it has already explored and committed, 
 
 ## See Also
 
-- [Attestations](attestations.md) — Session-level audit nodes that reference provenance graphs
-- [Agent Integration Overview](overview.md) — How the full agent lifecycle works
+- [AI Agent Session Audit Trails](attestations.md) — Session-level audit nodes that reference provenance graphs
+- [How Atomic Records What Your AI Coding Agent Did](overview.md) — How the full agent lifecycle works
 - [`atomic agent` command reference](/commands/agent) — CLI documentation
