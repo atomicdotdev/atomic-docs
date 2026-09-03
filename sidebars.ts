@@ -10,7 +10,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "html",
       value: '<div class="sidebar-section-label">GETTING STARTED</div>',
-      defaultStyle: true,
+      defaultStyle: false,
     },
     "getting-started/installation",
     "getting-started/first-repository",
@@ -31,9 +31,8 @@ const sidebars: SidebarsConfig = {
     {
       type: "html",
       value: '<div class="sidebar-section-label">GUIDES</div>',
-      defaultStyle: true,
+      defaultStyle: false,
     },
-    "guides/overview",
     "guides/reduce-ai-agent-rework",
     "guides/version-control-for-ai-agents",
     "guides/track-ai-agent-changes-and-reasoning",
@@ -44,7 +43,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "html",
       value: '<div class="sidebar-section-label">AGENTS</div>',
-      defaultStyle: true,
+      defaultStyle: false,
     },
     {
       type: "doc",
@@ -69,7 +68,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "html",
       value: '<div class="sidebar-section-label">CONCEPTS</div>',
-      defaultStyle: true,
+      defaultStyle: false,
     },
     {
       type: "doc",
@@ -101,7 +100,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "html",
       value: '<div class="sidebar-section-label">PROPOSALS</div>',
-      defaultStyle: true,
+      defaultStyle: false,
     },
     "proposals/manifest-nodes",
     "proposals/virtual-working-copies",
@@ -109,7 +108,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "html",
       value: '<div class="sidebar-section-label">TEAMS & STORAGE</div>',
-      defaultStyle: true,
+      defaultStyle: false,
     },
     {
       type: "doc",
@@ -119,7 +118,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "html",
       value: '<div class="sidebar-section-label">COMMANDS</div>',
-      defaultStyle: true,
+      defaultStyle: false,
     },
     {
       type: "doc",
