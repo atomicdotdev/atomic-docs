@@ -239,7 +239,7 @@ The classic Docusaurus preset includes Algolia DocSearch, so no additional packa
 ```bash
 ALGOLIA_APP_ID=your_application_id \
 ALGOLIA_SEARCH_API_KEY=your_search_only_api_key \
-ALGOLIA_INDEX_NAME=atomic-vcs \
+ALGOLIA_INDEX_NAME=docs_atomic_dev_wzs81ggiuf_pages \
 npm run build
 ```
 

@@ -5,7 +5,8 @@ import type * as Preset from "@docusaurus/preset-classic";
 const algoliaAppId = process.env.ALGOLIA_APP_ID ?? "WZS81GGIUF";
 const algoliaSearchApiKey =
   process.env.ALGOLIA_SEARCH_API_KEY ?? "71552cb8da2740b81b8901d5d5ec1b1c";
-const algoliaIndexName = process.env.ALGOLIA_INDEX_NAME ?? "atomic-vcs";
+const algoliaIndexName =
+  process.env.ALGOLIA_INDEX_NAME ?? "docs_atomic_dev_wzs81ggiuf_pages";
 
 const config: Config = {
   title: "Atomic",
