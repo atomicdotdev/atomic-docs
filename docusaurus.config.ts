@@ -2,6 +2,11 @@ import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
+const algoliaAppId = process.env.ALGOLIA_APP_ID ?? "WZS81GGIUF";
+const algoliaSearchApiKey =
+  process.env.ALGOLIA_SEARCH_API_KEY ?? "71552cb8da2740b81b8901d5d5ec1b1c";
+const algoliaIndexName = process.env.ALGOLIA_INDEX_NAME ?? "atomic-vcs";
+
 const config: Config = {
   title: "Atomic",
   tagline:
@@ -209,10 +214,12 @@ gtag('config', 'G-NWP8LGDP27');`,
       ],
     },
     algolia: {
-      appId: "YOUR_APP_ID",
-      apiKey: "YOUR_SEARCH_API_KEY",
-      indexName: "atomic-vcs",
+      appId: algoliaAppId,
+      apiKey: algoliaSearchApiKey,
+      indexName: algoliaIndexName,
       contextualSearch: true,
+      searchPagePath: "search",
+      placeholder: "Search Atomic docs",
     },
     mermaid: {
       // "base" is the only Mermaid theme that accepts custom variables;

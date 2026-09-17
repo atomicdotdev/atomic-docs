@@ -232,27 +232,20 @@ import MyComponent from '@site/src/components/MyComponent';
 
 ## 🔍 Search
 
-### Algolia DocSearch (Recommended)
+### Algolia DocSearch
 
-1. Apply for Algolia DocSearch at https://docsearch.algolia.com/apply/
-2. Once approved, add to `docusaurus.config.ts`:
-
-```typescript
-algolia: {
-  appId: 'YOUR_APP_ID',
-  apiKey: 'YOUR_SEARCH_API_KEY',
-  indexName: 'atomic-vcs',
-  contextualSearch: true,
-}
-```
-
-### Local Search
-
-Install a local search plugin:
+The classic Docusaurus preset includes Algolia DocSearch, so no additional package is required. Public DocSearch credentials are configured in `docusaurus.config.ts`; they can be overridden when running or deploying the site:
 
 ```bash
-npm install --save @docusaurus/theme-search-algolia
+ALGOLIA_APP_ID=your_application_id \
+ALGOLIA_SEARCH_API_KEY=your_search_only_api_key \
+ALGOLIA_INDEX_NAME=atomic-vcs \
+npm run build
 ```
+
+The search-only API key is designed for browser use and is safe to include in the site configuration. Never provide an Algolia admin API key.
+
+The crawler must target `https://docs.atomic.dev/` and should use Algolia's recommended Docusaurus v3 crawler configuration. After changing crawler or index settings, trigger a new crawl in the Algolia dashboard.
 
 ## 📊 Analytics
 
