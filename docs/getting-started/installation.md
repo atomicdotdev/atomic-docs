@@ -5,11 +5,11 @@ title: Installation
 
 # Installing Atomic
 
-This guide will help you install Atomic on your system. The recommended installation path is the hosted installer script from Atomic Storage. Development builds can still be installed from source.
+One command installs the Atomic CLI, detects your platform, and makes Atomic available to the coding agents you already use. No account is required, and Atomic sends no telemetry by default.
 
-## Installation Methods
+The hosted installer supports macOS, Linux, and WSL2. Development builds can also be installed from source.
 
-### Hosted Installer (Recommended)
+## Recommended installation
 
 Install the latest Atomic CLI release with the installer hosted by Atomic Storage:
 

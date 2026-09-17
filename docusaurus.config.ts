@@ -33,6 +33,13 @@ const config: Config = {
   ],
   headTags: [
     {
+      tagName: "meta",
+      attributes: {
+        name: "algolia-site-verification",
+        content: "3894BB5FA41C71AB",
+      },
+    },
+    {
       tagName: "script",
       attributes: {},
       innerHTML: `window.dataLayer = window.dataLayer || [];
