@@ -27,7 +27,7 @@ atomic query ask <QUESTION> [-t <MAX_TURNS>] [--json]
 
 ## Description
 
-`atomic query` is the read surface of Atomic's **knowledge graph (KG)** — a graph that connects code entities, files, changes, views, and vault content (memories, intents, goals) into one searchable structure. The graph is fed from three directions:
+`atomic query` is the read surface of Atomic's **knowledge graph (KG)**, a graph that connects code entities, files, changes, views, and vault content (memories, intents, goals) into one searchable structure. The graph is fed from three directions:
 
 - **VCS data** — recorded changes, files, and views (via [`enrich`](#query-enrich---enrich-the-graph-from-vcs-data))
 - **Code structure** — tree-sitter entities (functions, classes, types) and the syntext content index

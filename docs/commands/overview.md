@@ -41,15 +41,6 @@ Every command listed here corresponds to a real subcommand in the `atomic` CLI b
 | [`identity`](identity.md) | Manage user identities and signing keys |
 | [`agent`](agent.md) | Manage AI agent integration |
 | [`doctor`](doctor.md) | Verify working-copy consistency and repair indexes |
-| [`git`](git.md) | Git interoperability (import, push, hooks) |
-| [`sandbox`](sandbox.md) | Provision concurrent agent sandboxes (copy-on-write working trees) |
-| [`session`](session.md) | Inspect the agent session ledger |
-| [`query`](query.md) | Query the knowledge graph |
-| [`vault`](vault.md) | Manage the vault (shared project knowledge store) |
-| [`provenance`](provenance.md) | W3C PROV projections for changes |
-| [`unrecord`](unrecord.md) | Remove the last change from the current view |
-| [`update`](update.md) | Check for available CLI updates |
-| [`triage`](triage.md) | Review a feature view's candidate changes against a target |
 
 ## Command Categories
 
@@ -73,7 +64,6 @@ atomic log                        # View history
 - **[`diff`](diff.md)** — Show differences between working copy and last recorded state
 - **[`record`](record.md)** — Create a new change from tracked file modifications
 - **[`revise`](revise.md)** — Modify a previously recorded change in-place
-- **[`unrecord`](unrecord.md)** — Remove the last change (or a specific change) from the current view
 - **[`log`](log.md)** — Display the history of changes on the current view
 - **[`change`](change.md)** — Inspect details of a specific change by hash or sequence number
 
@@ -91,21 +81,6 @@ atomic restore --force            # Discard uncommitted changes
 - **[`clone`](clone.md)** — Clone an existing repository from a remote
 - **[`restore`](restore.md)** — Restore the working copy to the last recorded state
 - **[`split`](split.md)** — Create a new view from an existing one
-- **[`git`](git.md)** — Import Git repositories into Atomic and sync back to Git
-
-### Knowledge Graph & Vault
-
-Search the knowledge graph and manage the shared project knowledge store:
-
-```bash
-atomic query search "authentication"   # Keyword search over the graph
-atomic query code "issue_token" -t rs  # Search source content
-atomic vault context --intent PIMO-1   # Memories relevant to a task
-```
-
-- **[`query`](query.md)** — Search the knowledge graph (keywords, neighbors, code, RAG)
-- **[`vault`](vault.md)** — Manage the shared knowledge store (memories, intents, goals)
-- **[`provenance`](provenance.md)** — Project and sign W3C PROV for a change
 
 ### Views
 
@@ -120,7 +95,6 @@ atomic view delete old-feature    # Delete a view
 
 - **[`view`](view.md)** — Create, switch, list, and delete views
 - **[`stash`](stash.md)** — Temporarily save uncommitted changes to an orphan view
-- **[`triage`](triage.md)** — Project a feature view's candidate change set against a target for review
 
 ### Remote Operations and Atomic Storage
 
@@ -185,9 +159,6 @@ atomic agent explain <session-id> --all --save
 ```
 
 - **[`agent`](agent.md)** — Enable, disable, and manage AI agent hooks for Claude Code, Gemini CLI, and OpenCode
-- **[`agent lifecycle`](agent-lifecycle.md)** — Declare and track managed runs for orchestrated agents
-- **[`session`](session.md)** — Inspect, fork, and rebuild the agent session ledger
-- **[`sandbox`](sandbox.md)** — Provision concurrent agent sandboxes and OCI images
 
 ### Diagnostics
 
@@ -200,7 +171,6 @@ atomic doctor check               # Verify the working copy matches the graph
 
 - **[`conflicts`](conflicts.md)** — List conflicted files, with the kind and line of each conflict
 - **[`doctor`](doctor.md)** — Verify working-copy consistency (materialization drift + conflict honesty) and repair derived indexes
-- **[`update`](update.md)** — Check for available CLI updates and print the upgrade path
 
 ## Global Options
 
