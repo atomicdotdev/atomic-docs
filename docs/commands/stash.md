@@ -10,7 +10,10 @@ Temporarily save uncommitted changes.
 ## Synopsis
 
 ```bash
-atomic stash [SUBCOMMAND]
+atomic stash [push] [OPTIONS]
+atomic stash pop|apply|show|drop [STASH] [OPTIONS]
+atomic stash list
+atomic stash clear [--force]
 ```
 
 ## Description
@@ -19,17 +22,22 @@ The `stash` command saves your uncommitted working copy changes to a temporary o
 
 Stashes are stored as lightweight orphan views under the `stash/` namespace. They persist until explicitly dropped or popped.
 
+`atomic stash` with no subcommand is equivalent to `atomic stash push`.
+
 ## Subcommands
 
-### `stash` (no subcommand)
+### `push` (or bare `stash`)
 
 Save uncommitted changes and restore a clean working copy.
 
 ```bash
 # Save all uncommitted changes
-atomic stash
+atomic stash push
 
 # Save with a message
+atomic stash push -m "WIP: auth refactor"
+
+# Bare form is equivalent
 atomic stash -m "WIP: auth refactor"
 ```
 
@@ -38,8 +46,8 @@ atomic stash -m "WIP: auth refactor"
 | Option | Description |
 |--------|-------------|
 | `-m`, `--message <TEXT>` | Descriptive message for the stash |
-| `--include-untracked` | Also stash untracked files |
-| `--keep` | Save to stash but don't revert the working copy |
+| `-u`, `--include-untracked` | Also stash untracked files |
+| `-k`, `--keep` | Save to stash but don't revert the working copy |
 
 ### `pop`
 
@@ -49,8 +57,9 @@ Apply the most recent stash and remove it.
 # Apply and remove the most recent stash
 atomic stash pop
 
-# Apply and remove a specific stash
+# Apply and remove a specific stash (by ref or index)
 atomic stash pop stash@{2}
+atomic stash pop 2
 ```
 
 If the stash applies cleanly, it is automatically removed from the stash list. If there are conflicts, the stash is preserved so you can resolve and retry.
@@ -90,6 +99,8 @@ Each entry shows:
 - The source view
 - The stash message (if provided)
 - How long ago it was created
+
+The index (or `stash@{N}` ref) is the identifier accepted by `pop`, `apply`, `show`, and `drop`.
 
 ### `drop`
 

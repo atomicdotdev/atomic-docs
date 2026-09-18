@@ -127,6 +127,18 @@ Maximum file size to record (in bytes).
 atomic record -m "Add data" --max-size 1048576
 ```
 
+### `--allow-conflict-markers`
+
+Record files even if they still contain unresolved conflict markers. Off by default — a recording that embeds `<<<<<<<` markers is usually a mistake, so Atomic refuses it unless you pass this flag explicitly.
+
+```bash
+atomic record -m "Merge resolution" --allow-conflict-markers
+```
+
+:::caution
+Only use this when you have genuinely resolved a conflict but want to keep marker-like content (e.g. in test fixtures or docs about conflict markers).
+:::
+
 ### AI Attribution Options
 
 Atomic includes first-class support for tracking AI-assisted contributions.

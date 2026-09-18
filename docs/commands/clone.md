@@ -62,21 +62,6 @@ atomic clone hello-world my-checkout   # → ./my-checkout
 
 ## Options
 
-### Project-reference resolution
-
-These apply only when `<SOURCE>` is a reference (ignored for full URLs):
-
-| Option | Description |
-|--------|-------------|
-| `--org <ORG>` | Organization override (default: active profile's org → identity's personal org) |
-| `-w`, `--workspace <SLUG>` | Workspace override (takes precedence over a `workspace/` prefix) |
-| `--server <NAME>` | [Server profile](server.md) to resolve against (default: the active profile) |
-
-```bash
-# Clone from a specific workspace and server without changing your defaults
-atomic clone hello-world --workspace demos --server staging
-```
-
 ### `--view <VIEW>`
 
 View to clone and check out (default: `dev`).
@@ -132,29 +117,17 @@ fallback).
 
 ## Examples
 
-### Clone by project reference
-
-```bash
-# Uses your active server, default org, and default workspace
-atomic clone hello-world
-
-# Name the workspace inline
-atomic clone demos/hello-world
-
-# Override workspace/server for one command
-atomic clone hello-world -w demos --server staging
-```
-
 ### Clone by URL
 
 ```bash
+# From a hosted project URL (find it with `atomic project list` or `atomic view list --remote`)
 atomic clone https://acme.atomic.storage/workspaces/demos/projects/hello-world/code
 ```
 
 ### Clone a specific view
 
 ```bash
-atomic clone hello-world --view main
+atomic clone https://acme.atomic.storage/workspaces/demos/projects/hello-world/code --view main
 ```
 
 ### Download without applying
