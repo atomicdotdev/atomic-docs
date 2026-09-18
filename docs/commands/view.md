@@ -14,8 +14,9 @@ atomic view <SUBCOMMAND>
 atomic view create <NAME> [OPTIONS]
 atomic view split <NAME> [CHANGES]... [OPTIONS]
 atomic view switch <NAME>
-atomic view list [--verbose] [--remote [<REMOTE>]]
+atomic view list [--short] [--remote [<REMOTE>]]
 atomic view delete <NAME> [--force]
+atomic view promote [NAME]
 ```
 
 ## Description
@@ -269,7 +270,6 @@ atomic view list [OPTIONS]
 | Option | Description |
 |--------|-------------|
 | `--short`, `-s` | Show only view names (no metadata) |
-| `--verbose`, `-v` | Show scope, parent, change count, and state hash |
 | `--remote [<REMOTE>]` | List views on a remote instead of locally. Pass `--remote` alone to use the default remote, or `--remote <name\|url>` to target a specific one |
 | `--identity <IDENTITY>` | Identity to authenticate to the remote (only with `--remote`) |
 | `--insecure`, `-k` | Skip TLS verification when querying a remote (only with `--remote`) |
@@ -286,13 +286,19 @@ $ atomic view list
 ```
 
 ```bash
-# Verbose list showing the view model
-$ atomic view list --verbose
+# Detailed list (scope, change count, state hash) — the default output
+$ atomic view list
 * dev            [shared]  (12 changes)  state: 2AAAAAAAA...
   feature-auth   [draft]   (3 changes)   state: XYZABCDEF...  parent: dev
   release-1.0    [shared]  (8 changes)   state: QRSTUVWXY...  parent: main
   service-auth   [draft]   (15 changes)  state: 123456789...  parent: dev
-  feature-login  [draft]   (2 changes)   state: ABCDEFGHI...  parent: service-auth
+
+# Names only
+$ atomic view list --short
+dev
+feature-auth
+release-1.0
+service-auth
 ```
 
 ```bash
@@ -372,8 +378,8 @@ atomic record -m "add logout"
 atomic record -m "add session mgmt"
 
 # Insert some changes into dev
-atomic insert <login-hash> --to-view dev
-atomic insert <session-hash> --to-view dev
+atomic insert <login-hash> --view dev
+atomic insert <session-hash> --view dev
 
 # Abandon the rest and clean up
 atomic view switch dev
@@ -381,6 +387,32 @@ atomic view delete feature
 # ✓ "logout" change reference removed (never inserted anywhere else)
 # ✓ "login" and "session" references preserved in dev
 # ✓ Orphaned edges from "logout" cleaned by GC
+```
+
+### `view promote` — Promote a View to Shared Root Scope
+
+#### Synopsis
+
+```bash
+atomic view promote [NAME]
+```
+
+#### Arguments
+
+**`[NAME]`** — Name of the view to promote. Defaults to the current view.
+
+#### Description
+
+Promotes a draft view to **shared root scope**: the view becomes permanent (like `main` or `dev`) and can no longer be deleted. Use this when a draft has proven itself — for example, graduating a long-lived service view into shared collaborative history.
+
+#### Examples
+
+```bash
+# Promote the current draft view to shared scope
+atomic view promote
+
+# Promote a named view
+atomic view promote service-auth
 ```
 
 ## View Types in Practice
@@ -391,7 +423,7 @@ atomic view delete feature
 # Create a draft view for a quick bug fix
 atomic view create bugfix-123 --draft --switch
 atomic record -m "Fix null pointer in auth"
-atomic insert <hash> --to-view dev
+atomic insert <hash> --view dev
 atomic view switch dev
 atomic view delete bugfix-123
 ```
@@ -408,7 +440,7 @@ atomic record -m "Add OAuth provider"
 atomic record -m "Add token refresh"
 
 # Insert shared infrastructure into dev (visible to all teams)
-atomic insert <oauth-provider-hash> --to-view dev
+atomic insert <oauth-provider-hash> --view dev
 
 # Team B sees it immediately via their filter chain
 # (service-payments is also parented on dev)
@@ -421,8 +453,8 @@ atomic insert <oauth-provider-hash> --to-view dev
 atomic view create release-2.0 --parent main
 
 # Insert specific changes from dev
-atomic insert <feature-hash> --to-view release-2.0
-atomic insert <bugfix-hash> --to-view release-2.0
+atomic insert <feature-hash> --view release-2.0
+atomic insert <bugfix-hash> --view release-2.0
 
 # Tag the release
 atomic tag create v2.0.0 --view release-2.0 -m "Release 2.0"
@@ -436,7 +468,7 @@ When you insert a change into another view, Atomic automatically resolves the **
 # feature has changes: C1, C2, C3, C4, C5
 # C5 depends on C1 → C2 → C3
 
-atomic insert C5 --to-view dev
+atomic insert C5 --view dev
 # Atomic computes: deps(C5) = {C1, C2, C3}
 # dev already has: {C1}
 # Missing: {C2, C3, C5} → inserted in dependency order
@@ -452,7 +484,7 @@ See [`atomic insert`](./insert.md) for the full insert command reference.
 
 ```bash
 # Preview what would be inserted (dry run)
-atomic insert --from feature --to-view dev --dry-run
+atomic insert view feature --to-view dev --dry-run
 
 # See the change-level diff between two views
 # (which changes exist in one but not the other)

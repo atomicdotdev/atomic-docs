@@ -93,7 +93,7 @@ atomic remote add upstream https://api.atomic.dev/community/oss/atomic/code
 atomic push
 
 # Pull from upstream explicitly
-atomic pull --remote upstream
+atomic pull upstream
 ```
 
 ## What Gets Pushed

@@ -21,12 +21,13 @@ When an integration is active, every supported turn or task is automatically rec
 
 No daemon required. Each hook invocation is a standalone process that opens the repo, does its work, and exits.
 
+For orchestrators driving inner agents, `atomic agent lifecycle` declares and tracks **managed runs** (leases, executor pinning, run summaries) — see [agent lifecycle](agent-lifecycle.md).
+
 For setup steps by agent, see [Installing Agent Integrations](/agents/installing-agent-integrations).
 
 ## Subcommands
 
 ### `enable`
-
 Install an agent integration for turn-level recording.
 
 For a registered agent, `enable` fetches the integration package from Atomic storage (caching it under `~/.atomic/integrations/<agent>/repo`), verifies the package's required CLI version, installs its files, hooks, and skills, and writes a receipt. Nothing from the package is executed. See [Installing Agent Integrations](/agents/installing-agent-integrations) for the per-agent guide.
@@ -340,6 +341,8 @@ atomic revise
 
 ## See Also
 
+- [agent lifecycle](agent-lifecycle.md) — Managed runs for orchestrated agents
+- [session](session.md) — The agent session ledger
 - [Provenance Graphs](/agents/provenance) — How agent reasoning is captured as causal DAGs
 - [Attestations](/agents/attestations) — Session-level audit and cost tracking
 - [AI Agent Workflows](/getting-started/ai-agent-workflows) — Getting started guide

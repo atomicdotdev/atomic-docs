@@ -98,6 +98,17 @@ Delete an organization. This is destructive and requires confirmation unless
 atomic org delete acme --force --org acme
 ```
 
+### `org upgrade`
+
+Upgrade a **personal org** to a **team org**. Takes the org slug to upgrade
+(defaults to the resolved default org); `--org` overrides the organization
+used by the API client.
+
+```bash
+atomic org upgrade acme
+atomic org upgrade           # operates on the default org
+```
+
 ## Organization members
 
 Before adding a developer to an organization, the developer should have a
