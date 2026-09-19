@@ -38,6 +38,25 @@ archive, verifies checksums when available, and installs the `atomic` binary.
 atomic --version
 ```
 
+### Upgrading an Existing Installation
+
+Before replacing the CLI, pause agent activity and shut down the background
+database owner for each active local repository:
+
+```bash
+atomic agent database-owner ping --repository /path/to/repository --json
+atomic agent database-owner shutdown --repository /path/to/repository --json
+```
+
+Wait for the owner to exit, perform the upgrade using your installation method,
+and check `atomic --version`. The updated CLI can then start a new owner on demand.
+Closing OpenCode or another agent application alone does not stop the owner, and
+replacing the binary does not update an already running process.
+
+See [Database Owner and Upgrades](/agents/database-owner) for the full sequence,
+multiple repositories, and recovery after an interrupted checkpoint. Do not
+assume the installer automatically stops existing owners.
+
 ## Connect to Atomic Storage (optional)
 
 To create or clone hosted projects, first create an Ed25519 identity and register

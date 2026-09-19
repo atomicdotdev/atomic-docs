@@ -90,39 +90,33 @@ Because provenance and the session envelope are in the **hashed** section, they'
 
 ## How Agent Recording Works
 
-```
-You prompt Claude Code → agent reads files, makes edits, runs tests
-                                          │
-                         hooks fire on each tool call
-                                          │
-                                          ▼
-                              TurnOrchestrator
-                                ├── Appends nodes to ProvenanceAccumulator
-                                │     (Goal, Exploration, Commitment, Verification)
-                                │
-                                ▼
-                           Agent goes idle (turn end)
-                                │
-                         ┌──────┴──────┐
-                         │  record_turn │
-                         │  ├── status  │
-                         │  ├── add     │
-                         │  └── record  │
-                         └──────┬──────┘
-                                │
-                         ┌──────┴──────────────────┐
-                         │  Save ProvenanceGraph     │
-                         │  ├── PatchProposal node   │
-                         │  ├── Convert to postcard  │
-                         │  └── Content-address hash │
-                         └──────┬──────────────────┘
-                                │
-                                ▼
-                    .atomic/changes/AB/ABC123.change
-                    .atomic/changes/XM/XMJZ3I.provenance
+```text
+Agent lifecycle and tool events
+              |
+     short-lived hook processes
+              |
+           local RPC
+              |
+   per-repository database owner
+              |
+   durable provenance journal in redb
+              |
+       Stop / turn checkpoint
+              |
+   record scoped file changes, build provenance graph,
+   publish the session's linked turn record
 ```
 
-Each hook invocation is a separate process — no daemon required. The provenance accumulator is persisted to `.atomic/sessions/{session_id}/graph.json` between invocations using atomic writes (temp file + rename).
+Hook processes exit after their work, but the repository's **database owner stays
+running**. It holds the writable change/provenance store connection and handles
+journal requests from concurrent hooks. Stop builds the turn's provenance from
+its durable journal and publishes a checkpoint. Read-only turns can have
+provenance without a file change.
+
+The journal replaces the old `graph.json` accumulator as the authoritative event
+store on this path. Session JSON files still hold runtime state; they are not the
+durable provenance journal. See [Database Owner and Upgrades](/agents/database-owner)
+for process lifetime, RPC scope, and the shutdown sequence required when upgrading.
 
 ## Agent Isolation with Views
 

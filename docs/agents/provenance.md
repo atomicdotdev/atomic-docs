@@ -86,25 +86,29 @@ The pending explorations list is cleared when a commitment arrives, so each comm
 
 ## How Provenance Graphs Are Built
 
-The **ProvenanceAccumulator** maintains an in-memory graph for each session. Because each hook invocation is a separate process, the accumulator is persisted to disk between invocations:
-
-```
-.atomic/sessions/{session_id}/graph.json
-```
+Agent hooks append provenance event envelopes to a durable journal through the
+per-repository [database owner](/agents/database-owner). The in-memory
+**ProvenanceAccumulator** builds the graph from those events at checkpoint time;
+`graph.json` is no longer the authoritative journal on this path.
 
 ### Lifecycle
 
-1. **`session-start`** — Session created, accumulator initialized (empty graph)
-2. **`user-prompt`** (TurnStart) — Accumulator loaded from disk, **Goal** node appended, saved back
-3. **`after-tool`** (PostToolUse) — Accumulator loaded, **tool call node** appended (classified), saved back
-4. **`stop`** (TurnEnd) — If a change was recorded:
-   - Accumulator loaded
-   - **PatchProposal** node appended
-   - Graph converted to content-addressed `ProvenanceGraph`
-   - Saved to repository via `repo.save_provenance_graph()`
-   - `last_provenance_hash` updated for chaining
-   - Accumulator saved back to disk
-5. **`session-end`** — If the session recorded changes, Atomic attempts to create an attestation (the provenance graph data is already saved)
+1. **`session-start`** — Initializes session runtime state. Journal operations
+   start or reconnect to the repository's background owner as needed.
+2. **`user-prompt`** (TurnStart) — Begins the turn and captures its goal.
+3. **Tool events** — Append event envelopes to the owner-managed journal. A
+   successful append acknowledgement means those events have been committed.
+4. **`stop`** (TurnEnd) — Records the turn's scoped file changes, reads the frozen
+   journal in pages, and constructs its content-addressed `ProvenanceGraph`.
+   Recorded changes are linked through **PatchProposal** nodes. Checkpoint
+   publication links the graph and changes into the session ledger. A read-only
+   turn can publish provenance with no file changes.
+5. **`session-end`** — If the session recorded changes, Atomic attempts to create
+   an attestation. This is separate from shutting down the repository's owner.
+
+Recording a file change and finishing checkpoint publication are distinct steps.
+If Stop fails partway through, inspect the existing session ledger before assuming
+that nothing was saved. See the [recovery guide](/agents/database-owner#recover-after-an-upgrade).
 
 ### Multi-Turn Chaining
 
@@ -120,26 +124,26 @@ The accumulator maintains session context across turns, but each saved `Provenan
 
 ### On Disk
 
-Provenance graphs are stored alongside changes in the two-level directory structure:
+The redb-native change store keeps provenance journal data and serialized
+provenance objects in `.atomic/changes.redb`. Session runtime JSON may coexist
+with that store. Older repositories can also contain legacy loose objects such
+as `.atomic/changes/{prefix}/{hash}.provenance`; their presence does not make them
+the active journal.
 
-```
-.atomic/changes/{change-hash[0:2]}/{full-change-hash}.change
-.atomic/changes/{attestation-hash[0:2]}/{full-attestation-hash}.attest
-.atomic/changes/{provenance-hash[0:2]}/{full-provenance-hash}.provenance
-```
-
-The `.provenance` extension distinguishes them from `.change` and `.attest` files.
+Use `atomic session show <session-id> --json` and `atomic change <hash>` to inspect
+recorded history rather than relying on a particular loose-file layout.
 
 ### Content Addressing
 
 Like changes and attestations, provenance graphs are content-addressed:
 
-```
+```text
 hash = blake3(serialized_graph)
-path = .atomic/changes/{hash[0:2]}/{hash}.provenance
 ```
 
-The graph is serialized with [postcard](https://docs.rs/postcard) for compact binary representation.
+The graph is serialized with [postcard](https://docs.rs/postcard) for compact
+binary representation. Its hash identifies the graph independently of the
+storage backend.
 
 ### Push
 
