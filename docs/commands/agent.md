@@ -19,11 +19,32 @@ The `agent` command is the Atomic-side control plane for AI coding integrations.
 
 When an integration is active, every supported turn or task is automatically recorded as an Atomic change with full provenance, and every session produces a provenance graph (causal decision DAG) and an attestation (session-level audit node).
 
-No daemon required. Each hook invocation is a standalone process that opens the repo, does its work, and exits.
+Atomic saves agent activity through a local background process called the
+**database owner**. It starts automatically and can keep running after you close
+your agent application. Follow the
+[restart steps](/agents/database-owner) when upgrading the CLI.
 
 For setup steps by agent, see [Installing Agent Integrations](/agents/installing-agent-integrations).
 
 ## Subcommands
+
+### `database-owner`
+
+Manage the background owner for a local repository:
+
+```bash
+atomic agent database-owner ping --repository "$PWD" --json
+atomic agent database-owner start --repository "$PWD" --json
+atomic agent database-owner shutdown --repository "$PWD" --json
+```
+
+`ping` only checks an existing process. `start` starts one if necessary or reuses
+the existing owner. `shutdown` requests exit without deleting stored data; stop
+agent activity first and wait for the owner to exit before upgrading. All three
+accept `--repository <PATH>` (default: the current directory) and `--json`.
+
+See the [owner lifecycle guide](/agents/database-owner) for upgrade order and
+recovery when a new CLI connects to an older owner.
 
 ### `enable`
 
@@ -239,13 +260,15 @@ You prompt the agent → agent reads, edits, tests → Atomic records the turn
 
 ### Provenance Graph Pipeline
 
-Throughout the session, the **ProvenanceAccumulator** builds a causal decision DAG:
+Atomic saves prompts and tool activity as events in `.atomic/changes.redb`.
+At turn end, it builds a provenance graph from those events:
 
-- **`user-prompt`** → appends a **Goal** node (the user's intent)
-- **`after-tool`** → appends a classified tool node (**Exploration**, **Commitment**, **Verification**, or **Execution**) with causal edges inferred from context
-- **`stop`** → appends a **PatchProposal** node, converts to `ProvenanceGraph`, saves to `.atomic/changes/`
+- **`user-prompt`** → captures the user's goal.
+- **`after-tool`** → captures what the tool did, such as reading, editing, or testing.
+- **`stop`** → builds the graph and links it to the turn's recorded file changes.
 
-The accumulator is persisted to `.atomic/sessions/{session_id}/graph.json` between hook invocations (each hook is a separate process). Writes are atomic (temp file + rename) to prevent corruption.
+Read-only turns can publish provenance without a file change. See
+[Provenance Graphs](/agents/provenance) for the graph structure and storage details.
 
 Provenance graphs are pushed to remotes alongside changes and rendered in the web UI.
 
