@@ -248,6 +248,27 @@ Atomic integrations generally introduce two kinds of files:
 
 Everything Atomic installs is listed in the receipt at `~/.atomic/integrations/<agent>/receipt.json`. The actual provenance artifacts live in `.atomic/` after the agent works — they are content-addressed records created by Atomic, not static setup files.
 
+## Updating and Troubleshooting an Installation
+
+Updating the CLI, refreshing the integration package, and restarting the
+background database owner are separate operations. Follow
+[Database Owner and Upgrades](/agents/database-owner) when replacing the CLI;
+restarting the agent application alone does not stop its owner.
+
+If OpenCode reports that it cannot resolve an imported plugin module, verify the
+installed files against the integration receipt. The install manifest must ship
+the plugin's helper modules as well as its entry point. Loading a plugin directly
+from a source checkout does not verify that the installed package is complete.
+
+For OpenCode, helper modules belong under `plugins/lib/`, with matching import
+paths and manifest destinations. Top-level files in `plugins/` are discovered as
+plugins; a helper class placed there can cause a startup error such as
+`Cannot call a class constructor without |new|`.
+
+After obtaining a corrected package, follow the refresh instructions for your
+integration and restart OpenCode. Check its startup errors and confirm that a
+test turn creates the expected entry in `atomic session show <session-id> --json`.
+
 ## Removing an Integration
 
 `disable` removes what `enable` installed, guided by the receipt. Files you modified after install are kept and reported; hook commands are stripped from shared settings files while your own hooks are preserved.

@@ -55,6 +55,7 @@ const sidebars: SidebarsConfig = {
       id: "agents/installing-agent-integrations",
       label: "Installing Integrations",
     },
+    "agents/database-owner",
     {
       type: "doc",
       id: "agents/provenance",
