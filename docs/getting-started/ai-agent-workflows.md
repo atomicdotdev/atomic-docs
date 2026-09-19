@@ -90,33 +90,19 @@ Because provenance and the session envelope are in the **hashed** section, they'
 
 ## How Agent Recording Works
 
-```text
-Agent lifecycle and tool events
-              |
-     short-lived hook processes
-              |
-           local RPC
-              |
-   per-repository database owner
-              |
-   durable provenance journal in redb
-              |
-       Stop / turn checkpoint
-              |
-   record scoped file changes, build provenance graph,
-   publish the session's linked turn record
-```
+1. You give the agent a task.
+2. Atomic saves its prompts and tool activity while it works.
+3. At turn end, Atomic records the file changes and links them to the agent's
+   provenance: the history of how it did the work. Read-only turns can have
+   provenance without file changes.
 
-Hook processes exit after their work, but the repository's **database owner stays
-running**. It holds the writable change/provenance store connection and handles
-journal requests from concurrent hooks. Stop builds the turn's provenance from
-its durable journal and publishes a checkpoint. Read-only turns can have
-provenance without a file change.
+A local background process called the **database owner** saves this activity for
+concurrent agent hooks. It starts automatically and can keep running after you
+close your agent application.
 
-The journal replaces the old `graph.json` accumulator as the authoritative event
-store on this path. Session JSON files still hold runtime state; they are not the
-durable provenance journal. See [Database Owner and Upgrades](/agents/database-owner)
-for process lifetime, RPC scope, and the shutdown sequence required when upgrading.
+When upgrading Atomic, follow the
+[database owner restart steps](/agents/database-owner) so your agent uses the
+updated process.
 
 ## Agent Isolation with Views
 

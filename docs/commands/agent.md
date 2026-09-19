@@ -19,10 +19,10 @@ The `agent` command is the Atomic-side control plane for AI coding integrations.
 
 When an integration is active, every supported turn or task is automatically recorded as an Atomic change with full provenance, and every session produces a provenance graph (causal decision DAG) and an attestation (session-level audit node).
 
-Each hook invocation is a short-lived process. Provenance journal operations use
-local RPC to a per-repository background database owner, which keeps the change
-store open. Closing the agent application does not stop that owner. See
-[Database Owner and Upgrades](/agents/database-owner) before upgrading the CLI.
+Atomic saves agent activity through a local background process called the
+**database owner**. It starts automatically and can keep running after you close
+your agent application. Follow the
+[restart steps](/agents/database-owner) when upgrading the CLI.
 
 For setup steps by agent, see [Installing Agent Integrations](/agents/installing-agent-integrations).
 
@@ -260,18 +260,15 @@ You prompt the agent → agent reads, edits, tests → Atomic records the turn
 
 ### Provenance Graph Pipeline
 
-Throughout the session, hooks persist event envelopes through the database owner.
-At checkpoint time, the **ProvenanceAccumulator** builds a causal decision DAG:
+Atomic saves prompts and tool activity as events in `.atomic/changes.redb`.
+At turn end, it builds a provenance graph from those events:
 
-- **`user-prompt`** → appends a **Goal** node (the user's intent)
-- **`after-tool`** → appends a classified tool node (**Exploration**, **Commitment**, **Verification**, or **Execution**) with causal edges inferred from context
-- **`stop`** → links recorded changes with **PatchProposal** nodes, builds a
-  content-addressed `ProvenanceGraph`, and publishes the turn's checkpoint
+- **`user-prompt`** → captures the user's goal.
+- **`after-tool`** → captures what the tool did, such as reading, editing, or testing.
+- **`stop`** → builds the graph and links it to the turn's recorded file changes.
 
-The durable journal lives in the owner-managed `.atomic/changes.redb` store.
-Session JSON files retain runtime state, but the legacy `graph.json` accumulator
-is not the authoritative event store on this path. Read-only turns can publish
-provenance without a change. See [Provenance Graphs](/agents/provenance).
+Read-only turns can publish provenance without a file change. See
+[Provenance Graphs](/agents/provenance) for the graph structure and storage details.
 
 Provenance graphs are pushed to remotes alongside changes and rendered in the web UI.
 

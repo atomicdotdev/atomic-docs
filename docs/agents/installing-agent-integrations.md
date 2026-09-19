@@ -250,24 +250,26 @@ Everything Atomic installs is listed in the receipt at `~/.atomic/integrations/<
 
 ## Updating and Troubleshooting an Installation
 
-Updating the CLI, refreshing the integration package, and restarting the
-background database owner are separate operations. Follow
-[Database Owner and Upgrades](/agents/database-owner) when replacing the CLI;
-restarting the agent application alone does not stop its owner.
+After upgrading the Atomic CLI, follow the
+[database owner restart steps](/agents/database-owner). Restarting your agent
+application alone does not restart the owner.
 
-If OpenCode reports that it cannot resolve an imported plugin module, verify the
-installed files against the integration receipt. The install manifest must ship
-the plugin's helper modules as well as its entry point. Loading a plugin directly
-from a source checkout does not verify that the installed package is complete.
+If OpenCode reports a missing plugin module or
+`Cannot call a class constructor without |new|`, update the integration package.
+These errors can occur when a package is missing a helper file or installs it
+in the wrong location.
 
-For OpenCode, helper modules belong under `plugins/lib/`, with matching import
-paths and manifest destinations. Top-level files in `plugins/` are discovered as
-plugins; a helper class placed there can cause a startup error such as
-`Cannot call a class constructor without |new|`.
+Close OpenCode, back up any custom edits to its installed Atomic integration
+files, then refresh the package:
 
-After obtaining a corrected package, follow the refresh instructions for your
-integration and restart OpenCode. Check its startup errors and confirm that a
-test turn creates the expected entry in `atomic session show <session-id> --json`.
+```bash
+atomic agent enable --agent opencode --force
+```
+
+`--force` downloads a fresh copy and overwrites installed integration files,
+including files you edited. Reopen OpenCode and try a short turn. Check
+`atomic session show <session-id> --json` to confirm that it was recorded.
+If the startup error remains, report it with your CLI and OpenCode versions.
 
 ## Removing an Integration
 

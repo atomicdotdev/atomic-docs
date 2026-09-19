@@ -4,132 +4,116 @@ title: Database Owner and Upgrades
 
 # Database Owner and Upgrades
 
-Atomic's agent recording path uses a **background database owner for each local
-repository**. Short-lived hook processes send provenance journal operations to
-that owner over local RPC. The owner holds the writable connection to
-`.atomic/changes.redb`, so concurrent hooks do not each try to open that database
-for writing.
+Atomic starts a small background process, called the **database owner**, to save
+agent activity for a local repository. It starts automatically when needed and
+lets multiple agent hooks share one connection to the change database.
 
-```text
-OpenCode / other agent integrations
-              |
-       Atomic hook processes
-              |
-           local RPC
-              |
-   repository database owner
-              |
-      .atomic/changes.redb
-```
+**Closing OpenCode or another agent application does not stop this process.**
+When you upgrade Atomic, stop the owner too so the new CLI can start an updated
+one. The steps below apply to each repository where you have been using agents.
 
-This is a local process, not the Atomic Storage server. It is started on demand
-from the CLI executable handling the request. Other hooks reconnect to the same
-repository's owner. Local RPC uses a Unix-domain socket on Unix and a named pipe
-on Windows.
+## Upgrade Atomic
 
-The owner is separate from OpenCode or your other agent application. **Closing
-the application does not shut down its repository's owner.** Replacing the CLI
-binary on disk also does not replace the code in an already running owner.
+1. Finish any active agent work, then close the agent application.
+2. Open a terminal in your project and stop its database owner:
 
-The owner does not route every Atomic command or eliminate every database lock.
-Repository graph/index operations have their own database access and contention
-handling. Its purpose here is to coordinate the change/provenance store and its
-durable journal.
+   ```bash
+   cd /path/to/your-project
+   atomic agent database-owner shutdown --repository "$PWD"
+   ```
 
-## Inspect or stop an owner
+   Wait for the owner to exit before continuing. You can check it with:
 
-Run these commands from the repository you want to inspect:
+   ```bash
+   atomic agent database-owner ping --repository "$PWD"
+   ```
+
+   Once it has stopped, `ping` can no longer connect. If you get a protocol error
+   instead, follow the recovery steps below. Repeat for other active repositories.
+3. [Upgrade Atomic](/getting-started/installation) using your usual installation
+   method, then check the version:
+
+   ```bash
+   atomic --version
+   ```
+
+4. Reopen your agent application. The next recording request starts a new owner
+   automatically.
+
+Stopping the owner does **not** delete recorded changes or saved agent activity.
+Do not assume your installer stops it automatically.
+
+## Recover After an Upgrade
+
+If you see `database owner does not support frozen journal pagination`, your CLI
+may be connecting to an older owner that is still running.
+
+Close the agent application and run these commands from the affected project
+using the updated CLI:
 
 ```bash
-# Check an existing owner without starting one.
-atomic agent database-owner ping --repository "$PWD" --json
-
-# Start one if absent, or reconnect to the existing process.
-atomic agent database-owner start --repository "$PWD" --json
-
-# Request shutdown of this repository's owner.
-atomic agent database-owner shutdown --repository "$PWD" --json
+atomic agent database-owner shutdown --repository "$PWD"
 ```
 
-`ping` reports a process ID and RPC protocol version. The protocol version is not
-the CLI release version, so a successful ping alone does not prove that the owner
-is running the newly installed release. `start` reuses a healthy existing owner;
-it is not a restart command.
+Wait for the old owner to exit, then start a new one:
 
-`shutdown` acknowledges that the owner is shutting down; it is not a wait for
-process exit. After stopping agent activity, wait for that owner's process to
-exit before replacing the binary or restarting work. A subsequent `ping` should
-no longer reach it. A failed ping can also indicate a connection or protocol
-problem, so inspect the error rather than assuming every failure means no owner
-exists.
+```bash
+atomic agent database-owner start --repository "$PWD"
+```
 
-Shutdown does not delete the database, changes, or committed journal events.
-It also does not finish an incomplete checkpoint on its own.
+Reopen the same agent session and retry the failed turn-end recording (the
+**Stop hook**) using your integration's retry option. Restarting the owner alone
+does not complete a failed recording.
 
-## Upgrade without mixing client and owner versions
+If shutdown fails because the versions cannot communicate, use the previous CLI
+version to stop the old owner first. If you have multiple Atomic installations,
+check that your terminal and agent application use the same version. Keep your
+`.atomic/` directory; deleting it is not a recovery step.
 
-Use this sequence for each local repository with an active owner:
-
-1. Pause agent work and let in-flight hooks finish. Keep the agent application
-   closed during the upgrade so it cannot start another owner.
-2. Use the currently installed CLI to ping and shut down the owner with the
-   commands above. Wait for it to exit. Repeat for other active repositories;
-   shutting down one owner does not stop all repository owners.
-3. Upgrade the CLI using your [installation method](/getting-started/installation).
-   Check `atomic --version` in the environment that launches your agent. If you
-   have multiple installations, make sure the agent resolves the intended binary.
-4. With the updated CLI, start the owner explicitly using the command above, or
-   let the next agent hook start it on demand. Restart the agent application.
-
-Do not assume an installer or updater performs this shutdown automatically.
-Until the update path you use explicitly handles owner lifecycle, perform it
-manually. Updating an agent integration package and restarting its application
-are separate from restarting the Atomic database owner.
-
-For installer/updater implementations, the same order matters: stop new hook
-traffic, request shutdown of affected owners, wait for exit, replace the binary,
-then allow new owners to start. A shutdown error must not be treated as proof
-that the old process has exited.
-
-## Recover after an upgrade
-
-An error such as `database owner does not support frozen journal pagination`
-means the client needs an owner capability that the connected process does not
-provide. An older owner still running after an upgrade is one possible cause.
-
-Pause agent activity, shut down the affected owner, and restart it using the
-intended CLI. If client and owner cannot communicate well enough to shut down,
-use the matching older CLI to request shutdown before starting the new one.
-Do not delete `.atomic/` or its database to resolve a version mismatch.
-
-Retry the failed Stop/checkpoint through the integration's retry path for the
-**same session**, then inspect its ledger:
+To check what was saved, replace `<session-id>` with the affected session's ID:
 
 ```bash
 atomic session show <session-id> --json
-atomic status
-atomic change <change-hash> --format json
+atomic log
 ```
 
-A Stop may have recorded file changes before checkpoint publication failed.
-Events already acknowledged by the owner are durable, but an append rejected
-before acknowledgement may never have reached the journal. Check the session
-ledger and hook error output; neither an error nor a successful owner restart
-alone establishes what was recorded. Recovery depends on the persisted state
-and the installed version's recovery support.
+A failed Stop can leave file changes recorded while their provenance is still
+incomplete. Check the session output and the original error before assuming
+anything was lost or that recovery is complete.
 
-## Large turns and frame limits
+## Large Recording Errors
 
-RPC limits apply to requests and responses. Reading a frozen journal in pages
-keeps each response bounded. A large batch of events sent **to** the owner also
-needs bounded requests; read pagination alone does not solve that case. A single
-very large event can exceed a frame even when its batch is split.
+`database-owner frame exceeds size limit` means a recording message is too large
+for the connection. Restarting the owner does not fix the size limit by itself.
 
-If you see `database-owner frame exceeds size limit`, retain the session and
-error details and check the applicable release's large-event support. Restarting
-an owner fixes a version mismatch, but does not make an oversized payload fit
-the same implementation's frame limit.
+Check for an Atomic release that supports larger recordings. If the error
+continues, include your Atomic version, agent integration, session ID, and error
+message in a bug report. Keep the existing session for recovery.
 
-See [Provenance Graphs](/agents/provenance) for journal/checkpoint behavior and
-[Installing Agent Integrations](/agents/installing-agent-integrations) for plugin
-installation and refresh steps.
+## Owner Commands
+
+Run these commands from the repository you want to manage:
+
+| Command | Purpose |
+| --- | --- |
+| `atomic agent database-owner ping` | Check whether an owner responds. Does not start one. |
+| `atomic agent database-owner start` | Start an owner, or reuse one already running. |
+| `atomic agent database-owner shutdown` | Ask the owner to stop. Wait for it to exit before upgrading. |
+
+Use `--repository /path/to/project` to manage another repository, or `--json` for
+machine-readable output. `start` does not restart an existing owner. A successful
+`ping` confirms that the owner responds, not that it runs the latest CLI version.
+
+## How It Works
+
+The owner runs on your computer and stores agent events in
+`.atomic/changes.redb`. At turn end, Atomic uses those events to build the
+provenance record: the history of what the agent did and which changes it made.
+
+Hooks communicate with the owner through a local connection. It is separate
+from the Atomic Storage server, and it does not handle every Atomic command or
+remove every possible database lock.
+
+See [Provenance Graphs](/agents/provenance) for more about recorded activity, or
+[Installing Agent Integrations](/agents/installing-agent-integrations) to update
+your agent's plugin.

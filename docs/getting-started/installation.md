@@ -40,22 +40,21 @@ atomic --version
 
 ### Upgrading an Existing Installation
 
-Before replacing the CLI, pause agent activity and shut down the background
-database owner for each active local repository:
+If you use Atomic with an AI agent, close the agent application and stop the
+background database owner in each active repository before upgrading:
 
 ```bash
-atomic agent database-owner ping --repository /path/to/repository --json
-atomic agent database-owner shutdown --repository /path/to/repository --json
+cd /path/to/your-project
+atomic agent database-owner shutdown --repository "$PWD"
 ```
 
-Wait for the owner to exit, perform the upgrade using your installation method,
-and check `atomic --version`. The updated CLI can then start a new owner on demand.
-Closing OpenCode or another agent application alone does not stop the owner, and
-replacing the binary does not update an already running process.
+Wait for the owner to exit, then upgrade using your usual installation method.
+Check `atomic --version` and reopen your agent application. Atomic starts a new
+owner when needed.
 
-See [Database Owner and Upgrades](/agents/database-owner) for the full sequence,
-multiple repositories, and recovery after an interrupted checkpoint. Do not
-assume the installer automatically stops existing owners.
+Closing the agent application alone does not stop the owner. Follow the
+[full upgrade steps](/agents/database-owner#upgrade-atomic) for checking shutdown
+or recovering from an upgrade error.
 
 ## Connect to Atomic Storage (optional)
 

@@ -86,29 +86,25 @@ The pending explorations list is cleared when a commitment arrives, so each comm
 
 ## How Provenance Graphs Are Built
 
-Agent hooks append provenance event envelopes to a durable journal through the
-per-repository [database owner](/agents/database-owner). The in-memory
-**ProvenanceAccumulator** builds the graph from those events at checkpoint time;
-`graph.json` is no longer the authoritative journal on this path.
+Atomic saves agent activity as it happens in a persistent event journal through
+its [database owner](/agents/database-owner). At the end of each turn, it builds
+a provenance graph from those events and links it to any recorded file changes.
 
 ### Lifecycle
 
-1. **`session-start`** — Initializes session runtime state. Journal operations
-   start or reconnect to the repository's background owner as needed.
-2. **`user-prompt`** (TurnStart) — Begins the turn and captures its goal.
-3. **Tool events** — Append event envelopes to the owner-managed journal. A
-   successful append acknowledgement means those events have been committed.
-4. **`stop`** (TurnEnd) — Records the turn's scoped file changes, reads the frozen
-   journal in pages, and constructs its content-addressed `ProvenanceGraph`.
-   Recorded changes are linked through **PatchProposal** nodes. Checkpoint
-   publication links the graph and changes into the session ledger. A read-only
-   turn can publish provenance with no file changes.
-5. **`session-end`** — If the session recorded changes, Atomic attempts to create
-   an attestation. This is separate from shutting down the repository's owner.
+1. **Session starts** — Atomic initializes the session.
+2. **Turn starts** — Atomic captures the user's prompt and goal.
+3. **Tools run** — Atomic saves tool activity to the journal. Once Atomic confirms
+   an event was saved, it has been committed to the database.
+4. **Turn ends (Stop)** — Atomic records the turn's file changes and publishes a
+   checkpoint linking those changes and their provenance to the session.
+   Read-only turns can have provenance without a file change.
+5. **Session ends** — If changes were recorded, Atomic attempts to create a
+   session attestation. The background database owner can keep running.
 
-Recording a file change and finishing checkpoint publication are distinct steps.
-If Stop fails partway through, inspect the existing session ledger before assuming
-that nothing was saved. See the [recovery guide](/agents/database-owner#recover-after-an-upgrade).
+File changes and their provenance are saved in separate steps. If Stop fails,
+some work may already be recorded. See the
+[recovery guide](/agents/database-owner#recover-after-an-upgrade) before retrying.
 
 ### Multi-Turn Chaining
 
@@ -124,14 +120,12 @@ The accumulator maintains session context across turns, but each saved `Provenan
 
 ### On Disk
 
-The redb-native change store keeps provenance journal data and serialized
-provenance objects in `.atomic/changes.redb`. Session runtime JSON may coexist
-with that store. Older repositories can also contain legacy loose objects such
-as `.atomic/changes/{prefix}/{hash}.provenance`; their presence does not make them
-the active journal.
+Atomic stores the event journal and provenance graphs in `.atomic/changes.redb`.
+Session JSON files hold additional runtime state. Older repositories may also
+contain `.provenance` files and a `graph.json` accumulator from earlier versions.
 
 Use `atomic session show <session-id> --json` and `atomic change <hash>` to inspect
-recorded history rather than relying on a particular loose-file layout.
+recorded history. You do not need to read or edit the database files yourself.
 
 ### Content Addressing
 
