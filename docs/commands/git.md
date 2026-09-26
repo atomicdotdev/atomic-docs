@@ -123,5 +123,5 @@ atomic git hooks uninstall
 
 - [pull](pull.md) / [push](push.md) — Atomic-native remote sync
 - [clone](clone.md) — Clone a remote Atomic repository
-- [Git Shadow Sync guide](/docs/getting-started/git-shadow-sync) — Full shadow-sync walkthrough
-- [migrating-from-git guide](/docs/getting-started/migrating-from-git) — Import walkthrough
+- [Git Shadow Sync guide](/getting-started/git-shadow-sync) — Full shadow-sync walkthrough
+- [migrating-from-git guide](/getting-started/migrating-from-git) — Import walkthrough

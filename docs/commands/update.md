@@ -51,4 +51,4 @@ atomic update --check || echo "update available (exit $?)"
 
 ## See Also
 
-- [installation](/docs/getting-started/installation) — Installing Atomic
+- [installation](/getting-started/installation) — Installing Atomic
