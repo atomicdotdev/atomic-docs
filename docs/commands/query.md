@@ -360,4 +360,4 @@ echo '{"query": "..."}' | atomic query plan
 
 - [vault](vault.md) — The shared knowledge store feeding the graph
 - [log](log.md) — Change history (source of change hashes)
-- [querying-the-graph guide](/docs/getting-started/querying-the-graph) — Getting-started walkthrough
+- [querying-the-graph guide](/getting-started/querying-the-graph) — Getting-started walkthrough
