@@ -102,4 +102,4 @@ atomic provenance show 3f9c2ab1 --sign --identity work-laptop
 - [change](change.md) — Inspect a specific change
 - [log](log.md) — Find change hashes
 - [identity](identity.md) — Managing signing identities
-- [How to See Why an AI Agent Changed Your Code](/docs/agents/provenance) — Provenance guide
+- [How to See Why an AI Agent Changed Your Code](/agents/provenance) — Provenance guide
