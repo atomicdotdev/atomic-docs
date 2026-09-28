@@ -24,6 +24,11 @@ const sidebars: SidebarsConfig = {
     "getting-started/migrating-from-git",
     {
       type: "doc",
+      id: "getting-started/comparison-with-git",
+      label: "Is Git Good Enough?",
+    },
+    {
+      type: "doc",
       id: "getting-started/git-shadow-sync",
       label: "Git Shadow",
     },
@@ -143,6 +148,8 @@ const sidebars: SidebarsConfig = {
         "commands/clone",
         "commands/restore",
         "commands/split",
+        "commands/git",
+        "commands/update",
       ],
     },
     {
@@ -162,6 +169,7 @@ const sidebars: SidebarsConfig = {
         "commands/diff",
         "commands/record",
         "commands/revise",
+        "commands/unrecord",
         "commands/log",
         "commands/change",
         "commands/insert",
@@ -171,7 +179,7 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "Views & Tags",
       collapsed: true,
-      items: ["commands/view", "commands/stash", "commands/tag"],
+      items: ["commands/view", "commands/stash", "commands/tag", "commands/triage"],
     },
     {
       type: "category",
@@ -183,7 +191,7 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "Intent & Memory",
       collapsed: true,
-      items: ["commands/intent", "commands/memory"],
+      items: ["commands/intent", "commands/memory", "commands/provenance", "commands/vault", "commands/query"],
     },
     {
       type: "category",
@@ -215,7 +223,7 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "AI Agents",
       collapsed: true,
-      items: ["commands/agent"],
+      items: ["commands/agent", "commands/agent-lifecycle", "commands/session", "commands/sandbox"],
     },
   ],
 };
