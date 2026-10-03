@@ -12,6 +12,7 @@ const sidebars: SidebarsConfig = {
       value: '<div class="sidebar-section-label">GETTING STARTED</div>',
       defaultStyle: false,
     },
+    "getting-started/quick-start",
     "getting-started/installation",
     "getting-started/first-repository",
     "getting-started/ai-agent-workflows",
