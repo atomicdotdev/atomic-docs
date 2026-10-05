@@ -56,6 +56,7 @@ atomic identity whoami
 | Working tree | Working copy | Your editable files |
 
 ## 3\. Initialize a Project
+A project groups files and agent intent across changes, similar to a repository.
 
 ```sh
 mkdir myproject
@@ -73,8 +74,7 @@ This creates an `.atomic` directory, or repository, containing:
 | `changes/` | Storage for change patches |
 
 ## 4\. Record Your First Change
-
-Track files, check status, review the diff, record:
+Manual changes are recorded to the change log.
 
 ```sh
 atomic add *                          # track files ("add to tree")
@@ -94,7 +94,7 @@ For a deeper walkthrough of the local workflow, see [Your First Repository](./fi
 
 ## 5\. Install the OpenCode Plugin
 
-Atomic records every agent turn automatically, with full provenance (model, tokens, cost, and a causal decision graph). No daemon is required. Install the OpenCode plugin with one command:
+Atomic records every agent turn automatically, with full provenance (model, tokens, cost, and a causal decision graph). Install the OpenCode plugin with one command:
 
 ```sh
 atomic agent enable --agent opencode
@@ -108,106 +108,77 @@ Confirm the install:
 ```sh
 atomic agent status --verbose
 ```
-
-Other agents are supported the same way: `atomic agent enable` auto-detects from directories like `.claude/` or `.cursor/`. Supported agents include Claude Code, Gemini CLI, Codex, Cursor, Copilot, Cline, and more. See [Installing Agent Integrations](/agents/installing-agent-integrations).
+Atomic records every agent turn automatically, with full provenance. Activate an agent using `atomic agent enable --agent <agent name>`. Supported agents are listed under the [Integration Matrix](https://docs.atomic.dev/agents/installing-agent-integrations#integration-matrix). `atomic agent enable` auto-detects from directories like `.claude/` or `.cursor/`. Supported agents include Claude Code, Gemini CLI, Codex, Cursor, Copilot, Cline, and more.
 
 ## 6\. Turn a Prompt into an Intent
 
-An **intent** records the *why* behind a unit of work — a directive with a mandatory `:::why`, checkable acceptance criteria, and ordered tasks that name the files they touch. An intent is not done until it conforms and is signed.
-
-Optionally, before creating one, check for existing work and pull relevant knowledge:
+An **intent** records the *why* behind a unit of work. Each intent is structured to include a `:::why`, checkable acceptance criteria, and ordered tasks that name the files they touch. An intent is not done until it conforms and is signed.
 
 ```sh
-atomic intent list
-atomic vault context --files src/
-```
+# 1. Scaffold a directive-based intent
+atomic intent new "Add the login flow"
 
-Then run the MVP workflow: scaffold, fill, sync, work, done, validate, attest.
-
-```sh
-atomic intent new "Add the login flow"          # scaffold the intent
-
-# Fill the directive stubs in the printed file:
-#   :::why, :::acceptance-criterion{#...}, :::task{#... criteria=...},
-#   :::scope-in, :::scope-out, :::constraint
-#   Every task names its files with ::file-ref{path=...}.
-
-atomic vault sync                               # persist your edits
-atomic intent update <ID> --status in_progress  # start the work
-# ... agent session records turns automatically ...
-atomic intent update <ID> --status done         # finish the work
+# 2. Fill the directive stubs in the printed file, then sync
 atomic vault sync
-atomic intent validate <ID>                     # must conform — hard gate
-atomic intent attest <ID>                       # sign it
+
+# 3. Gate it, then sign it
+atomic intent validate <ID>
+atomic intent attest <ID>
+
+# 4. Review your intents
+atomic intent list
+atomic intent show <ID>
 ```
 
-The `::file-ref` paths matter. They tie each task's files to the changes the agent records — which is how Atomic proves a change is covered by an intent. See [Atomic Vault](./atomic-vault#the-end-to-end-vault-workflow) for the full directive syntax.
+Note that `validate`, `attest`, and `show` read from the vault **database**. Always run `atomic vault sync` after editing an intent file and before validating or attesting, otherwise these commands see the stale on-disk scaffold. `vault sync` after editing an intent file and before validating or attesting, otherwise they see the stale on-disk scaffold. :::
 
-With the integration active, each agent turn is recorded automatically on an isolated draft session view. Work with your agent, then inspect the recorded turns:
+To track the work itself, start a goal linked to the intent:
 
 ```sh
-atomic log                                      # changes with AI provenance
+atomic vault goal start --intent <ID>
+# ... work happens (with your agent) ...
+atomic vault goal stop --promote
 ```
 
-:::note `validate`, `attest`, and `show` read from the vault **database**. Always run `atomic vault sync` after editing an intent file and before validating or attesting, otherwise these commands see the stale on-disk scaffold. :::
+See atomic intent and atomic vault for the full lifecycle. Additionally, the vault can be queried and mapped using a knowledge graph.
 
-## 7\. Verify, Complete, and Sign
+## 7\. Record Your First Change
 
 Run the checks your acceptance criteria require, then record the evidence in the intent file:
 
+With Atomic’s graphical structure, changes use patches. `atomic record` creates a patch (semantic change), instead of a linear snapshot.
+```sh
+atomic add *                          # track files ("add to tree")
+atomic status                         # see what changed
+atomic diff                           # review the diff
+atomic record -m "Initial change"     # record a change (creates a patch)
+atomic log                            # view history
 ```
-::verification{kind=unit outcome=pass scope=ac
-  observation="cargo test login_flow passed"}
-```
-
-Mark each task `done`, mark satisfied criteria `met` (with `verifiedBy` and `evidence`), and gate the intent:
+You can also record a specific file directly:
 
 ```sh
-atomic vault sync
-atomic intent update <ID> --status done
-atomic vault sync
-atomic intent validate <ID>     # must conform
-atomic intent attest <ID>       # sign it
-atomic intent verify <ID>       # confirm the signature is fresh
-atomic intent list              # shows done / fresh / checkmark
+atomic record file.txt
 ```
 
-`validate` is a hard gate. Before attesting, the only violations it may report are the fillable `attributedTo` and `proof`, which `attest` fills.
-
-## 8\. Capture Durable Memories
-
-Memories record durable, searchable knowledge as attestable records linked to their source. Link each memory to the most specific source available, such as an acceptance criterion or a task:
-
-| Kind | Use for |
-| :---- | :---- |
-| `decision` | A chosen approach and why it was selected |
-| `lesson` | A corrective lesson learned from something that went wrong |
-| `constraint` | A rule or limitation future work must respect |
-| `preference` | A durable preference (style, tooling, workflow) |
-| `context` | Background that is not a decision, lesson, or rule |
+## 8\. Review What Happened
+Now work with your agent for a bit, then review what was recorded:
 
 ```sh
-# Record a decision linked to its source criterion
-atomic memory new --kind decision \
-  --text "Chose readline over a full TUI: smaller dependency surface" \
-  --derived-from urn:atomic:ac:<UID>-ac-1
+# See the recorded changes with AI provenance (includes change hashes)
+atomic log
 
-# Gate and sign it
-atomic memory validate <ID>
-atomic memory attest <ID>
-atomic memory verify <ID>
+# Check session and hook status
+atomic agent status --verbose
 
-# Browse memories
-atomic memory list
+# Inspect attestations (cost, tokens, model breakdown)
+atomic agent attest
+
+# View details for a specific attestation with change hash
+atomic agent attest --hash XMJZ3IPF
+
+# Generate AI reasoning summaries
+atomic agent explain <session-id> --all --save
 ```
-
-Linking memories to sources is what makes them queryable later. The next time you start work, retrieve them again:
-
-```sh
-atomic vault context --intent <NEW_INTENT>
-```
-
-This closes the loop: memories from finished work inform the next intent. See [`atomic memory`](/commands/memory) for all subcommands.
 
 ## 9\. Branch with Views
 
@@ -226,7 +197,17 @@ Agent sessions already work this way: each session starts on an isolated draft v
 
 ## 10\. Review and Land Your Changes
 
-**Provenance** is the recorded causal chain of AI work: session, turns, changes, and views. Every change carries it, and you can inspect it directly:
+There are two ways to bring changes into a view, you may either insert the full change or select a specific change hash to insert :
+
+```sh
+# Insert the current view's changes to its parent
+atomic insert
+
+# Insert a single change into a specific view
+atomic insert <HASH> --view dev
+```
+
+**Provenance** is the recorded causal chain of AI work: session, turns, changes, and views. Every change generates additional metadata, and you can inspect it directly:
 
 ```sh
 # Inspect a specific change (hash from atomic log)
@@ -250,26 +231,6 @@ atomic intent validate <REVIEW_ID>
 atomic intent attest <REVIEW_ID> --identity reviewer
 ```
 
-Then land the work:
-
-```sh
-# Preview the promotion
-atomic insert preview feature-login --to dev
-
-# PROMOTE: insert the current view's changes into its parent
-atomic insert
-
-# Or insert a single change into a specific view
-atomic insert <HASH> --view dev
-```
-
-- **Promote** (`atomic insert` with no arguments) moves everything on the current view into its parent view.  
-- **Insert with a hash** brings one specific change into the current view (or `--view`).
-
-Both are O(1) metadata operations. Atomic inserts the full transitive dependency closure automatically so the view stays consistent. Promoting between two shared views requires an interactive confirmation; pass `--confirm` to skip it in scripts.
-
-The full finding reference, remediation workflow, and triage report options are covered in [Atomic Vault](./atomic-vault#triage-review-before-promotion).
-
 ## 11\. Push Everything
 
 Changes, provenance, and session data travel together:
@@ -278,7 +239,7 @@ Changes, provenance, and session data travel together:
 atomic push
 ```
 
-Collaborators receive your changes **and** the story behind them: intents, memories, attestation, and provenance. `atomic pull` brings remote changes in the same way.
+Collaborators within your organization receive your changes **and** the context behind them: intents, memories, attestation, and provenance. `atomic pull` brings remote changes in the same way.
 
 ## 12\. Coming from Git?
 
