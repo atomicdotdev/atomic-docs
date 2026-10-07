@@ -29,6 +29,7 @@ For agent-native workflows the commit DAG is the wrong *primary* abstraction, an
 - [Migrating from Git](https://docs.atomic.dev/getting-started/migrating-from-git): Move an existing Git project onto Atomic.
 - [Git Shadow](https://docs.atomic.dev/getting-started/git-shadow-sync): Keep a Git mirror in sync while adopting Atomic.
 - [Train Tracks Demo](https://docs.atomic.dev/getting-started/train-tracks-demo): Tour a live Atomic project built end-to-end by an AI agent.
+- [Atomic Setup Skill for Agents](https://docs.atomic.dev/atomic-setup-skill.md): Downloadable agent instruction file that walks a coding agent through installing, configuring, and verifying Atomic end to end.
 
 ## Agents
 
