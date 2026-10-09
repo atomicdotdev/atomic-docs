@@ -90,39 +90,19 @@ Because provenance and the session envelope are in the **hashed** section, they'
 
 ## How Agent Recording Works
 
-```
-You prompt Claude Code → agent reads files, makes edits, runs tests
-                                          │
-                         hooks fire on each tool call
-                                          │
-                                          ▼
-                              TurnOrchestrator
-                                ├── Appends nodes to ProvenanceAccumulator
-                                │     (Goal, Exploration, Commitment, Verification)
-                                │
-                                ▼
-                           Agent goes idle (turn end)
-                                │
-                         ┌──────┴──────┐
-                         │  record_turn │
-                         │  ├── status  │
-                         │  ├── add     │
-                         │  └── record  │
-                         └──────┬──────┘
-                                │
-                         ┌──────┴──────────────────┐
-                         │  Save ProvenanceGraph     │
-                         │  ├── PatchProposal node   │
-                         │  ├── Convert to postcard  │
-                         │  └── Content-address hash │
-                         └──────┬──────────────────┘
-                                │
-                                ▼
-                    .atomic/changes/AB/ABC123.change
-                    .atomic/changes/XM/XMJZ3I.provenance
-```
+1. You give the agent a task.
+2. Atomic saves its prompts and tool activity while it works.
+3. At turn end, Atomic records the file changes and links them to the agent's
+   provenance: the history of how it did the work. Read-only turns can have
+   provenance without file changes.
 
-Each hook invocation is a separate process — no daemon required. The provenance accumulator is persisted to `.atomic/sessions/{session_id}/graph.json` between invocations using atomic writes (temp file + rename).
+A local background process called the **database owner** saves this activity for
+concurrent agent hooks. It starts automatically and can keep running after you
+close your agent application.
+
+When upgrading Atomic, follow the
+[database owner restart steps](/agents/database-owner) so your agent uses the
+updated process.
 
 ## Agent Isolation with Views
 

@@ -38,6 +38,24 @@ archive, verifies checksums when available, and installs the `atomic` binary.
 atomic --version
 ```
 
+### Upgrading an Existing Installation
+
+If you use Atomic with an AI agent, close the agent application and stop the
+background database owner in each active repository before upgrading:
+
+```bash
+cd /path/to/your-project
+atomic agent database-owner shutdown --repository "$PWD"
+```
+
+Wait for the owner to exit, then upgrade using your usual installation method.
+Check `atomic --version` and reopen your agent application. Atomic starts a new
+owner when needed.
+
+Closing the agent application alone does not stop the owner. Follow the
+[full upgrade steps](/agents/database-owner#upgrade-atomic) for checking shutdown
+or recovering from an upgrade error.
+
 ## Connect to Atomic Storage (optional)
 
 To create or clone hosted projects, first create an Ed25519 identity and register
