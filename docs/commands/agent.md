@@ -19,7 +19,7 @@ The `agent` command is the Atomic-side control plane for AI coding integrations.
 
 When an integration is active, every supported turn or task is automatically recorded as an Atomic change with full provenance, and every session produces a provenance graph (causal decision DAG) and an attestation (session-level audit node).
 
-No daemon required. Each hook invocation is a standalone process that opens the repo, does its work, and exits.
+Each hook invocation is a standalone process. Database operations use the shared service handlers: local mode runs them in-process, and reactor mode calls the daemon.
 
 For orchestrators driving inner agents, `atomic agent lifecycle` declares and tracks **managed runs** (leases, executor pinning, run summaries) — see [agent lifecycle](agent-lifecycle.md).
 
@@ -97,7 +97,7 @@ atomic agent disable --all
 
 ### `status`
 
-Show agent integration status.
+Show agent integration status, sessions, hook liveness, and failures.
 
 ```bash
 # Show status
@@ -105,20 +105,45 @@ atomic agent status
 
 # Show verbose status with session details
 atomic agent status --verbose
+
+# Inspect session-scoped hook outcomes as JSON
+atomic agent status --json
 ```
 
 **Options:**
 
 | Option | Description |
 |--------|-------------|
-| `--verbose`, `-v` | Show session details, turn history, and watcher state |
+| `--verbose`, `-v` | Show detailed session information, including phase, prompt, and touched files |
+| `--json` | Emit machine-readable installation, session, hook-health, and error data |
 
 **Output includes:**
 
 - Installed agents and hook status
-- Active sessions with turn counts
-- File watcher state
-- Recent recording history
+- Active and ended sessions with turn counts
+- The last successful hook dispatch and its age relative to the current time
+- Outstanding failing verbs, attributed to their sessions and parents
+- Grouped errors from the bounded plugin/git-shadow error-log tail
+
+Health is derived from session-scoped operational logs. A successful child
+cannot clear a parent's failure, and concurrent hook processes retain their
+own observations.
+
+**Hook-health JSON fields:**
+
+| Field | Description |
+|-------|-------------|
+| `hook_health` | Per-agent liveness and outstanding failing verbs |
+| `hook_sessions` | Per-session outcomes under `health.verbs`, including parent IDs and failure details |
+| `hook_health_error` | Why the operational log could not be loaded |
+| `hook_errors` | Aggregated legacy plugin/git-shadow errors and recent entries |
+| `silent_agents` | Installed agents with no successful dispatch in the available log |
+
+With no observations, hook-health fields are omitted. During a service outage,
+pending observations may still be reported; `hook_health_error` explains the
+partial report, and `silent_agents` is omitted. See
+[Hook Health and Troubleshooting](/agents/hook-health) for diagnosis, correlation,
+and recovery behavior.
 
 ### `explain`
 
@@ -341,6 +366,7 @@ atomic revise
 
 ## See Also
 
+- [Hook Health and Troubleshooting](/agents/hook-health) — Session-scoped outcomes and failure diagnosis
 - [agent lifecycle](agent-lifecycle.md) — Managed runs for orchestrated agents
 - [session](session.md) — The agent session ledger
 - [Provenance Graphs](/agents/provenance) — How agent reasoning is captured as causal DAGs

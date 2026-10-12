@@ -229,6 +229,12 @@ atomic log
 atomic agent attest
 ```
 
+Check the most recent successful hook dispatch as well as the installation
+flags. If a hook fails, `atomic agent status --json` exposes the session's
+failing verb and detail under `hook_sessions`. See
+[Hook Health and Troubleshooting](hook-health.md) for interpretation and
+service-outage diagnostics.
+
 For a specific change, including its inline AI metadata and Change Ledger:
 
 ```bash

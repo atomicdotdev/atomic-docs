@@ -324,12 +324,21 @@ This is especially useful when reviewing pull requests — you can see exactly h
 ### Agent Hooks Not Firing
 
 ```bash
-# Check if hooks are installed
+# Check installation and observed hook outcomes
 atomic agent status
+
+# Inspect per-session failures and details
+atomic agent status --json
 
 # Reinstall hooks
 atomic agent enable --force
 ```
+
+Installed hooks can still fail when they run. Inspect the affected session in
+`hook_sessions`, including its failing verb's `detail` and `last_ok`. A child
+session's success cannot clear a parent's failure. If the service is unavailable,
+`hook_health_error` explains the partial report and pending observations remain
+inspectable. See [Hook Health and Troubleshooting](/agents/hook-health).
 
 ### Session Not Recording Changes
 
@@ -341,7 +350,10 @@ If the attestation shows `$0.00` and `0 tokens`, the provenance entries in the c
 
 ### Agent View Not Created
 
-If the agent view wasn't created (e.g., repository couldn't be opened), recording still works — it just records to the current view instead of an isolated one. Check stderr output for warnings.
+Failure to prepare or align a required agent view is reported rather than
+silently recording onto another view. Inspect the session's hook failure detail
+with `atomic agent status --json`, correct the reported cause, and retry the
+affected hook.
 
 ## Next Steps
 

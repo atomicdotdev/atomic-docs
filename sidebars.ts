@@ -63,6 +63,11 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "doc",
+      id: "agents/hook-health",
+      label: "Hook Health & Troubleshooting",
+    },
+    {
+      type: "doc",
       id: "agents/provenance",
       label: "How to See Why an AI Agent Changed Your Code",
     },

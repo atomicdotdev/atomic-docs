@@ -34,6 +34,7 @@ For agent-native workflows the commit DAG is the wrong *primary* abstraction, an
 
 - [Overview](https://docs.atomic.dev/agents/overview): How Atomic works alongside Claude Code, Cursor, Copilot, Gemini CLI, and OpenCode.
 - [Installing Integrations](https://docs.atomic.dev/agents/installing-agent-integrations): Configure per-agent provenance capture.
+- [Hook Health and Troubleshooting](https://docs.atomic.dev/agents/hook-health): Inspect session-scoped hook outcomes, diagnose silent failures, and understand parent/child correlation and outage recovery.
 - [Provenance Graphs](https://docs.atomic.dev/agents/provenance): The causal record of what an agent explored, read, changed, and why.
 - [Attestations](https://docs.atomic.dev/agents/attestations): ed25519-signed, content-addressed change attestation.
 
