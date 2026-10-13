@@ -339,8 +339,9 @@ atomic log --view agent-ses_3781fc...
 # Insert specific changes into your view
 atomic insert <change-hash> --to dev
 
-# Clean up the agent view
-atomic view delete agent-ses_3781fc...
+# Clean up the agent view (--force: uninserted changes would be orphaned,
+# and there is no terminal to confirm)
+atomic view delete agent-ses_3781fc... --force
 ```
 
 ### Push agent data to remote

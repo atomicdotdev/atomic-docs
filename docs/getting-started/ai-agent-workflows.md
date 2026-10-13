@@ -152,7 +152,9 @@ atomic insert <change-hash> --to dev
 atomic insert @~1 --to dev
 
 # Delete the agent view — removes VIEW_CHANGES entries, orphaned edges cleaned by GC
-atomic view delete agent-ses_3781fc7a...
+# --force: anything you did not insert would be orphaned, and agent sessions
+# have no terminal to answer the orphan-confirmation prompt
+atomic view delete agent-ses_3781fc7a... --force
 ```
 
 ## Provenance Graphs

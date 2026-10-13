@@ -190,7 +190,7 @@ atomic insert change <change-hash> --to dev
 
 # A current view cannot be deleted, so leave the agent view first
 atomic view switch dev
-atomic view delete agent-ses_3781fc...
+atomic view delete agent-ses_3781fc... --force
 ```
 
 ## Supported Agent Integrations

@@ -183,6 +183,23 @@ atomic view split <NAME> [CHANGES]... [OPTIONS]
 | `--cascade` | Also move any changes that depend on the split-out set |
 | `--dry-run`, `-n` | Preview the split (and any blocking dependents) without performing it |
 | `--switch`, `-s` | Switch to the new draft after creating it |
+| `--confirm` | Acknowledge the orphaning risk and skip the confirmation prompt (required for non-interactive use) |
+
+#### Confirmation
+
+A real split (not `--dry-run`) moves the changes **out of** the source view, so
+deleting the new draft later can leave them orphaned — referenced by no view and
+invisible everywhere. Atomic therefore previews the split, prints what will move,
+and asks you to confirm before performing it. In scripts and agent sessions
+(no terminal), pass `--confirm` to acknowledge the same risks non-interactively;
+without it the command refuses.
+
+```
+$ atomic view split wip --last 1
+⚠ This removes 1 change(s) from 'dev' into draft 'wip' (0 dependent change(s) included).
+⚠ Deleting that draft without inserting its changes elsewhere may leave them orphaned, invisible in every view. They will not return to the source automatically.
+? Split 1 change(s) from 'dev' into 'wip'? I understand deleting the draft may orphan them [y/N]
+```
 
 #### Dependency safety
 
@@ -338,7 +355,7 @@ atomic view delete <NAME> [OPTIONS]
 
 | Option | Description |
 |--------|-------------|
-| `--force`, `-f` | Force deletion without confirmation |
+| `--force`, `-f` | Delete without the orphan-confirmation prompt (also the non-interactive escape hatch) |
 
 #### Rules
 
@@ -346,15 +363,32 @@ atomic view delete <NAME> [OPTIONS]
 - **Views with children cannot be deleted** — delete or reparent children first.
 - **The current view cannot be deleted** — switch to a different view first.
 - **Draft views** have their `VIEW_CHANGES` entries removed. Orphaned edges (not referenced by any other view) are cleaned by background GC.
+- **Orphan preview**: before deleting, Atomic lists the changes that would lose
+  their last view reference (no remaining view references them, directly or via
+  dependencies). If any would be orphaned, it warns, prints the hashes, and asks
+  for confirmation. Their data is not erased — the change objects stay in the
+  content-addressed store — but they disappear from every view and do not return
+  to the source automatically. Insert them into another view first to keep them
+  referenced, or pass `--force` to proceed knowingly. In non-interactive
+  contexts (scripts, agents) the prompt fails closed: only `--force` proceeds.
 
 #### Examples
 
 ```bash
-# Delete an abandoned feature view
+# Delete an abandoned feature view (all its changes are still referenced
+# elsewhere, or it is empty — no prompt, straight through)
 atomic view delete feature-old
 # ✓ Deleted view: feature-old
 
-# Force delete without confirmation prompt
+# Deleting a view whose changes would be orphaned warns and prompts
+atomic view delete wip
+# ⚠ Deleting 'wip' would orphan 1 change(s): no remaining view references them.
+#   7A5F89A98F14B025...
+# ⚠ Their data is not erased by view deletion, but they will disappear from all views and will not return to the source automatically.
+# ℹ Insert these changes into another view before deleting this one to keep them referenced.
+# ? I understand these changes will be orphaned; delete the view [y/N]
+
+# Non-interactive: --force acknowledges the warning without a prompt
 atomic view delete experiment --force
 # ✓ Deleted view: experiment
 ```
