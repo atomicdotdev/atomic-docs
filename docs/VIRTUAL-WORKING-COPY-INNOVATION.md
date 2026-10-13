@@ -19,7 +19,7 @@ Traditional version control systems (Git) were designed for humans who edit file
 
 ## The Innovation: Virtual Working Copies
 
-Atomic VCS introduces **virtual working copies** - in-memory data structures that track file modifications without materializing them on disk.
+Atomic introduces **virtual working copies** — in-memory data structures that track file modifications without materializing them on disk.
 
 ### Architecture
 
@@ -33,7 +33,7 @@ Traditional VCS (Git):
 │ Agent 100: (50GB total)             │
 └─────────────────────────────────────┘
 
-Atomic VCS (Virtual Working Copies):
+Atomic (Virtual Working Copies):
 ┌─────────────────────────────────────┐
 │ Agent 1: session_1 (5MB RAM - diffs)│
 │ Agent 2: session_2 (5MB RAM - diffs)│
@@ -166,7 +166,7 @@ session.commit()                              # ONE disk write
 
 ### Defensibility
 
-1. **Architectural**: Requires change-based VCS model (can't retrofit onto Git)
+1. **Architectural**: Requires change-based graph model (can't retrofit onto Git)
 2. **Mathematical**: Built on patch theory foundations (10+ years research)
 3. **Performance**: 100× improvement creates moat (can't compete with incremental improvements)
 4. **Network Effects**: Change identity enables new collaboration patterns
@@ -248,7 +248,7 @@ Sessions are completely isolated in memory:
 
 ## Conclusion
 
-Virtual working copies are not a feature - they're a **fundamental architectural innovation** that makes Atomic VCS the first version control system designed for AI-native development.
+Virtual working copies are not a feature — they're a **fundamental architectural innovation** that makes Atomic the first semantic change graph designed for AI-native development.
 
 **Key Metrics**:
 - **100× cost reduction** (disk → memory)
@@ -257,11 +257,11 @@ Virtual working copies are not a feature - they're a **fundamental architectural
 - **Massive parallelism** (1000+ agents)
 
 **Market Position**:
-As AI-generated code becomes the majority, traditional VCS becomes the bottleneck. Virtual working copies eliminate that bottleneck, making Atomic the infrastructure for the next decade of software development.
+As AI-generated code becomes the majority, traditional version control becomes the bottleneck. Virtual working copies eliminate that bottleneck, making Atomic the infrastructure for the next decade of software development.
 
 **The Paradigm Shift**:
-- Git: Humans edit files, VCS computes diffs
-- Atomic: Agents describe transformations, VCS executes them
+- Git: Humans edit files, the system computes diffs
+- Atomic: Agents describe transformations, the graph executes them
 
 This is the difference between assembly language and high-level languages. Virtual working copies let AI agents speak their native language—transformations—without the overhead of state materialization.
 

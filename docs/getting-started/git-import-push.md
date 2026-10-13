@@ -266,4 +266,3 @@ Never delete `.atomic/` and re-import as a "fix." This destroys all Atomic-nativ
 - [Git Bridge](./git-bridge) — the verified, colocated workflow
 - [Migrating from Git](./migrating-from-git.md) — full migration guide if you want to go Atomic-only
 - [AI Agent Workflows](./ai-agent-workflows.md) — using agents with Atomic's provenance tracking
-- [Stacked Diffs](./stacked-diffs.md) — building reviewable change stacks in Atomic

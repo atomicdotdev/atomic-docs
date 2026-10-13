@@ -7,13 +7,13 @@ title: Hunks - Edit and Replacement Calculations
 
 ## Abstract
 
-This document provides a rigorous mathematical treatment of hunk operations in Atomic VCS. Hunks are the fundamental atomic operations in Atomic's patch-based directed acyclic graph (DAG) model. We prove the correctness properties of Edit and Replacement hunks, showing how they maintain consistency in the version control system's mathematical model.
+This document provides a rigorous mathematical treatment of hunk operations in Atomic. Hunks are the fundamental atomic operations in Atomic's patch-based directed acyclic graph (DAG) model. We prove the correctness properties of Edit and Replacement hunks, showing how they maintain consistency in the graph's mathematical model.
 
 ## 1. Preliminaries: The Patch-Based DAG Model
 
 ### 1.1 Mathematical Framework
 
-Atomic VCS is built on a **patch-based DAG** where:
+Atomic is built on a **patch-based DAG** where:
 
 - **Vertices** represent immutable blocks of content
 - **Edges** represent ordering relationships between vertices

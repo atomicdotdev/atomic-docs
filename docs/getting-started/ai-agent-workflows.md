@@ -13,33 +13,34 @@ No manual flags. No wrapper scripts. No environment variables.
 
 ### 1. Install an Agent Integration
 
-Atomic's agent adapters live in agent-specific packages:
+Install the adapter for your agent with one command:
+
+```bash
+# Install a specific agent's integration
+atomic agent enable --agent opencode
+
+# Or let Atomic detect the agent from directories like .claude/ or .cursor/
+atomic agent enable
+```
+
+`enable` fetches the integration package from Atomic storage and installs its hooks, plugins, extensions, skills, and instruction files — no clone, no `npm`/`npx`, no shell script. Supported agents:
 
 | Integration | Agent |
 |-------------|-------|
+| `atomic-agy` | Antigravity CLI |
 | `atomic-claude` | Claude Code |
-| `atomic-codex` | Codex |
 | `atomic-cline` | Cline |
-| `atomic-pi` | Pi |
+| `atomic-codex` | Codex |
 | `atomic-copilot` | GitHub Copilot |
 | `atomic-cursor` | Cursor |
+| `atomic-devin` | Devin |
+| `atomic-grok` | Grok Build |
+| `atomic-kilo` | Kilo Code |
+| `atomic-kiro` | Kiro |
 | `atomic-opencode` | OpenCode |
-
-Each package installs hooks, plugins, extensions, or skills for that agent and, when needed, provides project instruction files such as `CLAUDE.md`, `AGENTS.md`, `.cursor/rules/atomic.md`, or `.github/hooks/atomic-hooks.json`.
+| `atomic-pi` | Pi |
 
 → [Install an agent integration](/agents/installing-agent-integrations)
-
-If you are using a built-in Atomic adapter directly, you can still use `atomic agent enable`:
-
-```bash
-# Auto-detect which built-in agent adapter is present
-atomic agent enable
-
-# Or target a specific built-in adapter
-atomic agent enable --agent claude-code
-atomic agent enable --agent opencode
-atomic agent enable --agent gemini-cli
-```
 
 All integrations call back to `atomic agent hooks <agent> <verb>` on lifecycle events.
 
@@ -223,19 +224,25 @@ The `+tag` is a short hash of the session ID — every agent turn traces back to
 |-------|---------------|
 | Claude Code | `claude+60f5 <lee@atomic.dev>` |
 | Gemini CLI | `gemini+abcd <lee@atomic.dev>` |
+| Grok Build | `grok+019f <lee@atomic.dev>` |
 | OpenCode | `opencode+9876 <lee@atomic.dev>` |
 
 ## Supported Agent Integrations
 
-| Integration | Agent | Install Model | Project Setup |
-|-------------|-------|---------------|---------------|
-| **atomic-claude** | Claude Code | Global hooks + skills | Copy `CLAUDE.md` to the project root |
-| **atomic-codex** | Codex | Global hooks + feature flag | Copy `AGENTS.md` to the project root |
-| **atomic-cline** | Cline | Hook scripts in Cline's hooks directory | Copy `rules/atomic.md` to `.clinerules/atomic.md` |
-| **atomic-pi** | Pi | Pi extension package | No repo-local file required by default |
-| **atomic-copilot** | GitHub Copilot | Repository hook manifest for cloud agent | Copy `.github/hooks/atomic-hooks.json`, `.github/copilot-instructions.md`, and `AGENTS.md` |
-| **atomic-cursor** | Cursor | Global hooks | Copy `rules/atomic.md` to `.cursor/rules/atomic.md` |
+| Integration | Agent | Install Model | Notes |
+|-------------|-------|---------------|-------|
+| **atomic-agy** | Antigravity CLI | Plugin (hooks + skills) | Writes a managed `AGENTS.md` section |
+| **atomic-claude** | Claude Code | Hooks + skills | Auto-detected from `.claude/` |
+| **atomic-cline** | Cline | Hook scripts | Enable hooks in Cline's VS Code Hooks tab |
+| **atomic-codex** | Codex | Hooks + feature flag | Codex hook support is experimental |
+| **atomic-copilot** | GitHub Copilot | Repository hook manifest | Manifest must be on the default branch for the cloud agent |
+| **atomic-cursor** | Cursor | Hooks + rules | Follows the Atomic intent workflow in-project |
+| **atomic-devin** | Devin | Hook wiring | — |
+| **atomic-grok** | Grok Build | Global hooks + rules + skills | Installs to `~/.grok/`; requires CLI >= 0.12.0 |
+| **atomic-kilo** | Kilo Code | Rules + agent config | Reads `.kilo/` config |
+| **atomic-kiro** | Kiro | IDE steering + hooks | Configure hooks in the Kiro IDE panel |
 | **atomic-opencode** | OpenCode | Plugin + agent + skills | Select the Atomic agent in OpenCode |
+| **atomic-pi** | Pi | Pi extension | Activates in Atomic repositories |
 
 All integrations share the same Rust-side orchestrator (`TurnOrchestrator`). The only difference is how each agent reports lifecycle events and how project instructions are discovered. Each adapter normalizes events into common `TurnEvent` values before Atomic records provenance.
 
@@ -317,12 +324,21 @@ This is especially useful when reviewing pull requests — you can see exactly h
 ### Agent Hooks Not Firing
 
 ```bash
-# Check if hooks are installed
+# Check installation and observed hook outcomes
 atomic agent status
+
+# Inspect per-session failures and details
+atomic agent status --json
 
 # Reinstall hooks
 atomic agent enable --force
 ```
+
+Installed hooks can still fail when they run. Inspect the affected session in
+`hook_sessions`, including its failing verb's `detail` and `last_ok`. A child
+session's success cannot clear a parent's failure. If the service is unavailable,
+`hook_health_error` explains the partial report and pending observations remain
+inspectable. See [Hook Health and Troubleshooting](/agents/hook-health).
 
 ### Session Not Recording Changes
 
@@ -334,7 +350,10 @@ If the attestation shows `$0.00` and `0 tokens`, the provenance entries in the c
 
 ### Agent View Not Created
 
-If the agent view wasn't created (e.g., repository couldn't be opened), recording still works — it just records to the current view instead of an isolated one. Check stderr output for warnings.
+Failure to prepare or align a required agent view is reported rather than
+silently recording onto another view. Inspect the session's hook failure detail
+with `atomic agent status --json`, correct the reported cause, and retry the
+affected hook.
 
 ## Next Steps
 

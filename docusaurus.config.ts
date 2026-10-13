@@ -2,6 +2,12 @@ import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
+const algoliaAppId = process.env.ALGOLIA_APP_ID ?? "WZS81GGIUF";
+const algoliaSearchApiKey =
+  process.env.ALGOLIA_SEARCH_API_KEY ?? "71552cb8da2740b81b8901d5d5ec1b1c";
+const algoliaIndexName =
+  process.env.ALGOLIA_INDEX_NAME ?? "Atomic Docs Docusaurus";
+
 const config: Config = {
   title: "Atomic",
   tagline:
@@ -19,8 +25,44 @@ const config: Config = {
   projectName: "atomic-docs",
   trailingSlash: false,
 
+  // Analytics scripts — injected into the <head> of every page.
+  scripts: [
+    {
+      src: "https://api.attrifast.com/af.js",
+      defer: true,
+      "data-tracking-id": "af_TqLkS1bL5WTnDiNe",
+    },
+    {
+      src: "https://www.googletagmanager.com/gtag/js?id=G-NWP8LGDP27",
+      async: true,
+    },
+  ],
+  headTags: [
+    {
+      tagName: "meta",
+      attributes: {
+        name: "algolia-site-verification",
+        content: "3894BB5FA41C71AB",
+      },
+    },
+    {
+      tagName: "script",
+      attributes: {},
+      innerHTML: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-NWP8LGDP27');`,
+    },
+  ],
+
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
+
+  markdown: {
+    mermaid: true,
+  },
+
+  themes: ["@docusaurus/theme-mermaid"],
 
   i18n: {
     defaultLocale: "en",
@@ -34,11 +76,15 @@ const config: Config = {
         docs: {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/",
-          editUrl: "https://github.com/atomicdotdev/atomic/tree/main/docs/",
+          // Docusaurus appends the site-relative source path (which already
+          // starts with `docs/`), so this base must be the REPO ROOT of this
+          // repo — not the atomic repo, and not a path ending in `docs/`.
+          editUrl: "https://github.com/atomicdotdev/atomic-docs/tree/release/",
         },
         blog: false,
+
         theme: {
-          customCss: "./src/css/custom.css",
+          customCss: ["./src/css/fonts.css", "./src/css/custom.css"],
         },
       } satisfies Preset.Options,
     ],
@@ -48,15 +94,15 @@ const config: Config = {
     image: "img/atomic-logo.png",
     colorMode: {
       defaultMode: "dark",
-      disableSwitch: false,
-      respectPrefersColorScheme: true,
+      disableSwitch: true,
+      respectPrefersColorScheme: false,
     },
     navbar: {
       title: "",
       logo: {
         alt: "Atomic",
-        src: "img/atomic-logo-horizontal-white.png",
-        srcDark: "img/atomic-logo-horizontal-white.png",
+        src: "img/atomic-logo-horizontal.png",
+        srcDark: "img/atomic-logo-horizontal.png",
         style: { height: "50px" },
       },
       items: [
@@ -169,10 +215,54 @@ const config: Config = {
       ],
     },
     algolia: {
-      appId: "YOUR_APP_ID",
-      apiKey: "YOUR_SEARCH_API_KEY",
-      indexName: "atomic-vcs",
+      appId: algoliaAppId,
+      apiKey: algoliaSearchApiKey,
+      indexName: algoliaIndexName,
       contextualSearch: true,
+      searchPagePath: "search",
+      placeholder: "Search Atomic docs",
+    },
+    mermaid: {
+      // "base" is the only Mermaid theme that accepts custom variables;
+      // map it onto the atomic.dev Midnight + Atomic Pink palette.
+      theme: { light: "base", dark: "base" },
+      options: {
+        fontSize: 15,
+        themeVariables: {
+          fontFamily: "var(--font-mono, ui-monospace, monospace)",
+          // Surfaces
+          background: "#07041a",
+          primaryColor: "#130a36",
+          primaryTextColor: "#f4eefe",
+          primaryBorderColor: "#ff0a8c",
+          secondaryColor: "#0c0726",
+          tertiaryColor: "#0a0620",
+          // Flowchart
+          clusterBkg: "#0c0726",
+          clusterBorder: "rgba(255, 255, 255, 0.14)",
+          titleColor: "#f4eefe",
+          nodeTextColor: "#f4eefe",
+          lineColor: "#ff4ea8",
+          edgeLabelBackground: "#0c0726",
+          // Sequence diagram
+          actorBkg: "#130a36",
+          actorBorder: "#ff0a8c",
+          actorTextColor: "#f4eefe",
+          actorLineColor: "rgba(244, 238, 254, 0.42)",
+          signalColor: "#f4eefe",
+          signalTextColor: "#f4eefe",
+          noteBkgColor: "#130a36",
+          noteTextColor: "#f4eefe",
+          noteBorderColor: "#c9006a",
+          labelBoxBkgColor: "#0c0726",
+          labelBoxBorderColor: "#ff0a8c",
+          labelTextColor: "#f4eefe",
+          loopTextColor: "#f4eefe",
+          activationBkgColor: "#c9006a",
+          activationBorderColor: "#ff0a8c",
+          sequenceNumberColor: "#07041a",
+        },
+      },
     },
   } satisfies Preset.ThemeConfig,
 };

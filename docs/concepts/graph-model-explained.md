@@ -5,7 +5,7 @@ description: "Understanding how Atomic's graph model enables perfect attribution
 keywords: [atomic, graph model, vertices, edges, soft delete, AI attribution, provenance, CRDT]
 ---
 
-# 🔗 The Graph Model Explained
+# The Graph Model Explained
 
 *How Atomic tracks every change—and why nothing is ever truly deleted*
 

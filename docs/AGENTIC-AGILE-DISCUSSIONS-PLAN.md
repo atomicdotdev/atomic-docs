@@ -16,7 +16,7 @@
 
 ### Coordination Rhythm
 - Weekly cross-team standup reviewing the table above.
-- Tag each workstream update with `discussion-stack` label in issue tracker.
+- Tag each workstream update with `discussion-view` label in issue tracker.
 - Record demos for W3, W4, W5; archive links in `docs/demos/`.
 
 ### Change Control

@@ -7,7 +7,7 @@ title: Change Identity
 
 ## Overview
 
-Change identity is a fundamental concept in Atomic VCS that distinguishes it from Git and other version control systems. In Atomic, **changes are identified by their content alone**, not by metadata like author, timestamp, or parent commits.
+Change identity is a fundamental concept in Atomic that distinguishes it from Git and other version control systems. In Atomic, **changes are identified by their content alone**, not by metadata like author, timestamp, or parent commits.
 
 ## What is Change Identity?
 
@@ -404,7 +404,7 @@ Hashes are encoded as **base32** for human readability:
 ## See Also
 
 - [Virtual Working Copies](../proposals/virtual-working-copies.md) - How sessions use change identity
-- [Stacked Diffs Guide](../getting-started/stacked-diffs.md) - Building on change identity
+- [Git Bridge](../getting-started/git-bridge) - Using change identity across Atomic and Git
 - [Comparison with Git](../getting-started/comparison-with-git.md) - Why change identity matters
 
 ## Summary
@@ -418,7 +418,7 @@ Hashes are encoded as **base32** for human readability:
 - ✅ Automatic deduplication
 - ✅ Mathematical correctness
 
-This foundation enables Atomic's advanced features: commutative merges, stacked workflows, and AI agent collaboration at scale.
+This foundation enables Atomic's advanced features: commutative merges, view-based development, and AI agent collaboration at scale.
 
 ---
 

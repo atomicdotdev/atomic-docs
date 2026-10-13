@@ -5,152 +5,113 @@ title: log
 
 # atomic log
 
-Display the history of changes in a view.
+Show change history.
 
 ## Synopsis
 
 ```bash
-atomic log [OPTIONS] [FILTERS]...
+atomic log [OPTIONS]
 ```
 
 ## Description
 
-The `log` command displays the history of changes recorded in a view. It shows change metadata including hashes, authors, timestamps, messages, and optionally descriptions, files changed, and AI attribution information.
+The `log` command displays the history of changes recorded in a view. It shows
+change metadata such as hashes, authors, dates, and messages.
 
-Unlike traditional VCS log commands, Atomic's log displays the **dependency graph** of changes based on the mathematical patch theory. Each change has cryptographically verifiable dependencies, forming a directed acyclic graph (DAG).
+Unlike traditional VCS log commands, Atomic's log reflects the **dependency
+graph** of changes based on patch theory. Each change has cryptographically
+verifiable dependencies, forming a directed acyclic graph (DAG), and changes are
+displayed in that order.
 
-The log output can be filtered, paginated, and formatted in multiple ways to suit different use cases.
+The output can be limited, filtered by path, reordered, and formatted in
+multiple ways to suit different use cases.
 
 ## Options
 
-### `--repository <PATH>`
+### `-n, --count <N>`
 
-Set the repository where this command should run. Defaults to the first ancestor of the current directory that contains a `.atomic` directory.
+Limit number of changes to show.
 
 ```bash
-atomic log --repository /path/to/repo
+# Show the last 5 changes
+atomic log -n 5
+atomic log --count 5
 ```
 
-### `--view <VIEW>`
+### `--view <NAME>`
 
-Show logs for a specific view instead of the current view.
+Show history for a specific view instead of the current view.
 
 ```bash
 atomic log --view feature-branch
 ```
 
-### `--hash-only`
+### `--tags-only`
 
-Only show the change hashes without any other information. Useful for scripting.
-
-```bash
-atomic log --hash-only
-```
-
-Output:
-```
-MNYNGT2VGEQZX4QA43FWBDVYQY7CGXN4J2CGE5FDFIHOWQFKFIJQC
-ABCDEFGHIJKLMNOPQRSTUVWXYZ234567ABCDEFGHIJKLMNOPQRSTU
-...
-```
-
-### `--state`
-
-Include state identifiers (Merkle tree hashes) in the output. States represent the repository state after each change.
+Only show tagged changes.
 
 ```bash
-atomic log --state
+atomic log --tags-only
 ```
 
-### `--description`
+### `--path <PATH>`
 
-Include the full change description in addition to the commit message.
+Filter to changes affecting a specific path.
 
 ```bash
-atomic log --description
+# Show only changes that affected src/main.rs
+atomic log --path src/main.rs
+
+# Show only changes under a directory
+atomic log --path src/
 ```
 
-### `--files`
+### `-f, --format <FORMAT>`
 
-Include the list of files changed by each commit.
+Output format. Possible values:
+
+- `default` - Full detailed format with all information (default)
+- `short` - Short format showing hash and first line of message
+- `oneline` - Single-line format with hash, date, author, and message
+- `json` - JSON format for machine parsing
 
 ```bash
-atomic log --files
+atomic log --format oneline
+atomic log -f json
 ```
 
-### `--offset <NUMBER>`
+### `--reverse`
 
-Start displaying after skipping this many changes. Useful for pagination.
+Show in reverse order (oldest first).
 
 ```bash
-# Skip the first 10 changes
-atomic log --offset 10
+atomic log --reverse
 ```
 
-### `--limit <NUMBER>`
+### `--from <SEQ>`
 
-Output at most this many changes. Useful for pagination or limiting output.
+Start from a specific sequence number.
 
 ```bash
-# Show only the last 5 changes
-atomic log --limit 5
-
-# Show changes 11-20
-atomic log --offset 10 --limit 10
+atomic log --from 10
 ```
 
-### `--output-format <FORMAT>`
+### `--full-hash`
 
-Specify the output format. Options:
-- `default` - Human-readable format
-- `json` - JSON format for programmatic consumption
+Show full hash instead of abbreviated.
 
 ```bash
-atomic log --output-format json
+atomic log --full-hash
 ```
 
-### AI Attribution Options
+### Global Options
 
-#### `--attribution`
+These options are available on all commands:
 
-Show AI attribution information for changes that were AI-assisted.
-
-```bash
-atomic log --attribution
-```
-
-#### `--ai-only`
-
-Show only AI-assisted changes, filtering out human-authored changes.
-
-```bash
-atomic log --ai-only
-```
-
-#### `--human-only`
-
-Show only human-authored changes, filtering out AI-assisted changes.
-
-```bash
-atomic log --human-only
-```
-
-### `[FILTERS]...`
-
-Filter log output to show only changes that touched specified files or directories. Paths are relative to the repository root.
-
-**Note**: Filters can only be applied when logging the current view (the one comprising the working copy).
-
-```bash
-# Show only changes that modified files in src/
-atomic log src/
-
-# Show changes to specific files
-atomic log src/main.rs config.toml
-
-# Multiple paths
-atomic log src/ docs/ README.md
-```
+- `-v, --verbose` - Emit extra diagnostic output.
+- `--no-color` - Disable ANSI color in output.
+- `-h, --help` - Print help.
+- `-V, --version` - Print version.
 
 ## Examples
 
@@ -161,66 +122,64 @@ atomic log src/ docs/ README.md
 atomic log
 
 # Show the last 10 changes
-atomic log --limit 10
+atomic log -n 10
 ```
 
-### Detailed Information
+### Formatting
 
 ```bash
-# Show full descriptions
-atomic log --description
+# Compact single-line view
+atomic log --format oneline
 
-# Show files changed
-atomic log --files
+# Short format (hash + first message line)
+atomic log --format short
 
-# Show everything
-atomic log --description --files --state
+# JSON output for parsing
+atomic log --format json
 ```
 
-### AI Attribution
-
-```bash
-# Show AI attribution for all changes
-atomic log --attribution
-
-# Show only AI-assisted changes
-atomic log --ai-only --attribution
-
-# Show only human changes
-atomic log --human-only
-```
-
-### Filtering by Files
+### Filtering by Path
 
 ```bash
 # Show changes that modified the authentication module
-atomic log src/auth/
+atomic log --path src/auth/
 
-# Show changes to configuration files
-atomic log config.toml .ignore
-
-# Show changes to documentation
-atomic log docs/
+# Show changes to a specific file
+atomic log --path src/main.rs
 ```
 
-### Pagination
+### Ordering and Ranges
 
 ```bash
-# Show changes 21-40
-atomic log --offset 20 --limit 20
+# Show oldest changes first
+atomic log --reverse
 
-# Show only the most recent change
-atomic log --limit 1
+# Start from a specific sequence number
+atomic log --from 20
+
+# Show the 5 changes starting at sequence 20
+atomic log --from 20 --count 5
 ```
 
-### Scripting
+### Tags
 
 ```bash
-# Get just the hashes for scripting
-atomic log --hash-only
+# Show only tagged changes
+atomic log --tags-only
+```
 
-# JSON output for parsing
-atomic log --output-format json --limit 10
+### Full Hashes
+
+```bash
+# Show full change hashes instead of abbreviated ones
+atomic log --full-hash --format oneline
+```
+
+### A Specific View
+
+```bash
+# Show history for another view
+atomic log --view release -n 10
 ```
 
 ## Output Formats
@@ -243,60 +202,11 @@ Date: 2025-01-14 15:20:00 +0000
     Initial project setup
 ```
 
-### With Descriptions
+### Oneline Format
 
 ```
-Change MNYNGT2VGEQZX4QA43FWBDVYQY7CGXN4J2CGE5FDFIHOWQFKFIJQC
-Author: Alice <alice@example.com>
-Date: 2025-01-15 10:30:00 +0000
-
-    Add user authentication system
-
-    Implements JWT-based authentication with refresh tokens.
-    Includes middleware for protecting routes and role-based
-    access control.
-```
-
-### With Files
-
-```
-Change MNYNGT2VGEQZX4QA43FWBDVYQY7CGXN4J2CGE5FDFIHOWQFKFIJQC
-Author: Alice <alice@example.com>
-Date: 2025-01-15 10:30:00 +0000
-
-    Add user authentication system
-
-    Files changed:
-      - src/auth/mod.rs
-      - src/auth/jwt.rs
-      - src/middleware/auth.rs
-      - Cargo.toml
-```
-
-### With AI Attribution
-
-```
-Change MNYNGT2VGEQZX4QA43FWBDVYQY7CGXN4J2CGE5FDFIHOWQFKFIJQC
-Author: Alice <alice@example.com>
-Date: 2025-01-15 10:30:00 +0000
-AI-Assisted: Yes
-  Provider: cursor
-  Model: gpt-4
-  Type: collaborative
-  Confidence: 0.90
-
-    Add user authentication system
-```
-
-### With State Identifiers
-
-```
-Change MNYNGT2VGEQZX4QA43FWBDVYQY7CGXN4J2CGE5FDFIHOWQFKFIJQC
-State: XYZABC123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ234567890ABC
-Author: Alice <alice@example.com>
-Date: 2025-01-15 10:30:00 +0000
-
-    Add user authentication system
+MNYNGT2 2025-01-15 Alice  Add user authentication system
+ABCDEFG 2025-01-14 Bob    Initial project setup
 ```
 
 ### JSON Format
@@ -305,191 +215,53 @@ Date: 2025-01-15 10:30:00 +0000
 [
   {
     "hash": "MNYNGT2VGEQZX4QA43FWBDVYQY7CGXN4J2CGE5FDFIHOWQFKFIJQC",
-    "state": "XYZABC123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ234567890ABC",
     "author": {
       "name": "Alice",
       "email": "alice@example.com"
     },
     "timestamp": "2025-01-15T10:30:00+00:00",
-    "message": "Add user authentication system",
-    "description": "Implements JWT-based authentication...",
-    "files": [
-      "src/auth/mod.rs",
-      "src/auth/jwt.rs"
-    ],
-    "attribution": {
-      "ai_assisted": true,
-      "provider": "cursor",
-      "model": "gpt-4",
-      "suggestion_type": "collaborative",
-      "confidence": 0.90
-    }
+    "message": "Add user authentication system"
   }
 ]
 ```
 
 ## Hash Format
 
-Change hashes are 53-character Base32-encoded identifiers derived from the cryptographic hash of the change contents. They uniquely identify changes across all repositories.
+Change hashes are Base32-encoded identifiers derived from the cryptographic hash
+of the change contents. They uniquely identify changes across all repositories.
 
 Example: `MNYNGT2VGEQZX4QA43FWBDVYQY7CGXN4J2CGE5FDFIHOWQFKFIJQC`
 
-## State Identifiers
-
-State identifiers (Merkle tree hashes) represent the complete repository state after applying a change. They enable:
-
-- Cryptographic verification of repository integrity
-- Efficient state comparison
-- Tag creation and validation
+By default hashes are abbreviated; use `--full-hash` to show the full value.
 
 ## Dependencies
 
-Changes in the log are ordered based on their dependencies in the DAG. Each change may depend on zero or more previous changes. The log displays changes in topological order, ensuring dependencies appear before dependents.
-
-## File Filtering
-
-When using file filters, Atomic shows only changes that:
-
-- Added, modified, or deleted the specified files
-- Affected directories containing the specified paths
-- Touched any file matching the filter criteria
-
-**Important**: File filtering only works when viewing the current view. To filter logs for other views, switch to that view first.
-
-```bash
-# This works (current view)
-atomic log src/
-
-# This won't filter (different view)
-atomic log --view other-branch src/  # Shows all changes, ignores filter
-```
-
-## Performance
-
-Log operations are optimized for performance:
-
-- **Small repos** (&lt; 1000 changes): Instant
-- **Medium repos** (1000-10000 changes): &lt; 1 second
-- **Large repos** (10000+ changes): &lt; 5 seconds
-
-File filtering may take longer on large repositories as it requires traversing the change graph.
-
-## Pagination Strategy
-
-For large repositories, use pagination to manage output:
-
-```bash
-# Page 1: First 50 changes
-atomic log --limit 50
-
-# Page 2: Changes 51-100
-atomic log --offset 50 --limit 50
-
-# Page 3: Changes 101-150
-atomic log --offset 100 --limit 50
-```
-
-## Use Cases
-
-### Code Review
-
-```bash
-# Review recent changes
-atomic log --limit 10 --files
-
-# Review AI-assisted changes
-atomic log --ai-only --attribution --files
-```
-
-### Debugging
-
-```bash
-# Find changes to a specific file
-atomic log src/buggy_module.rs
-
-# Get change details for investigation
-atomic log --description --files
-```
-
-### Auditing
-
-```bash
-# Full audit trail
-atomic log --description --attribution --state
-
-# Export for compliance
-atomic log --output-format json > audit_log.json
-```
-
-### Finding Changes
-
-```bash
-# Search for specific author's changes
-atomic log | grep "Alice"
-
-# Find changes in the last week
-atomic log --limit 20
-
-# Get all AI-generated changes
-atomic log --ai-only --hash-only
-```
+Changes in the log are ordered based on their dependencies in the DAG. Each
+change may depend on zero or more previous changes. The log displays changes in
+topological order, ensuring dependencies appear before dependents. Use
+`--reverse` to display oldest first.
 
 ## Notes
 
-- **Reverse Order**: Changes are displayed in reverse chronological order (newest first)
-- **View-Specific**: Each view has its own independent log
-- **Immutable History**: The log reflects the immutable change history in the DAG
-- **No Merge Commits**: Atomic has no merge commits; all changes are semantic patches
-- **Cryptographic Integrity**: Each change hash cryptographically ensures the integrity of the change
-
-## Configuration
-
-Relevant configuration options:
-
-```toml
-# In .atomic/config.toml or ~/.config/atomic/config.toml
-
-# Use a pager for long output (Unix only)
-pager = "auto"  # "auto", "always", or "never"
-
-# Color output
-colors = "auto"  # "auto", "always", or "never"
-```
-
-## Environment Variables
-
-- `PAGER` - Pager program for long output (e.g., `less`, `more`)
-- `NO_COLOR` - Disable colored output if set
-
-## Piping and Pagers
-
-On Unix systems, `atomic log` automatically uses a pager (like `less`) for long output when:
-
-- Output is to a terminal (not redirected)
-- `PAGER` environment variable is set
-- Configuration allows paging
-
-To disable the pager:
-
-```bash
-# Use --pager=never (if available) or redirect output
-atomic log | cat
-
-# Set environment variable
-PAGER="" atomic log
-```
+- **Reverse Order**: By default, changes are displayed newest first; use
+  `--reverse` for oldest first.
+- **View-Specific**: Each view has its own independent log; use `--view` to
+  target another view.
+- **Immutable History**: The log reflects the immutable change history in the
+  DAG.
+- **Cryptographic Integrity**: Each change hash cryptographically ensures the
+  integrity of the change.
 
 ## Exit Codes
 
 - `0` - Success
-- `1` - Error (view not found, invalid filter, etc.)
+- `1` - Error (view not found, invalid option, etc.)
 
 ## See Also
 
 - [`atomic record`](./record.md) - Record new changes
 - [`atomic change`](./change.md) - Inspect individual changes
 - [`atomic diff`](./diff.md) - Show differences
-- [`atomic agent`](./agent.md) - AI agent integration and provenance
 - [`atomic view`](./view.md) - Manage views
 
 ## Related Concepts
@@ -497,5 +269,3 @@ PAGER="" atomic log
 - **Changes** - Immutable semantic patches
 - **DAG** - Directed acyclic graph of change dependencies
 - **Views** - Independent lines of development
-- **State** - Merkle tree hash representing repository state
-- **AI Attribution** - Cryptographic tracking of AI contributions

@@ -278,13 +278,12 @@ $ atomic view list --verbose
 * master                         [shared]  (4511 changes)  state: KJRM7HJVZNX2
 ```
 
-### Inspect a change with AI attestation
+### Inspect a change with embedded AI provenance
 
-For agent-recorded changes, `-a` shows the AI metadata baked into the
-change hash:
+For agent-recorded changes, the default view renders the first embedded provenance entry as `=== Attestation ===`, then renders the associated Change Ledger:
 
 ```
-$ atomic change -a <hash>
+$ atomic change <hash>
 
 change XMJZ3IPF (#4512)
 Author: claude+60f5 <lee@atomic.dev>
@@ -300,68 +299,57 @@ Files changed: 2
   ± tokio/src/sync/semaphore.rs (+1 span, ~2 edges: insert, replace)
   ± tokio/src/sync/batch_semaphore.rs (+1 span, ~1 edge: insert)
 
-AI Provenance:
+=== Attestation ===
   Vendor:  Anthropic
   Model:   claude-sonnet-4-5
-  Tool:    ClaudeCode
-  Type:    Completion
+  Tool:    Cli("claude-code")
+  Type:    Complete
   Tokens:
-    Input:  3,412
+    Input:  3412
     Output: 891
-    Total:  4,303
-  Cost:    $0.018 USD
+    Total:  4303
+  Cost:    $0.018000 USD
   Session: ses_a7f3bc12...
 ```
 
-This is in the **hashed section** — it's part of the change's cryptographic
-identity. Tamper with the attribution, and the hash changes.
+This provenance is in the **hashed section** — it's part of the change's cryptographic identity. Tamper with the attribution, and the hash changes. Despite the display heading, it is not the separate session-level attestation artifact listed by `atomic agent attest`.
 
 ### Inspect the provenance decision graph
 
-`-p` shows the causal DAG — not just what changed, but **why**:
+The same default output continues with the causal DAG — not just what changed, but the observed activity associated with **why** it changed:
 
 ```
-$ atomic change -p <hash>
-
-change XMJZ3IPF (#4512)
-Author: claude+60f5 <lee@atomic.dev>
-Date:   2026-06-14 15:23:41
-
-    feat: add non-panicking try_acquire_many_owned to Semaphore
-
-Provenance Graph:
+=== Change Ledger ===
   Session: ses_a7f3bc12...
   Agent:   Claude Code (anthropic)
   Nodes:   7  Edges: 6  Changes: 1
 
-  Goal         » Fix Semaphore try_acquire_many_owned to return error instead of panicking
-  Exploration  » atomic vault query entities tokio/src/sync/semaphore.rs  [Bash] (120ms)
-  Exploration  » atomic vault query code "try_acquire_many_owned" -t rs  [Bash] (85ms)
-  Exploration  » Read tokio/src/sync/batch_semaphore.rs L79-120  [Read] (12ms)
-  Commitment   » Edit tokio/src/sync/semaphore.rs L921-932  [Edit] (45ms)
-  Commitment   » Edit tokio/src/sync/batch_semaphore.rs L95-98  [Edit] (32ms)
-  Verification » cargo test --lib sync::semaphore  [Bash] (3,200ms)
+  goal » Fix Semaphore try_acquire_many_owned to return error instead of panicking
+  exploration » atomic vault query entities tokio/src/sync/semaphore.rs [bash] (120ms)
+  exploration » atomic vault query code "try_acquire_many_owned" -t rs [bash] (85ms)
+  exploration » Read tokio/src/sync/batch_semaphore.rs L79-120 [read] (12ms)
+  commitment » Edit tokio/src/sync/semaphore.rs L921-932 [edit] (45ms)
+  commitment » Edit tokio/src/sync/batch_semaphore.rs L95-98 [edit] (32ms)
+  verification » cargo test --lib sync::semaphore [bash] (3200ms)
 ```
 
-Every tool call classified: exploration (read-only), commitment (file edit),
-verification (test run). Causal edges connect them — the exploration informed
-the commitment, the commitment was verified by the test.
+Every tool call is classified: exploration (read-only), commitment (file edit), or verification (test run). Inferred causal edges connect the observations — the exploration preceded the commitment, and the commitment was followed by the test.
 
 This graph is content-addressed and pushes to remotes alongside the change.
-Your team reviews not just the code, but the agent's reasoning.
+Your team reviews not just the code, but the observed workflow and inferred decision links associated with it.
 
 ---
 
 ## The Full Loop
 
 ```
-atomic query enrich          # Build the knowledge graph
-atomic query search "X"      # Find structure
-atomic query code "X"        # Find source text
-atomic query neighbors N     # Follow relationships
-atomic query entities F      # Get file outline
-atomic query ask "Q"         # Ask a question (RAG + LLM)
-atomic query graph "X"       # Visualize
+atomic vault query enrich          # Build the knowledge graph
+atomic vault query search "X"      # Find structure
+atomic vault query code "X"        # Find source text
+atomic vault query neighbors N     # Follow relationships
+atomic vault query entities F      # Get file outline
+atomic vault query ask "Q"         # Ask a question (RAG + LLM)
+atomic vault query graph "X"       # Visualize
 
 claude                             # Agent uses code-intelligence skill
                                    # → queries the KG instead of grep/find
@@ -369,9 +357,7 @@ claude                             # Agent uses code-intelligence skill
                                    # → changes recorded with full provenance
 
 atomic view list --verbose         # See agent views
-atomic change -a <hash>            # AI attestation (model, tokens, cost)
-atomic change -p <hash>            # Provenance graph (why it changed)
+atomic change <hash>               # Code, AI metadata, and Change Ledger
 ```
 
-One system. From code intelligence to agent development to cryptographic
-attribution. No wrappers, no plugins, no separate tools.
+One connected toolchain, from code intelligence to agent development to tamper-evident attribution and review.

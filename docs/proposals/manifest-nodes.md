@@ -394,7 +394,7 @@ atomic manifest apply <manifest-hash>
 
 ## References
 
-- [Sapling SCM](https://github.com/facebook/sapling) - Facebook's scalable VCS with manifest system
+- [Sapling SCM](https://github.com/facebook/sapling) - Facebook's scalable source control with manifest system
 - [Hunks: Edit and Replacement Calculations](../concepts/hunks-edit-replacement.md) - Mathematical foundations
 - [Hunks: Edit and Replacement Calculations](../concepts/hunks-edit-replacement.md) - Mathematical foundations of Atomic's patch model
 

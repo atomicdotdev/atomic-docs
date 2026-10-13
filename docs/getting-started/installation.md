@@ -5,11 +5,11 @@ title: Installation
 
 # Installing Atomic
 
-This guide will help you install Atomic VCS on your system. The recommended installation path is the hosted installer script from Atomic Storage. Development builds can still be installed from source.
+One command installs the Atomic CLI, detects your platform, and makes Atomic available to the coding agents you already use. No account is required, and Atomic sends no telemetry by default.
 
-## Installation Methods
+The hosted installer supports macOS, Linux, and WSL2. Development builds can also be installed from source.
 
-### Hosted Installer (Recommended)
+## Recommended installation
 
 Install the latest Atomic CLI release with the installer hosted by Atomic Storage:
 
@@ -37,6 +37,47 @@ archive, verifies checksums when available, and installs the `atomic` binary.
 ```bash
 atomic --version
 ```
+
+## Connect to Atomic Storage (optional)
+
+To create or clone hosted projects, first create an Ed25519 identity and register
+it with your Atomic Storage server. Registration creates your personal
+organization on the server and stores the server URL and default organization in
+your global Atomic configuration.
+
+```bash
+atomic identity new alice-acme --email alice@acme.com --set-default
+atomic identity register https://atomic.storage
+atomic org show
+```
+
+To create a hosted project for your team, select an organization, then create a
+workspace and project:
+
+```bash
+atomic org create acme --email dev@acme.com
+atomic org set acme
+
+atomic workspace create platform --visibility private
+atomic workspace set platform
+atomic project create api --kind rust
+```
+
+Organizations contain members and teams, workspaces group projects, and projects
+map to hosted Atomic repositories. For access rules and team management, see
+[Team Collaboration](../teams/overview).
+
+### Enable Shell Completions (optional)
+
+Turn on tab-completion for subcommands, flags, and live values like view names
+and change hashes. For zsh, add this to your `~/.zshrc`:
+
+```bash
+source <(COMPLETE=zsh atomic)
+```
+
+See [Shell Completions](../commands/completions) for other shells, the static
+`atomic completions <shell>` script, and troubleshooting.
 
 ### Source Install (Development)
 
@@ -191,12 +232,9 @@ rustup update stable
 
 ## Next Steps
 
-Now that you have Atomic installed, you're ready to:
-
-1. Follow the [Quickstart](./quickstart) to register with Atomic Storage and push a hosted project
-2. Create [your first local repository](./first-repository)
-3. Learn the [team collaboration model](../teams/overview)
-4. Explore the [command reference](../commands/overview)
+Now that Atomic is installed, create or clone [your first repository](./first-repository).
+Then explore [AI Agent Workflows](./ai-agent-workflows), or learn the
+[team collaboration model](../teams/overview).
 
 ## Uninstalling
 

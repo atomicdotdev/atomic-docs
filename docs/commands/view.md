@@ -12,9 +12,11 @@ Manage views (filtered perspectives on the repository graph).
 ```bash
 atomic view <SUBCOMMAND>
 atomic view create <NAME> [OPTIONS]
+atomic view split <NAME> [CHANGES]... [OPTIONS]
 atomic view switch <NAME>
-atomic view list [--verbose]
+atomic view list [--short] [--remote [<REMOTE>]]
 atomic view delete <NAME> [--force]
+atomic view promote [NAME]
 ```
 
 ## Description
@@ -130,7 +132,7 @@ atomic view create feature-api --draft --switch
 The `--parent` option sets where this view sits in the filter hierarchy. When you're working in a view, graph traversal filters edges through your view's changes, then your parent's, all the way up to the root.
 
 ```bash
-# Stacked draft views for team-level organization
+# Draft views for team-level organization
 atomic view create service-auth --draft --parent dev
 atomic view create feature-login --draft --parent service-auth
 atomic view create feature-oauth --draft --parent service-auth
@@ -139,6 +141,86 @@ atomic view create feature-oauth --draft --parent service-auth
 #   VIEW_CHANGES[feature-login]     ← my changes
 #   ∪ VIEW_CHANGES[service-auth]    ← parent's changes
 #   ∪ VIEW_CHANGES[dev]             ← grandparent's changes (and up)
+```
+
+### `view split` — Split Changes into a New Draft View
+
+:::info Requires Atomic CLI **>= 0.15.3**
+`atomic view split` was added in Atomic **0.15.3**. On earlier versions the
+subcommand is unavailable — check yours with `atomic --version`.
+:::
+
+Pull a set of changes **out of** a view and into a new draft view. Because
+changes are content-addressed and every edge already lives in the canonical
+`GRAPH`, split is a pure **metadata** operation: no change is re-applied, no hash
+is rewritten, and the changes that stay behind are left byte-identical.
+
+The new view is created as a **draft** parented on the source, so it inherits the
+source's state and holds the split-out changes in its own `VIEW_CHANGES`. The
+source keeps everything else.
+
+This is the inverse of [`atomic insert`](./insert.md): insert brings a change's
+dependency closure *into* a view; split lifts a change and its dependents *out*.
+
+#### Synopsis
+
+```bash
+atomic view split <NAME> [CHANGES]... [OPTIONS]
+```
+
+#### Arguments
+
+**`<NAME>`** — Name for the new draft view.
+
+**`[CHANGES]...`** — One or more change hashes (or unambiguous prefixes) to split out. Mutually exclusive with `--last`.
+
+#### Options
+
+| Option | Description |
+|--------|-------------|
+| `--from <VIEW>` | Source view to split out of (defaults to the current view) |
+| `--last <N>` | Split the last `N` changes of the source view instead of naming them |
+| `--cascade` | Also move any changes that depend on the split-out set |
+| `--dry-run`, `-n` | Preview the split (and any blocking dependents) without performing it |
+| `--switch`, `-s` | Switch to the new draft after creating it |
+
+#### Dependency safety
+
+Before moving anything, Atomic computes the **reverse-dependency closure** of the
+requested changes within the source view: does any change that stays behind
+depend on one you're pulling out?
+
+- **Nothing depends on them** → clean split.
+- **Something depends on them** → the split is **refused** unless you pass
+  `--cascade`, which moves the dependents along too. Preview it with `--dry-run`.
+
+This guarantees the source view is never left with a dangling reference, and the
+changes that remain are provably independent of what left.
+
+#### Working copy
+
+When you split out of the **current** view, Atomic reconciles the working copy to
+the source's new state (files whose only remaining change left are removed;
+reverted files are rewritten). With `--switch`, the working copy is materialized
+to the new draft instead.
+
+#### Examples
+
+```bash
+# Split two specific changes out of the current view into a new draft "wip"
+atomic view split wip ABCDEF12 34567890
+
+# Split the last 3 changes of dev, previewing first
+atomic view split wip --from dev --last 3 --dry-run
+
+# Pull out a change and everything that depends on it, then switch to it
+atomic view split experiment 9F3C21AA --cascade --switch
+```
+
+```
+$ atomic view split wip --from dev --last 2
+✓ Split 2 change(s) out of dev into draft wip
+ℹ 'dev' now has 5 change(s); draft 'wip' has 2 own change(s).
 ```
 
 ### `view switch` — Switch to a Different View
@@ -173,7 +255,9 @@ When you switch views:
 
 **Note**: Switching views updates your working copy files. Unrecorded changes may be affected.
 
-### `view list` — List All Views
+### `view list` — List Views
+
+Lists views locally by default, or on a remote with `--remote`.
 
 #### Synopsis
 
@@ -185,7 +269,10 @@ atomic view list [OPTIONS]
 
 | Option | Description |
 |--------|-------------|
-| `--verbose`, `-v` | Show scope, parent, change count, and state hash |
+| `--short`, `-s` | Show only view names (no metadata) |
+| `--remote [<REMOTE>]` | List views on a remote instead of locally. Pass `--remote` alone to use the default remote, or `--remote <name\|url>` to target a specific one |
+| `--identity <IDENTITY>` | Identity to authenticate to the remote (only with `--remote`) |
+| `--insecure`, `-k` | Skip TLS verification when querying a remote (only with `--remote`) |
 
 #### Examples
 
@@ -199,14 +286,41 @@ $ atomic view list
 ```
 
 ```bash
-# Verbose list showing the view model
-$ atomic view list --verbose
+# Detailed list (scope, change count, state hash) — the default output
+$ atomic view list
 * dev            [shared]  (12 changes)  state: 2AAAAAAAA...
   feature-auth   [draft]   (3 changes)   state: XYZABCDEF...  parent: dev
   release-1.0    [shared]  (8 changes)   state: QRSTUVWXY...  parent: main
   service-auth   [draft]   (15 changes)  state: 123456789...  parent: dev
-  feature-login  [draft]   (2 changes)   state: ABCDEFGHI...  parent: service-auth
+
+# Names only
+$ atomic view list --short
+dev
+feature-auth
+release-1.0
+service-auth
 ```
+
+```bash
+# List the views available on a remote (default remote)
+$ atomic view list --remote
+Views on origin (https://acme.atomic.storage/workspaces/demos/projects/app/code)
+  dev            [shared]  (12 changes)  state: 2AAAAAAAA...
+  feature-auth   [draft]   (3 changes)   state: XYZABCDEF...  parent: dev
+  release-1.0    [shared]  (8 changes)   state: QRSTUVWXY...  parent: main
+
+# Target a specific remote by name or URL
+atomic view list --remote origin
+atomic view list --remote https://acme.atomic.storage/workspaces/demos/projects/app/code
+```
+
+:::note Remote views preserve their scope and parent
+The server records each pushed view with its scope and parent, so remote
+listings report the real `[shared]` / `[draft]` scope and the parent chain,
+matching how the view was scoped locally. Use
+[`atomic clone --all-views`](./clone.md) to reconstruct the full set of remote
+views locally.
+:::
 
 ### `view delete` — Delete a View
 
@@ -264,8 +378,8 @@ atomic record -m "add logout"
 atomic record -m "add session mgmt"
 
 # Insert some changes into dev
-atomic insert <login-hash> --to-view dev
-atomic insert <session-hash> --to-view dev
+atomic insert <login-hash> --view dev
+atomic insert <session-hash> --view dev
 
 # Abandon the rest and clean up
 atomic view switch dev
@@ -273,6 +387,32 @@ atomic view delete feature
 # ✓ "logout" change reference removed (never inserted anywhere else)
 # ✓ "login" and "session" references preserved in dev
 # ✓ Orphaned edges from "logout" cleaned by GC
+```
+
+### `view promote` — Promote a View to Shared Root Scope
+
+#### Synopsis
+
+```bash
+atomic view promote [NAME]
+```
+
+#### Arguments
+
+**`[NAME]`** — Name of the view to promote. Defaults to the current view.
+
+#### Description
+
+Promotes a draft view to **shared root scope**: the view becomes permanent (like `main` or `dev`) and can no longer be deleted. Use this when a draft has proven itself — for example, graduating a long-lived service view into shared collaborative history.
+
+#### Examples
+
+```bash
+# Promote the current draft view to shared scope
+atomic view promote
+
+# Promote a named view
+atomic view promote service-auth
 ```
 
 ## View Types in Practice
@@ -283,7 +423,7 @@ atomic view delete feature
 # Create a draft view for a quick bug fix
 atomic view create bugfix-123 --draft --switch
 atomic record -m "Fix null pointer in auth"
-atomic insert <hash> --to-view dev
+atomic insert <hash> --view dev
 atomic view switch dev
 atomic view delete bugfix-123
 ```
@@ -300,7 +440,7 @@ atomic record -m "Add OAuth provider"
 atomic record -m "Add token refresh"
 
 # Insert shared infrastructure into dev (visible to all teams)
-atomic insert <oauth-provider-hash> --to-view dev
+atomic insert <oauth-provider-hash> --view dev
 
 # Team B sees it immediately via their filter chain
 # (service-payments is also parented on dev)
@@ -313,8 +453,8 @@ atomic insert <oauth-provider-hash> --to-view dev
 atomic view create release-2.0 --parent main
 
 # Insert specific changes from dev
-atomic insert <feature-hash> --to-view release-2.0
-atomic insert <bugfix-hash> --to-view release-2.0
+atomic insert <feature-hash> --view release-2.0
+atomic insert <bugfix-hash> --view release-2.0
 
 # Tag the release
 atomic tag create v2.0.0 --view release-2.0 -m "Release 2.0"
@@ -328,7 +468,7 @@ When you insert a change into another view, Atomic automatically resolves the **
 # feature has changes: C1, C2, C3, C4, C5
 # C5 depends on C1 → C2 → C3
 
-atomic insert C5 --to-view dev
+atomic insert C5 --view dev
 # Atomic computes: deps(C5) = {C1, C2, C3}
 # dev already has: {C1}
 # Missing: {C2, C3, C5} → inserted in dependency order
@@ -344,7 +484,7 @@ See [`atomic insert`](./insert.md) for the full insert command reference.
 
 ```bash
 # Preview what would be inserted (dry run)
-atomic insert --from feature --to-view dev --dry-run
+atomic insert view feature --to-view dev --dry-run
 
 # See the change-level diff between two views
 # (which changes exist in one but not the other)
@@ -395,6 +535,7 @@ View operations are fast because they only manipulate metadata (`VIEW_CHANGES` e
 | Operation | Time | Notes |
 |-----------|------|-------|
 | Create | < 10ms | Writes view metadata |
+| Split | O(n) | Metadata move; recomputes the source view's Merkle + reverse-dependency closure |
 | Switch | 100ms–5s | Depends on working copy size (materializing the view) |
 | List | < 10ms | Scans `VIEWS` table |
 | Delete (draft) | < 50ms | Removes `VIEW_CHANGES` entries; GC cleans orphaned edges |
