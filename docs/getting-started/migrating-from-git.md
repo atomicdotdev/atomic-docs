@@ -329,11 +329,15 @@ atomic log --limit 10
 atomic view list
 ```
 
-### Import Specific Paths
+### Import a Repo in a Different Location
 
 ```bash
-# Import Git repo from different location
-atomic git import /path/to/git/repo /path/to/atomic/repo
+# Import a Git repo from another directory into a new Atomic repo
+cd /path/to/git/repo
+atomic git import
+
+# Or pick the branch to import
+atomic git import --branch main --no-vault
 ```
 
 ### What Gets Imported
@@ -350,7 +354,7 @@ atomic git import /path/to/git/repo /path/to/atomic/repo
 - Git-specific metadata
 - Merge commit structure (converted to changes)
 - Submodules (requires manual handling)
-- Git hooks (reimplement in Atomic)
+- Git hooks (Atomic has its own integration — see the [Git Bridge](./git-bridge))
 
 ### Post-Import Steps
 
@@ -669,10 +673,11 @@ atomic restore --force
 ## Next Steps
 
 1. **Import your Git repository**: `atomic git import`
-2. **Create your first change**: `atomic record -m "First Atomic change"`
-3. **Explore AI attribution**: `atomic record --ai-assisted`
-4. **Create consolidating tags**: `atomic tag create v1.0.0`
-5. **Experience conflict-free merging**: Try parallel development!
+2. **Keep working with Git and GitHub?** Set up the [Git Bridge](./git-bridge) for verified two-way sync
+3. **Create your first change**: `atomic record -m "First Atomic change"`
+4. **Explore AI attribution**: `atomic record --ai-assisted`
+5. **Create consolidating tags**: `atomic tag create v1.0.0`
+6. **Experience conflict-free merging**: Try parallel development!
 
 ## Why Switch from Git?
 
