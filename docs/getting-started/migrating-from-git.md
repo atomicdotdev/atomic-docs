@@ -213,7 +213,7 @@ git log --graph --all
 
 # Atomic
 atomic log
-atomic log --limit 10
+atomic log -n 10
 atomic log --state  # Shows state hashes (Merkle trees)
 ```
 
@@ -325,7 +325,7 @@ cd your-git-repo
 atomic git import
 
 # Verify import
-atomic log --limit 10
+atomic log -n 10
 atomic view list
 ```
 
@@ -362,7 +362,7 @@ After importing:
 
 ```bash
 # 1. Verify the import
-atomic log --limit 20
+atomic log -n 20
 atomic view list
 
 # 2. Create a consolidating tag for better performance

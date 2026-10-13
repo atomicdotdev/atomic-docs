@@ -53,7 +53,7 @@ After import, your repo has both `.git/` and `.atomic/` — it's dual-tracked. T
 
 ```bash
 # Check Atomic history
-atomic log --limit 10
+atomic log -n 10
 
 # List views (one per imported branch)
 atomic view list
@@ -254,7 +254,7 @@ Without the bridge:
 atomic git import --incremental
 
 git log --oneline -10
-atomic log --limit 10
+atomic log -n 10
 ```
 
 :::warning
