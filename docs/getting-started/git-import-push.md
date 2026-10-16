@@ -7,7 +7,7 @@ title: Git Import and Push
 
 `atomic git import` and `atomic git push` are the manual Git interoperability commands: they pull Git history into Atomic and push Atomic state out to Git, on your schedule, with no ongoing background integration. Use them for one-time migrations, occasional syncing, or as building blocks in scripts.
 
-Looking for the always-verified, colocated workflow with hooks, signed bindings, and a watcher? See the [Git Bridge](./git-bridge).
+Looking for the always-verified, colocated workflow with hooks, signed bindings, and a watcher? See the [Git Shim](./git-shim).
 
 ## `atomic git import`
 
@@ -206,7 +206,7 @@ atomic status
 
 ## `atomic git hooks`
 
-The hooks subcommands manage the Atomic-owned advisory Git hook dispatchers — the same integration `atomic git bridge enable` installs:
+The hooks subcommands manage the Atomic-owned advisory Git hook dispatchers — the same integration `atomic git shim enable` installs:
 
 ```bash
 atomic git hooks install     # install/refresh the advisory dispatchers
@@ -214,7 +214,7 @@ atomic git hooks status      # show which hooks are installed and owned
 atomic git hooks uninstall   # remove Atomic's post-checkout hook
 ```
 
-What the dispatchers do has changed from earlier releases: they no longer run `atomic git import --incremental` automatically. They now journal advisory evidence for the Git bridge (checkout, commit-time captures, rewrites, ref movements) and perform local advisory verification — they never block a Git operation and never change your history. See [the bridge documentation](./git-bridge#hooks-are-advisory) for the full list and semantics.
+What the dispatchers do has changed from earlier releases: they no longer run `atomic git import --incremental` automatically. They now journal advisory evidence for the Git shim (checkout, commit-time captures, rewrites, ref movements) and perform local advisory verification — they never block a Git operation and never change your history. See [the shim documentation](./git-shim#hooks-are-advisory) for the full list and semantics.
 
 Atomic only writes a hook file when it is missing or already an exact Atomic-owned dispatcher; foreign hooks and custom `core.hooksPath` setups are reported and left untouched. Legacy import-sync hooks from earlier releases are migrated automatically when the integration is installed.
 
@@ -240,15 +240,15 @@ Existing Atomic changes are preserved — nothing is lost. Force-pushes only aff
 
 ### "Git and Atomic are out of sync"
 
-If you've enabled the bridge, prefer `atomic git bridge reconcile` — it also verifies both sides and records a checkpoint:
+If you've enabled the shim, prefer `atomic git shim reconcile` — it also verifies both sides and records a checkpoint:
 
 ```bash
-atomic git bridge status    # see which view diverged and how
-atomic git bridge reconcile
-atomic git bridge verify
+atomic git shim status    # see which view diverged and how
+atomic git shim reconcile
+atomic git shim verify
 ```
 
-Without the bridge:
+Without the shim:
 
 ```bash
 atomic git import --incremental
@@ -263,6 +263,6 @@ Never delete `.atomic/` and re-import as a "fix." This destroys all Atomic-nativ
 
 ## Next Steps
 
-- [Git Bridge](./git-bridge) — the verified, colocated workflow
+- [Git Shim](./git-shim) — the verified, colocated workflow
 - [Migrating from Git](./migrating-from-git.md) — full migration guide if you want to go Atomic-only
 - [AI Agent Workflows](./ai-agent-workflows.md) — using agents with Atomic's provenance tracking

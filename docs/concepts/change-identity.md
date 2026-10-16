@@ -404,7 +404,7 @@ Hashes are encoded as **base32** for human readability:
 ## See Also
 
 - [Virtual Working Copies](../proposals/virtual-working-copies.md) - How sessions use change identity
-- [Git Bridge](../getting-started/git-bridge) - Using change identity across Atomic and Git
+- [Git Shim](../getting-started/git-shim) - Using change identity across Atomic and Git
 - [Comparison with Git](../getting-started/comparison-with-git.md) - Why change identity matters
 
 ## Summary

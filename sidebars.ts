@@ -30,8 +30,8 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "doc",
-      id: "getting-started/git-bridge",
-      label: "Git Bridge",
+      id: "getting-started/git-shim",
+      label: "Git Shim",
     },
     {
       type: "doc",

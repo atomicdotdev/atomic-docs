@@ -22,7 +22,7 @@ atomic git hooks <SUBCOMMAND>
 
 - **`git import`** — bring an existing Git repository **into** Atomic: each Git commit becomes an Atomic change, preserving history. Run it inside a Git checkout to create the Atomic repository alongside.
 - **`git push`** — push Atomic's state **out** to Git as a regular commit, so your Atomic work appears on the Git remote (e.g. GitHub) without Git ever being the system of record.
-- **`git hooks`** — install or remove Atomic's advisory Git hook dispatchers (evidence journaling and verification — they never block Git operations; see the [Git Bridge](/getting-started/git-bridge)).
+- **`git hooks`** — install or remove Atomic's advisory Git hook dispatchers (evidence journaling and verification — they never block Git operations; see the [Git Shim](/getting-started/git-shim)).
 
 ## Subcommands
 
@@ -110,7 +110,7 @@ atomic git hooks <SUBCOMMAND>
 | Subcommand | Description |
 |------------|-------------|
 | `install` | Install or refresh Atomic's advisory Git hook dispatchers (migrates legacy import-sync hooks automatically) |
-| `uninstall` | Remove Atomic's post-checkout hook (other dispatchers are removed with the bridge integration) |
+| `uninstall` | Remove Atomic's post-checkout hook (other dispatchers are removed with the shim integration) |
 | `status` | Show which hooks are installed and owned by Atomic |
 
 ```bash
@@ -123,5 +123,5 @@ atomic git hooks uninstall
 
 - [pull](pull.md) / [push](push.md) — Atomic-native remote sync
 - [clone](clone.md) — Clone a remote Atomic repository
-- [Git Bridge guide](/getting-started/git-bridge) — Verified Git interop walkthrough
+- [Git Shim guide](/getting-started/git-shim) — Verified Git interop walkthrough
 - [migrating-from-git guide](/getting-started/migrating-from-git) — Import walkthrough

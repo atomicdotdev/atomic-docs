@@ -263,15 +263,15 @@ atomic git import --all             # include inner-PR commits, not just first-p
 atomic git import --dry-run         # preview without creating anything
 
 # Keep the two synchronized automatically (verified, opt-in per repository)
-atomic git bridge enable
-atomic git bridge reconcile         # align Git and Atomic, record a checkpoint
-atomic git bridge verify            # check both sides agree
+atomic git shim enable
+atomic git shim reconcile         # align Git and Atomic, record a checkpoint
+atomic git shim verify            # check both sides agree
 
 # Publish Atomic state as a Git commit, with provenance trailers
 atomic git push
 ```
 
-If the Git side drifts (for example, from a raw `git commit`), reconcile with `atomic git bridge reconcile` before pushing. The full setup paths, reconcile/verify guidance, and the development workflow are covered in [Git Bridge](./git-bridge).
+If the Git side drifts (for example, from a raw `git commit`), reconcile with `atomic git shim reconcile` before pushing. The full setup paths, reconcile/verify guidance, and the development workflow are covered in [Git Shim](./git-shim).
 
 ## Cheat Sheet
 
@@ -334,9 +334,9 @@ atomic intent validate <REVIEW_ID> && atomic intent attest <REVIEW_ID> --identit
 atomic insert preview feature-login --to dev
 atomic insert
 
-# Git bridge (optional)
+# Git shim (optional)
 atomic git import
-atomic git bridge enable && atomic git bridge reconcile
+atomic git shim enable && atomic git shim reconcile
 atomic git push
 
 # Share
@@ -350,6 +350,6 @@ atomic push
 - [Querying the Graph](./querying-the-graph): build the knowledge graph with `atomic query enrich`, then explore it with `atomic query search "login"` and `atomic query graph "login"`. (`atomic vault query` is an alias for `atomic query`.)  
 - [Comparison with Git](./comparison-with-git): how Atomic differs from Git  
 - [AI Agent Workflows](./ai-agent-workflows): provenance, session isolation, attestation details, and `atomic agent explain`  
-- [Migrating from Git](./migrating-from-git) and [Git Bridge](./git-bridge): the two-way Git workflow  
+- [Migrating from Git](./migrating-from-git) and [Git Shim](./git-shim): the two-way Git workflow  
 - [Command Reference](/commands/overview): full documentation for every command
 

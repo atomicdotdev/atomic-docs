@@ -354,7 +354,7 @@ atomic git import --branch main --no-vault
 - Git-specific metadata
 - Merge commit structure (converted to changes)
 - Submodules (requires manual handling)
-- Git hooks (Atomic has its own integration — see the [Git Bridge](./git-bridge))
+- Git hooks (Atomic has its own integration — see the [Git Shim](./git-shim))
 
 ### Post-Import Steps
 
@@ -673,7 +673,7 @@ atomic restore --force
 ## Next Steps
 
 1. **Import your Git repository**: `atomic git import`
-2. **Keep working with Git and GitHub?** Set up the [Git Bridge](./git-bridge) for verified two-way sync
+2. **Keep working with Git and GitHub?** Set up the [Git Shim](./git-shim) for verified two-way sync
 3. **Create your first change**: `atomic record -m "First Atomic change"`
 4. **Explore AI attribution**: `atomic record --ai-assisted`
 5. **Create consolidating tags**: `atomic tag create v1.0.0`
