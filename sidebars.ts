@@ -132,6 +132,11 @@ const sidebars: SidebarsConfig = {
       label: "Team Collaboration",
     },
     {
+      type: "doc",
+      id: "teams/self-hosting",
+      label: "Self-Hosting",
+    },
+    {
       type: "html",
       value: '<div class="sidebar-section-label">COMMANDS</div>',
       defaultStyle: false,
