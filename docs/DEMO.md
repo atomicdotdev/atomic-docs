@@ -9,22 +9,18 @@
 
 ### Build the knowledge graph
 
-After importing a project from Git, enrich the knowledge graph. This extracts
-files, modules, changes, tree-sitter entities, include relationships, and builds
-a full-text content index.
+After importing a project from Git, project the knowledge graph. This classifies
+changes, views, files, and identities using the Atomic workflow ontology:
 
 ```
-$ atomic query enrich
+$ atomic query reindex --full
 
-Enriching views... ✓ 2 view(s)
-Enriching files... ✓ 483 file(s)
-Enriching modules... ✓ 64 module(s)
-Enriching changes... ✓ 4511 change(s)
-Extracting entities (tree-sitter)... ✓ 12,847 entit(ies)
-Resolving includes... ✓ 1,203 include(s)
-Building content index... ✓ 483 file(s) indexed (4.7 MB)
+Projecting workflow graph... ✓
+Views: 2
+Changes: 4511
+Identities: 1
 
-Enriched: 2 views, 483 files, 64 modules, 4511 changes, 12847 entities, 1203 includes
+KG generation: 2
 ```
 
 One command. The entire project is now queryable.
@@ -56,7 +52,7 @@ $ atomic query search "sync" -p 5000
 Files, modules, entities, **and changes** — all from one query. Filter by kind:
 
 ```
-$ atomic vault query search "sync" -t change -k 5
+$ atomic query search "sync" -t Change -k 5
 
   [change] change:2OJECPXPLQHL  doc: sync interval.rs and time/mod.rs docs (#3533)
   [change] change:44XWBJBZRONM  sync: fix warnings in benches and tests (#912)
@@ -108,24 +104,20 @@ entity defined in a file AND every change that touched it:
 ```
 $ atomic query neighbors "file:tokio/src/sync/semaphore.rs"
 
-Nodes (99):
-  [entity] entity:tokio/src/sync/semaphore.rs:close:963  pub fn close(&self)
-  [entity] entity:tokio/src/sync/semaphore.rs:acquire:585  pub fn acquire(...)
-  [entity] entity:tokio/src/sync/semaphore.rs:Semaphore:398  pub struct Semaphore
+Nodes (6):
   [change] change:6VJNKUDTWHYX  sync: add Semaphore (#1973)
   [change] change:G4SXCOK523DV  sync: add `Semaphore::close` (#3065)
   [change] change:XOSH4M7UXO2W  sync: add `merge()` to semaphore permits (#4948)
   [change] change:KCJ3DZW7VLGR  sync: add `Semaphore::MAX_PERMITS` (#5144)
-  [module] module:tokio/src/sync  tokio/src/sync
-  ...
+  [view] view:main  Shared view
+  [file] file:tokio/src/sync/semaphore.rs
 
-Edges (98):
-  file:tokio/src/sync/semaphore.rs →[DEFINES]→ entity:...:Semaphore:398
-  file:tokio/src/sync/semaphore.rs →[DEFINES]→ entity:...:acquire:585
-  file:tokio/src/sync/semaphore.rs →[PART_OF]→ module:tokio/src/sync
-  change:6VJNKUDTWHYX →[MODIFIES]→ file:tokio/src/sync/semaphore.rs
-  change:G4SXCOK523DV →[MODIFIES]→ file:tokio/src/sync/semaphore.rs
-  ...
+Edges (5):
+  change:6VJNKUDTWHYX →[https://atomic.dev/ns/workflow#modifiesFile]→ file:tokio/src/sync/semaphore.rs
+  change:G4SXCOK523DV →[https://atomic.dev/ns/workflow#modifiesFile]→ file:tokio/src/sync/semaphore.rs
+  change:XOSH4M7UXO2W →[https://atomic.dev/ns/workflow#modifiesFile]→ file:tokio/src/sync/semaphore.rs
+  change:KCJ3DZW7VLGR →[https://atomic.dev/ns/workflow#modifiesFile]→ file:tokio/src/sync/semaphore.rs
+  change:6VJNKUDTWHYX →[https://atomic.dev/ns/workflow#directlyOnView]→ view:main
 ```
 
 98 edges — the full provenance of this file: who created it, what was added,
@@ -193,7 +185,7 @@ The Semaphore uses a two-layer implementation:
 Generate an interactive HTML graph from any search query:
 
 ```
-$ atomic vault query graph "sync" -o sync-graph.html
+$ atomic query graph "sync" -o sync-graph.html
 
 Opening graph (156 nodes, 243 edges) in browser...
 ```
@@ -232,10 +224,10 @@ The intent agent:
 2. **Uses code intelligence to search** — not grep, not find:
 
 ```
-atomic vault query search "Semaphore"
-atomic vault query entities tokio/src/sync/semaphore.rs
-atomic vault query code "try_acquire_many_owned" -t rs
-atomic vault query neighbors "entity:tokio/src/sync/semaphore.rs:try_acquire_many_owned:921"
+atomic query search "Semaphore" -t Change
+atomic query entities tokio/src/sync/semaphore.rs
+atomic query code "try_acquire_many_owned" -t rs
+atomic query neighbors "file:tokio/src/sync/semaphore.rs"
 ```
 
 3. Asks clarifying questions based on what it found
@@ -243,7 +235,7 @@ atomic vault query neighbors "entity:tokio/src/sync/semaphore.rs:try_acquire_man
 5. Each TODO names **specific files and line ranges** found via the KG
 
 The agent never uses `Grep` or `Glob` — those tools are not in its tool list.
-It has `Bash` (for `atomic vault query` commands) and `Read` (for intent files).
+It has `Bash` (for `atomic query` commands) and `Read` (for intent files).
 The `code-intelligence` skill teaches it the query patterns.
 
 ### The build agent executes
@@ -335,8 +327,8 @@ Provenance Graph:
   Nodes:   7  Edges: 6  Changes: 1
 
   Goal         » Fix Semaphore try_acquire_many_owned to return error instead of panicking
-  Exploration  » atomic vault query entities tokio/src/sync/semaphore.rs  [Bash] (120ms)
-  Exploration  » atomic vault query code "try_acquire_many_owned" -t rs  [Bash] (85ms)
+  Exploration  » atomic query entities tokio/src/sync/semaphore.rs  [Bash] (120ms)
+  Exploration  » atomic query code "try_acquire_many_owned" -t rs  [Bash] (85ms)
   Exploration  » Read tokio/src/sync/batch_semaphore.rs L79-120  [Read] (12ms)
   Commitment   » Edit tokio/src/sync/semaphore.rs L921-932  [Edit] (45ms)
   Commitment   » Edit tokio/src/sync/batch_semaphore.rs L95-98  [Edit] (32ms)
@@ -355,7 +347,7 @@ Your team reviews not just the code, but the agent's reasoning.
 ## The Full Loop
 
 ```
-atomic query enrich          # Build the knowledge graph
+atomic query reindex --full  # Build the knowledge graph
 atomic query search "X"      # Find structure
 atomic query code "X"        # Find source text
 atomic query neighbors N     # Follow relationships
