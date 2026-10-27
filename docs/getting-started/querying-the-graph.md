@@ -43,6 +43,72 @@ KG generation: 2
 
 You can re-run `reindex --full` at any time to reproject the graph. It's idempotent and replaces the derived KG tables atomically — the core VCS graph is never touched.
 
+:::warning Ignored files and folders are not included
+Anything your ignore patterns exclude is **intentionally excluded** from code intelligence too — not indexed, not searchable, not graphed. See [What's Indexed — and What's Intentionally Excluded](#whats-indexed--and-whats-intentionally-excluded) below before you conclude a search is broken.
+:::
+
+## What's Indexed — and What's Intentionally Excluded
+
+**Ignored files and folders are not included in the knowledge graph or the content index. They are intentionally excluded.** Ignore patterns define what is not part of your project; code intelligence follows the same policy that `status` and `add` already follow.
+
+With this `.gitignore`:
+
+```bash
+node_modules/
+target/
+dist/
+*.log
+```
+
+…`node_modules/`, `target/`, `dist/`, and every `*.log` file are:
+
+- **Not** in the content index — `atomic query code "…"` never returns a match from them
+- **Not** tracked, and therefore never appear as `file:` nodes or in `search` results
+- **Not** visualized by `atomic query graph`
+
+This is deliberate, not a stale or incomplete index. If a search doesn't find text you know exists, check whether the file matches an ignore pattern before debugging anything else.
+
+### Which ignore rules apply
+
+| Rule source | Honored by code intelligence |
+|-------------|------------------------------|
+| `.gitignore` | Yes |
+| `.ignore` | Yes |
+| `.atomicignore` | Yes — and it wins on conflicting patterns, so a `!pattern` there re-includes something `.gitignore` excludes |
+| Global ignore file (`~/.atomic/ignore`) | Yes |
+| Nested ignore files inside subdirectories | No — only the ignore files at the repository root are read |
+
+### Atomic-internal paths are also excluded
+
+`.atomic/`, `.git/`, `.vault/`, and `.atomic-sandbox*` are never reprojected or indexed. Vault content is already queryable through its own KG nodes (`intent:`, `memory:`, `goal:`), so a `file:.vault/…` node would only duplicate it.
+
+### Size and binary limits
+
+The content index also skips files larger than **10 MiB** and files whose contents are detected as binary.
+
+### What happens when a file becomes ignored
+
+Ignore rules govern the *discovery* of new paths, so the effect depends on the surface:
+
+| Query surface | Behavior for ignored paths |
+|---------------|----------------------------|
+| Content search (`query code`) | Excluded. A pattern that starts matching a file removes it from the index at the next `reindex --full` or `index --rebuild` — even if the file was already recorded |
+| VCS-derived KG nodes (`file:`, `change:`) | A recorded change is an immutable fact: the nodes it created remain until `atomic query reindex --full` reconciles stale entries |
+| Structure queries (`query entities`, `query callers`) | Parsed on demand from tracked file contents, so a file that is tracked but currently ignored still parses |
+
+### Making an ignored file searchable
+
+Remove the pattern (or re-include the path with `!` in `.atomicignore`), then rebuild:
+
+```bash
+atomic query index --rebuild    # rebuild the content index
+atomic query reindex --full     # reproject the graph's file/change nodes
+```
+
+:::tip Why not index everything?
+Ignored directories are where build output and dependencies live. Indexing them multiplies index size and slows every search without adding signal — the same reason `atomic status` skips them. If you genuinely want a file in code intelligence, stop ignoring it.
+:::
+
 :::tip
 Run `reindex --full` after importing a Git repository or after a large pull. The KG doesn't update automatically — you control when it reprojects. Lightweight and read-only opens do not run the migration; KG reads on an old generation report `KgNeedsRebuild`.
 :::
@@ -434,6 +500,10 @@ The recommended agent workflow is:
 5. **Read file** — read only the specific lines you need
 
 This approach is faster and more accurate than scanning the filesystem because the KG already knows the structure. An agent doesn't need to guess file paths or parse import statements — the relationships are pre-computed.
+
+:::info Empty results vs. ignored files
+Ignored files and folders are intentionally excluded from the KG and the content index, so `code` and `search` return nothing for them. An agent should treat that as an answer, not a failure — and should not fall back to grep/find to read them. If the file genuinely matters, remove the ignore pattern and rebuild the index.
+:::
 
 :::tip
 If your KG results seem sparse after a fresh import, run `atomic query reindex --full` to populate it. The agent skill instructions tell agents to do this automatically if queries return empty results.
