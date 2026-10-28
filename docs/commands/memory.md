@@ -147,9 +147,15 @@ Gates the memory, fills `attributedTo` from the signing identity, signs the
 canonical node, re-gates, and writes the attested node as a tracked vault entry.
 The source memory is unchanged.
 
+`--json` emits the attested canonical node as JSON-LD — the same document
+[`memory show --json`](#memory-show--render-a-read-time-projection) prints, now
+with the `proof` embedded — and nothing else, so stdout stays one parseable
+document.
+
 ```bash
 atomic memory attest 01j8zc4r8t
 atomic memory attest 01j8zc4r8t --identity alice-work
+atomic memory attest 01j8zc4r8t --json
 ```
 
 ### `memory verify` — verify a signed attestation

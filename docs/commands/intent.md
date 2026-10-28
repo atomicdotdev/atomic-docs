@@ -133,6 +133,11 @@ node, re-gates the result, and writes the attested node (with embedded
 mutated. `--identity` selects the signing identity (defaults to the current
 default identity).
 
+`--json` emits the attested canonical node as JSON-LD — the same document
+[`intent show --json`](#intent-show--render-a-read-time-projection) prints, now
+with the `proof` embedded — and nothing else, so stdout stays one parseable
+document.
+
 ```bash
 atomic intent attest PIMO-1
 atomic intent attest PIMO-1 --identity alice-work

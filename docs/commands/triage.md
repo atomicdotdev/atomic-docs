@@ -78,7 +78,7 @@ atomic triage review <FEATURE> --into <INTO> [OPTIONS]
 | Option | Description |
 |--------|-------------|
 | `--into <INTO>` | The target view the feature would be inserted into |
-| `--json` | Emit the full report as JSON instead of the bounded CLI dashboard |
+| `--json` | Emit the full report as JSON instead of the bounded CLI dashboard. Mutually exclusive with `--html`: the pair is rejected with exit code 2 before any work is done |
 | `--walkthrough` | Print the guided walkthrough: the candidate changes grouped into ordered semantic layers (foundations first), with each layer's rationale, files, and inspect commands. Bounded — never a diff dump |
 | `--html` | Write a self-contained HTML report (inline CSS/JS, no external assets) to a file and open it in the default browser |
 | `--output <FILE>` | With `--html`, write the report to this path instead of a temp file |

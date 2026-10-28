@@ -106,7 +106,7 @@ Your teammate on GitHub sees ordinary commits and reviews ordinary PRs. You keep
 | `atomic git shim verify` | Read-only comparison of Git HEAD and the current Atomic view. Changes nothing. |
 | `atomic git shim status` | Per-view ref-mapping status: `Synchronized`, `GitAhead`, `AtomicAhead`, `Diverged`, or `Unrepresentable`, with explicit remediation for each. |
 | `atomic git shim switch <view>` | Switch Git and Atomic together to an existing view. Requires an already-mapped branch; it does not create one. |
-| `atomic status --git` | Git-style staging status for the supported subset of Git semantics (`--json` available). Not full porcelain compatibility. |
+| `atomic status --git` | Git-style staging status for the supported subset of Git semantics (`--json` available, but not together with `--no-reconcile`). Not full porcelain compatibility. |
 
 ### Publishing a Draft view
 
