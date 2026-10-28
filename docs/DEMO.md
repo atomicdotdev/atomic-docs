@@ -9,22 +9,18 @@
 
 ### Build the knowledge graph
 
-After importing a project from Git, enrich the knowledge graph. This extracts
-files, modules, changes, tree-sitter entities, include relationships, and builds
-a full-text content index.
+After importing a project from Git, project the knowledge graph. This classifies
+changes, views, files, and identities using the Atomic workflow ontology:
 
 ```
-$ atomic query enrich
+$ atomic query reindex --full
 
-Enriching views... ✓ 2 view(s)
-Enriching files... ✓ 483 file(s)
-Enriching modules... ✓ 64 module(s)
-Enriching changes... ✓ 4511 change(s)
-Extracting entities (tree-sitter)... ✓ 12,847 entit(ies)
-Resolving includes... ✓ 1,203 include(s)
-Building content index... ✓ 483 file(s) indexed (4.7 MB)
+Projecting workflow graph... ✓
+Views: 2
+Changes: 4511
+Identities: 1
 
-Enriched: 2 views, 483 files, 64 modules, 4511 changes, 12847 entities, 1203 includes
+KG generation: 2
 ```
 
 One command. The entire project is now queryable.
@@ -56,7 +52,7 @@ $ atomic query search "sync" -p 5000
 Files, modules, entities, **and changes** — all from one query. Filter by kind:
 
 ```
-$ atomic vault query search "sync" -t change -k 5
+$ atomic query search "sync" -t Change -k 5
 
   [change] change:2OJECPXPLQHL  doc: sync interval.rs and time/mod.rs docs (#3533)
   [change] change:44XWBJBZRONM  sync: fix warnings in benches and tests (#912)
@@ -108,24 +104,20 @@ entity defined in a file AND every change that touched it:
 ```
 $ atomic query neighbors "file:tokio/src/sync/semaphore.rs"
 
-Nodes (99):
-  [entity] entity:tokio/src/sync/semaphore.rs:close:963  pub fn close(&self)
-  [entity] entity:tokio/src/sync/semaphore.rs:acquire:585  pub fn acquire(...)
-  [entity] entity:tokio/src/sync/semaphore.rs:Semaphore:398  pub struct Semaphore
+Nodes (6):
   [change] change:6VJNKUDTWHYX  sync: add Semaphore (#1973)
   [change] change:G4SXCOK523DV  sync: add `Semaphore::close` (#3065)
   [change] change:XOSH4M7UXO2W  sync: add `merge()` to semaphore permits (#4948)
   [change] change:KCJ3DZW7VLGR  sync: add `Semaphore::MAX_PERMITS` (#5144)
-  [module] module:tokio/src/sync  tokio/src/sync
-  ...
+  [view] view:main  Shared view
+  [file] file:tokio/src/sync/semaphore.rs
 
-Edges (98):
-  file:tokio/src/sync/semaphore.rs →[DEFINES]→ entity:...:Semaphore:398
-  file:tokio/src/sync/semaphore.rs →[DEFINES]→ entity:...:acquire:585
-  file:tokio/src/sync/semaphore.rs →[PART_OF]→ module:tokio/src/sync
-  change:6VJNKUDTWHYX →[MODIFIES]→ file:tokio/src/sync/semaphore.rs
-  change:G4SXCOK523DV →[MODIFIES]→ file:tokio/src/sync/semaphore.rs
-  ...
+Edges (5):
+  change:6VJNKUDTWHYX →[https://atomic.dev/ns/workflow#modifiesFile]→ file:tokio/src/sync/semaphore.rs
+  change:G4SXCOK523DV →[https://atomic.dev/ns/workflow#modifiesFile]→ file:tokio/src/sync/semaphore.rs
+  change:XOSH4M7UXO2W →[https://atomic.dev/ns/workflow#modifiesFile]→ file:tokio/src/sync/semaphore.rs
+  change:KCJ3DZW7VLGR →[https://atomic.dev/ns/workflow#modifiesFile]→ file:tokio/src/sync/semaphore.rs
+  change:6VJNKUDTWHYX →[https://atomic.dev/ns/workflow#directlyOnView]→ view:main
 ```
 
 98 edges — the full provenance of this file: who created it, what was added,
@@ -193,7 +185,7 @@ The Semaphore uses a two-layer implementation:
 Generate an interactive HTML graph from any search query:
 
 ```
-$ atomic vault query graph "sync" -o sync-graph.html
+$ atomic query graph "sync" -o sync-graph.html
 
 Opening graph (156 nodes, 243 edges) in browser...
 ```
@@ -232,10 +224,10 @@ The intent agent:
 2. **Uses code intelligence to search** — not grep, not find:
 
 ```
-atomic vault query search "Semaphore"
-atomic vault query entities tokio/src/sync/semaphore.rs
-atomic vault query code "try_acquire_many_owned" -t rs
-atomic vault query neighbors "entity:tokio/src/sync/semaphore.rs:try_acquire_many_owned:921"
+atomic query search "Semaphore" -t Change
+atomic query entities tokio/src/sync/semaphore.rs
+atomic query code "try_acquire_many_owned" -t rs
+atomic query neighbors "file:tokio/src/sync/semaphore.rs"
 ```
 
 3. Asks clarifying questions based on what it found
@@ -243,7 +235,7 @@ atomic vault query neighbors "entity:tokio/src/sync/semaphore.rs:try_acquire_man
 5. Each TODO names **specific files and line ranges** found via the KG
 
 The agent never uses `Grep` or `Glob` — those tools are not in its tool list.
-It has `Bash` (for `atomic vault query` commands) and `Read` (for intent files).
+It has `Bash` (for `atomic query` commands) and `Read` (for intent files).
 The `code-intelligence` skill teaches it the query patterns.
 
 ### The build agent executes
@@ -278,12 +270,13 @@ $ atomic view list --verbose
 * master                         [shared]  (4511 changes)  state: KJRM7HJVZNX2
 ```
 
-### Inspect a change with embedded AI provenance
+### Inspect a change with AI attestation
 
-For agent-recorded changes, the default view renders the first embedded provenance entry as `=== Attestation ===`, then renders the associated Change Ledger:
+For agent-recorded changes, `-a` shows the AI metadata baked into the
+change hash:
 
 ```
-$ atomic change <hash>
+$ atomic change -a <hash>
 
 change XMJZ3IPF (#4512)
 Author: claude+60f5 <lee@atomic.dev>
@@ -299,57 +292,68 @@ Files changed: 2
   ± tokio/src/sync/semaphore.rs (+1 span, ~2 edges: insert, replace)
   ± tokio/src/sync/batch_semaphore.rs (+1 span, ~1 edge: insert)
 
-=== Attestation ===
+AI Provenance:
   Vendor:  Anthropic
   Model:   claude-sonnet-4-5
-  Tool:    Cli("claude-code")
-  Type:    Complete
+  Tool:    ClaudeCode
+  Type:    Completion
   Tokens:
-    Input:  3412
+    Input:  3,412
     Output: 891
-    Total:  4303
-  Cost:    $0.018000 USD
+    Total:  4,303
+  Cost:    $0.018 USD
   Session: ses_a7f3bc12...
 ```
 
-This provenance is in the **hashed section** — it's part of the change's cryptographic identity. Tamper with the attribution, and the hash changes. Despite the display heading, it is not the separate session-level attestation artifact listed by `atomic agent attest`.
+This is in the **hashed section** — it's part of the change's cryptographic
+identity. Tamper with the attribution, and the hash changes.
 
 ### Inspect the provenance decision graph
 
-The same default output continues with the causal DAG — not just what changed, but the observed activity associated with **why** it changed:
+`-p` shows the causal DAG — not just what changed, but **why**:
 
 ```
-=== Change Ledger ===
+$ atomic change -p <hash>
+
+change XMJZ3IPF (#4512)
+Author: claude+60f5 <lee@atomic.dev>
+Date:   2026-06-14 15:23:41
+
+    feat: add non-panicking try_acquire_many_owned to Semaphore
+
+Provenance Graph:
   Session: ses_a7f3bc12...
   Agent:   Claude Code (anthropic)
   Nodes:   7  Edges: 6  Changes: 1
 
-  goal » Fix Semaphore try_acquire_many_owned to return error instead of panicking
-  exploration » atomic vault query entities tokio/src/sync/semaphore.rs [bash] (120ms)
-  exploration » atomic vault query code "try_acquire_many_owned" -t rs [bash] (85ms)
-  exploration » Read tokio/src/sync/batch_semaphore.rs L79-120 [read] (12ms)
-  commitment » Edit tokio/src/sync/semaphore.rs L921-932 [edit] (45ms)
-  commitment » Edit tokio/src/sync/batch_semaphore.rs L95-98 [edit] (32ms)
-  verification » cargo test --lib sync::semaphore [bash] (3200ms)
+  Goal         » Fix Semaphore try_acquire_many_owned to return error instead of panicking
+  Exploration  » atomic query entities tokio/src/sync/semaphore.rs  [Bash] (120ms)
+  Exploration  » atomic query code "try_acquire_many_owned" -t rs  [Bash] (85ms)
+  Exploration  » Read tokio/src/sync/batch_semaphore.rs L79-120  [Read] (12ms)
+  Commitment   » Edit tokio/src/sync/semaphore.rs L921-932  [Edit] (45ms)
+  Commitment   » Edit tokio/src/sync/batch_semaphore.rs L95-98  [Edit] (32ms)
+  Verification » cargo test --lib sync::semaphore  [Bash] (3,200ms)
 ```
 
-Every tool call is classified: exploration (read-only), commitment (file edit), or verification (test run). Inferred causal edges connect the observations — the exploration preceded the commitment, and the commitment was followed by the test.
+Every tool call classified: exploration (read-only), commitment (file edit),
+verification (test run). Causal edges connect them — the exploration informed
+the commitment, the commitment was verified by the test.
 
 This graph is content-addressed and pushes to remotes alongside the change.
-Your team reviews not just the code, but the observed workflow and inferred decision links associated with it.
+Your team reviews not just the code, but the agent's reasoning.
 
 ---
 
 ## The Full Loop
 
 ```
-atomic vault query enrich          # Build the knowledge graph
-atomic vault query search "X"      # Find structure
-atomic vault query code "X"        # Find source text
-atomic vault query neighbors N     # Follow relationships
-atomic vault query entities F      # Get file outline
-atomic vault query ask "Q"         # Ask a question (RAG + LLM)
-atomic vault query graph "X"       # Visualize
+atomic query reindex --full  # Build the knowledge graph
+atomic query search "X"      # Find structure
+atomic query code "X"        # Find source text
+atomic query neighbors N     # Follow relationships
+atomic query entities F      # Get file outline
+atomic query ask "Q"         # Ask a question (RAG + LLM)
+atomic query graph "X"       # Visualize
 
 claude                             # Agent uses code-intelligence skill
                                    # → queries the KG instead of grep/find
@@ -357,7 +361,9 @@ claude                             # Agent uses code-intelligence skill
                                    # → changes recorded with full provenance
 
 atomic view list --verbose         # See agent views
-atomic change <hash>               # Code, AI metadata, and Change Ledger
+atomic change -a <hash>            # AI attestation (model, tokens, cost)
+atomic change -p <hash>            # Provenance graph (why it changed)
 ```
 
-One connected toolchain, from code intelligence to agent development to tamper-evident attribution and review.
+One system. From code intelligence to agent development to cryptographic
+attribution. No wrappers, no plugins, no separate tools.

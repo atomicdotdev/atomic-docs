@@ -5,16 +5,18 @@ title: Querying the Graph
 
 # Querying the Knowledge Graph
 
-After you import or create a repository, Atomic can build a **knowledge graph** (KG) from your codebase. The knowledge graph maps out your files, functions, structs, classes, changes, views, modules, and the relationships between them — who changed what, which file defines which entity, what depends on what.
+After you import or create a repository, Atomic can project a **knowledge graph** (KG) over your codebase. The KG maps out your files, changes, views, identities, and workflow resources (intents, goals, sessions, and more) — who changed what, which view a change is on, and how changes depend on each other.
+
+Code structure (functions, structs, classes, imports, calls) is **parsed live from source** rather than persisted in the KG. The KG classifies changes, files, views, and workflow resources using class IRIs from the Atomic workflow ontology (`https://atomic.dev/ns/workflow#`).
 
 This isn't just metadata. It's a queryable model of your entire project that powers:
 
 - **Code search** — find source text across your repo with content indexing
-- **Structural search** — find entities by name, kind, or relationship
-- **Dependency exploration** — trace how files, changes, and entities connect
+- **Structural search** — find KG nodes by class, label, or summary
+- **Dependency exploration** — trace how files, changes, and views connect
 - **AI agent workflows** — agents use the KG instead of grep/find for faster, more accurate code discovery
 
-All of these capabilities live under a single command: `atomic vault query`.
+All of these capabilities live under a single command: `atomic query`.
 
 :::info
 The knowledge graph is especially important for [AI Agent Workflows](/getting-started/ai-agent-workflows). Agent integrations install a code-intelligence skill that teaches agents to query the KG instead of scanning the filesystem. If you're setting up Atomic for agent use, this page is essential reading.
@@ -22,39 +24,24 @@ The knowledge graph is especially important for [AI Agent Workflows](/getting-st
 
 ## Building the Knowledge Graph
 
-Before you can query anything, you need to populate the knowledge graph. Run:
+Before you can query anything, you need to project the KG. Run:
 
 ```bash
-atomic vault query enrich
+atomic query reindex --full
 ```
 
-This builds the graph from what the repository actually contains:
+This projects the workflow ontology over your repository's changes and views:
 
 ```
-Enriching views... ✓ 3 view(s)
-Enriching files... ✓ 42 file(s)
-Enriching changes... ✓ 15 change(s)
-Building content index... ✓ 42 file(s) indexed (1.2 MB)
+Projecting workflow graph... ✓
+Views: 3
+Changes: 15
+Identities: 2
 
-Enriched: 3 views, 42 files, 15 changes
+KG generation: 2
 ```
 
-Here's what each phase does:
-
-| Phase | What it extracts |
-|-------|-----------------|
-| **Views** | All views in the repository (main, dev, feature branches) |
-| **Files** | Every file touched by a recorded change, with path metadata |
-| **Changes** | Every recorded change, with author and message |
-| **Content index** | Full-text search index over the files it includes (see exclusions below) |
-
-Structural queries — entity outlines, callers, import relationships — are parsed from file contents on demand at query time, so there is no separate phase to run for them.
-
-You can re-run `enrich` at any time to pick up new changes. It's idempotent.
-
-:::tip
-Run `enrich` after importing a Git repository or after a large pull. The KG doesn't update automatically — you control when it rebuilds.
-:::
+You can re-run `reindex --full` at any time to reproject the graph. It's idempotent and replaces the derived KG tables atomically — the core VCS graph is never touched.
 
 :::warning Ignored files and folders are not included
 Anything your ignore patterns exclude is **intentionally excluded** from code intelligence too — not indexed, not searchable, not graphed. See [What's Indexed — and What's Intentionally Excluded](#whats-indexed--and-whats-intentionally-excluded) below before you conclude a search is broken.
@@ -93,7 +80,7 @@ This is deliberate, not a stale or incomplete index. If a search doesn't find te
 
 ### Atomic-internal paths are also excluded
 
-`.atomic/`, `.git/`, `.vault/`, and `.atomic-sandbox*` are never enriched or indexed. Vault content is already queryable through its own nodes (`intent:`, `memory:`, `goal:`), so a `file:.vault/…` node would only duplicate it.
+`.atomic/`, `.git/`, `.vault/`, and `.atomic-sandbox*` are never reprojected or indexed. Vault content is already queryable through its own KG nodes (`intent:`, `memory:`, `goal:`), so a `file:.vault/…` node would only duplicate it.
 
 ### Size and binary limits
 
@@ -105,8 +92,8 @@ Ignore rules govern the *discovery* of new paths, so the effect depends on the s
 
 | Query surface | Behavior for ignored paths |
 |---------------|----------------------------|
-| Content search (`query code`) | Excluded. A pattern that starts matching a file removes it from the index at the next `enrich` or `index --rebuild` — even if the file was already recorded |
-| VCS-derived KG nodes (`file:`, `change:`) | A recorded change is an immutable fact: the nodes it created remain until `atomic query enrich --rebuild` reconciles stale entries |
+| Content search (`query code`) | Excluded. A pattern that starts matching a file removes it from the index at the next `reindex --full` or `index --rebuild` — even if the file was already recorded |
+| VCS-derived KG nodes (`file:`, `change:`) | A recorded change is an immutable fact: the nodes it created remain until `atomic query reindex --full` reconciles stale entries |
 | Structure queries (`query entities`, `query callers`) | Parsed on demand from tracked file contents, so a file that is tracked but currently ignored still parses |
 
 ### Making an ignored file searchable
@@ -115,19 +102,23 @@ Remove the pattern (or re-include the path with `!` in `.atomicignore`), then re
 
 ```bash
 atomic query index --rebuild    # rebuild the content index
-atomic query enrich --rebuild   # reconcile the graph's file/change nodes
+atomic query reindex --full     # reproject the graph's file/change nodes
 ```
 
 :::tip Why not index everything?
 Ignored directories are where build output and dependencies live. Indexing them multiplies index size and slows every search without adding signal — the same reason `atomic status` skips them. If you genuinely want a file in code intelligence, stop ignoring it.
 :::
 
+:::tip
+Run `reindex --full` after importing a Git repository or after a large pull. The KG doesn't update automatically — you control when it reprojects. Lightweight and read-only opens do not run the migration; KG reads on an old generation report `KgNeedsRebuild`.
+:::
+
 ## Searching Source Code
 
-The `code` subcommand searches the content index built by `enrich`. Think of it as a faster, KG-aware alternative to grep:
+The `code` subcommand searches the content index built by `reindex --full`. Think of it as a faster, KG-aware alternative to grep:
 
 ```bash
-atomic vault query code "verify_token" -t rs
+atomic query code "verify_token" -t rs
 ```
 
 ```
@@ -154,7 +145,7 @@ src/middleware.rs:23:     let claims = auth::verify_token(&bearer)?;
 When there are more matches than the limit, `code` shows you how to narrow down:
 
 ```bash
-atomic vault query code "replication" -t cpp
+atomic query code "replication" -t cpp
 ```
 
 ```
@@ -175,16 +166,16 @@ This tells you exactly which `-g` filter to add to drill into the results you ca
 
 ## Searching the Knowledge Graph
 
-The `search` subcommand searches across all node types in the KG — entities, files, changes, and views — by keyword:
+The `search` subcommand searches across all node types in the KG — files, changes, views, identities, and workflow resources — by keyword:
 
 ```bash
-atomic vault query search "authentication"
+atomic query search "authentication"
 ```
 
 ```
-  [entity] entity:src/auth.rs:verify_token:42  Verifies JWT token signature
   [file] file:src/auth.rs  Authentication module
   [change] change:R4YQUAS2UZV5  fix: token validation edge case
+  [view] view:main  Shared view, 42 changes
 
 3 result(s).
 ```
@@ -195,26 +186,26 @@ atomic vault query search "authentication"
 |------|-------------|
 | `<query>` | Search query text |
 | `-k, --limit <N>` | Maximum results (default: 10) |
-| `-t, --kind <KIND>` | Filter by node kind: `change`, `entity`, `file`, `view` |
+| `-t, --kind <KIND>` | Filter by class IRI suffix: `Change`, `File`, `View`, `Identity`, `WorkIntent`, `Goal`, etc. |
 | `--json` | Output as JSON |
 
 ### Filtering by Kind
 
-Use `-t` to narrow results to a specific node type:
+Use `-t` to narrow results to a specific node class:
 
 ```bash
-# Only entities (functions, structs, etc.)
-atomic vault query search "session" -t entity
-
 # Only changes
-atomic vault query search "authentication" -t change
+atomic query search "authentication" -t Change
 
 # Only files
-atomic vault query search "auth" -t file
+atomic query search "auth" -t File
+
+# Only views
+atomic query search "main" -t View
 ```
 
 :::tip
-`search` is structural — it finds nodes in the KG by their descriptions and names. For finding text *inside* files, use `code` instead.
+`search` is structural — it finds nodes in the KG by their class, descriptions, and names. For finding text *inside* files, use `code` instead. Code entities (functions, structs, classes) are parsed live from source and are not KG nodes; use `entities` for file outlines.
 :::
 
 ## Exploring Relationships
@@ -222,28 +213,29 @@ atomic vault query search "auth" -t file
 The `neighbors` subcommand is where the graph really shines. Give it a node ID, and it shows you everything connected to that node:
 
 ```bash
-atomic vault query neighbors "file:src/auth.rs"
+atomic query neighbors "file:src/auth.rs"
 ```
 
 ```
-Nodes (5):
-  [entity] entity:src/auth.rs:verify_token:42  Verifies JWT token signature
-  [entity] entity:src/auth.rs:create_session:78  Creates a new user session
+Nodes (4):
   [change] change:R4YQUAS2UZV5  fix: token validation edge case
   [change] change:ABC12345DEF6  feat: add session management
+  [view] view:main  Shared view, 42 changes
   [file] file:src/auth.rs  Authentication module
 
 Edges (4):
-  file:src/auth.rs →[DEFINES]→ entity:src/auth.rs:verify_token:42
-  file:src/auth.rs →[DEFINES]→ entity:src/auth.rs:create_session:78
-  change:R4YQUAS2UZV5 →[MODIFIES]→ file:src/auth.rs
-  change:ABC12345DEF6 →[MODIFIES]→ file:src/auth.rs
+  change:R4YQUAS2UZV5 →[https://atomic.dev/ns/workflow#modifiesFile]→ file:src/auth.rs
+  change:ABC12345DEF6 →[https://atomic.dev/ns/workflow#modifiesFile]→ file:src/auth.rs
+  change:R4YQUAS2UZV5 →[https://atomic.dev/ns/workflow#directlyOnView]→ view:main
+  change:ABC12345DEF6 →[https://atomic.dev/ns/workflow#directlyOnView]→ view:main
 ```
 
 From this single query, you can see:
-- What entities the file defines (`DEFINES` edges)
-- Which changes touched the file (`MODIFIES` edges)
+- Which changes touched the file (`modifiesFile` edges)
+- Which view each change is on (`directlyOnView` edges)
 - The full neighborhood of related nodes
+
+Code entities (functions, structs, classes) are not KG nodes — they're parsed live from source. Use the `entities` subcommand for file outlines.
 
 ### Options
 
@@ -258,7 +250,7 @@ From this single query, you can see:
 Use `--depth 2` to see two hops out from a node. This is useful for understanding indirect relationships — for example, which *other files* were modified by the same changes that touched your file:
 
 ```bash
-atomic vault query neighbors "file:src/auth.rs" --depth 2
+atomic query neighbors "file:src/auth.rs" --depth 2
 ```
 
 ### Exploring Changes
@@ -266,17 +258,17 @@ atomic vault query neighbors "file:src/auth.rs" --depth 2
 You can also start from a change to see what it affected:
 
 ```bash
-atomic vault query neighbors "change:R4YQUAS2UZV5"
+atomic query neighbors "change:R4YQUAS2UZV5"
 ```
 
-This shows you the files modified, the entities touched, which view the change is on, and who authored it.
+This shows you the files modified, which view the change is on, and who authored it. Code entities touched by the change are parsed live from source — use `entities <path>` for file outlines.
 
 ## Listing File Entities
 
-The `entities` subcommand parses a file with tree-sitter and lists all the structural entities it finds — functions, structs, classes, constants, traits, and more:
+The `entities` subcommand parses a file with tree-sitter and lists all the structural entities it finds — functions, structs, classes, constants, traits, and more. Code entities are **parsed live from source** and are not persisted in the KG:
 
 ```bash
-atomic vault query entities src/auth.rs
+atomic query entities src/auth.rs
 ```
 
 ```
@@ -311,7 +303,7 @@ The `entities` subcommand requires tree-sitter support for the file's language. 
 The `graph` subcommand generates a visual representation of the knowledge graph seeded from a search query. By default, it produces an interactive HTML page with a D3 force-directed layout:
 
 ```bash
-atomic vault query graph "authentication" -o auth.html
+atomic query graph "authentication" -o auth.html
 ```
 
 ```
@@ -324,17 +316,17 @@ Open `auth.html` in a browser to explore the graph interactively — drag nodes,
 
 **HTML** (default) — interactive D3 force-directed graph:
 ```bash
-atomic vault query graph "authentication" -o auth.html
+atomic query graph "authentication" -o auth.html
 ```
 
 **DOT** — Graphviz format, pipe to `dot` for SVG/PNG:
 ```bash
-atomic vault query graph "authentication" --dot | dot -Tsvg -o auth-graph.svg
+atomic query graph "authentication" --dot | dot -Tsvg -o auth-graph.svg
 ```
 
 **JSON** — machine-readable nodes and edges:
 ```bash
-atomic vault query graph "authentication" --json
+atomic query graph "authentication" --json
 ```
 
 ### Options
@@ -348,11 +340,11 @@ atomic vault query graph "authentication" --json
 | `--json` | Output JSON to stdout |
 | `--dot` | Output DOT to stdout |
 | `--max-nodes <N>` | Maximum nodes (default: 5000 for HTML, 200 for DOT) |
-| `--kinds <KINDS>` | Comma-separated node kinds to include |
+| `--kinds <KINDS>` | Comma-separated class IRI suffixes to include (e.g. `Change,File,View`) |
 | `--changes-per-seed <N>` | Max change nodes per seed during expansion (default: 5, 0 = unlimited) |
 
 :::tip
-For large codebases, use `--kinds` to filter the visualization. For example, `--kinds entity,file` hides change nodes and shows only code structure.
+For large codebases, use `--kinds` to filter the visualization. For example, `--kinds Change,File` hides workflow nodes and shows only changes and files. Code entities are not KG nodes and won't appear in the graph.
 :::
 
 ## Managing the Index
@@ -362,7 +354,7 @@ Three subcommands help you maintain the search index and KG:
 ### `index` — Update the content search index
 
 ```bash
-atomic vault query index --stats
+atomic query index --stats
 ```
 
 ```
@@ -375,20 +367,43 @@ Updating content index... done.
 | `--rebuild` | Full rebuild instead of incremental update |
 | `--stats` | Show index statistics after building |
 
-### `reindex` — Rebuild the KG index from vault entries
+### `reindex` — Rebuild the KG projection
 
 ```bash
-atomic vault query reindex
+atomic query reindex --full
 ```
 
 ```
-Indexed 342 nodes + edges.
+Projecting workflow graph... ✓
+Views: 3
+Changes: 15
+Identities: 2
+
+KG generation: 2
 ```
+
+The first full writable open mints an unsigned upgrade identity if needed and reprojects the derived graph once. Lightweight, repair, and read-only opens do not run the migration. KG reads on an old generation report `KgNeedsRebuild`; ordinary repository reads remain available.
+
+:::warning
+Once a repository is reprojected to KG generation 2, older Atomic builds cannot open it — they lack the `kg-semweb-v1` required capability. This is a one-way cutover.
+:::
+
+### `validate` — Evaluate SHACL shapes
+
+Run builtin or local enterprise SHACL shapes over the workflow snapshot:
+
+```bash
+atomic query validate --format json
+atomic query validate --profile publication --format json
+atomic query validate --shape <shape-iri> --node <resource-iri>
+```
+
+Validation runs locally in the CLI using PurRDF 3.0.1. Exit codes are **0** for conformance, **1** for violations, and **3** for shape or engine errors.
 
 ### `embed` — Rebuild embeddings for vault content
 
 ```bash
-atomic vault query embed
+atomic query embed
 ```
 
 ```
@@ -409,7 +424,7 @@ Embedded 47 total chunks.
 The `plan` subcommand executes a multi-step query plan from JSON on stdin. This is primarily used by tooling and agents that need to chain KG operations programmatically:
 
 ```bash
-echo '{"steps":[{"type":"kg_search","query":"auth","limit":5}]}' | atomic vault query plan
+echo '{"steps":[{"type":"kg_search","query":"auth","limit":5}]}' | atomic query plan
 ```
 
 ```
@@ -434,7 +449,7 @@ Each step in the plan corresponds to a KG operation (search, neighbors, code sea
 The `ask` subcommand combines the knowledge graph with an LLM to answer natural language questions about your codebase. It uses retrieval-augmented generation (RAG) — querying the KG first, then passing relevant context to the model:
 
 ```bash
-atomic vault query ask "what does the authentication module depend on?"
+atomic query ask "what does the authentication module depend on?"
 ```
 
 ```
@@ -463,18 +478,18 @@ Requires `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` set in your environment.
 
 ## How Agents Use Code Intelligence
 
-When you install an agent integration like `atomic-claude` or `atomic-codex`, it includes a **code-intelligence skill** that teaches the agent to use `atomic vault query` commands instead of raw filesystem tools like grep and find.
+When you install an agent integration like `atomic-claude` or `atomic-codex`, it includes a **code-intelligence skill** that teaches the agent to use `atomic query` commands instead of raw filesystem tools like grep and find.
 
 The mapping works like this:
 
 | Agent goal | Query command |
 |-----------|---------------|
-| Find text in source code | `atomic vault query code "pattern"` |
-| Find where something is defined | `atomic vault query search` or `entities` |
-| See what a file contains | `atomic vault query entities <path>` |
-| Understand dependencies | `atomic vault query neighbors <node_id>` |
-| See what a change affected | `atomic vault query neighbors "change:HASH"` |
-| Visual exploration | `atomic vault query graph "topic"` |
+| Find text in source code | `atomic query code "pattern"` |
+| Find where something is defined | `atomic query search` or `entities` |
+| See what a file contains | `atomic query entities <path>` |
+| Understand dependencies | `atomic query neighbors <node_id>` |
+| See what a change affected | `atomic query neighbors "change:HASH"` |
+| Visual exploration | `atomic query graph "topic"` |
 
 The recommended agent workflow is:
 
@@ -491,7 +506,7 @@ Ignored files and folders are intentionally excluded from the KG and the content
 :::
 
 :::tip
-If your KG results seem sparse after a fresh import, run `atomic vault query enrich` to populate it. The agent skill instructions tell agents to do this automatically if queries return empty results.
+If your KG results seem sparse after a fresh import, run `atomic query reindex --full` to populate it. The agent skill instructions tell agents to do this automatically if queries return empty results.
 :::
 
 → [Installing Agent Integrations](/agents/installing-agent-integrations)
@@ -502,27 +517,26 @@ Every node in the knowledge graph has a typed ID. You'll use these with `neighbo
 
 | Prefix | Format | Example |
 |--------|--------|---------|
-| `entity:` | `entity:<file>:<name>:<line>` | `entity:src/auth.rs:verify_token:42` |
 | `file:` | `file:<path>` | `file:src/auth.rs` |
 | `change:` | `change:<hash>` | `change:R4YQUAS2UZV5` |
 | `view:` | `view:<name>` | `view:main` |
-| `intent:` | `intent:<id>` | `intent:ATOM-42` |
-| `goal:` | `goal:<name>` | `goal:ambient-graph-phase-9` |
+| `identity:` | `did:atomic:<base32>` | `did:atomic:R4YQUAS2UZV5...` |
+
+Code entities (functions, structs, classes) are not KG nodes — they're parsed live from source and don't have stable KG IDs.
 
 ## Edge Types
 
-These are the relationship types in the knowledge graph:
+KG edges use absolute predicate IRIs from the Atomic workflow ontology (`https://atomic.dev/ns/workflow#`). In output, they're often shown in compact form (`atomic:predicateName`):
 
-| Edge | From → To | Meaning |
-|------|-----------|---------|
-| `MODIFIES` | change → file | This change touched this file |
-| `DEFINES` | file → entity | This file defines this function/struct/class |
-| `AUTHORED_BY` | change → identity | Who authored this change |
-| `DEPENDS_ON` | change → change | This change depends on another |
-| `REFERENCES` | entity → entity | Code reference between entities |
-| `ON_VIEW` | change → view | This change is on this view |
-| `PART_OF` | file → module | This file belongs to this module |
-| `INCLUDES` | file → file | This file includes/imports another |
+| Edge (IRI) | Compact | From → To | Meaning |
+|------------|---------|-----------|---------|
+| `https://atomic.dev/ns/workflow#modifiesFile` | `atomic:modifiesFile` | change → file | This change touched this file |
+| `https://atomic.dev/ns/workflow#authoredBy` | `atomic:authoredBy` | change → identity | Who authored this change |
+| `https://atomic.dev/ns/workflow#directlyDependsOnChange` | `atomic:directlyDependsOnChange` | change → change | This change directly depends on another |
+| `https://atomic.dev/ns/workflow#directlyOnView` | `atomic:directlyOnView` | change → view | This change is on this view |
+| `https://atomic.dev/ns/workflow#references` | `atomic:references` | thing → thing | Generic reference relationship |
+
+Class assertions (e.g. `rdf:type`) are stored in `kg_types`, not as neighborhood edges. Use `-t <Class>` with `search` or `neighbors` to filter by class.
 
 ## What's Next
 
