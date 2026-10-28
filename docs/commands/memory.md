@@ -23,7 +23,7 @@ atomic memory show <ID> [--json]
 atomic memory validate <ID_OR_PATH> [--json]
 atomic memory attest <ID> [--identity <IDENTITY>] [--json]
 atomic memory verify <ID> [--identity <IDENTITY>]
-atomic memory list [--limit <N>] [--identity <IDENTITY>] [--json]
+atomic memory list [--limit <N>] [--identity <IDENTITY>] [--sort <KEY>] [-r] [--json]
 atomic memory kinds [--json]
 atomic memory write <NAME> [--type <TYPE>]
 ```
@@ -169,16 +169,36 @@ atomic memory verify 01j8zc4r8t --identity alice-work
 ### `memory list` — list memories, attestation-aware
 
 ```bash
-atomic memory list [--limit <N>] [--identity <IDENTITY>] [--json]
+atomic memory list [--limit <N>] [--identity <IDENTITY>] [--sort <KEY>] [-r] [--json]
 ```
 
 Shows each memory's id (full ULID), kind, status, about-count, an `attested`
 column (fresh / stale / `–`) and a `verifies` column (`✓` / `✗` / `–`).
-`-n/--limit` caps the output to the N most recent (shows all when omitted).
+
+`--sort <KEY>` picks the column to order by; ties keep id order.
+`-r, --reverse` flips the chosen order (the id tiebreak stays ascending).
+`-n/--limit` caps the output to N rows **after** sorting, so it returns the
+first N in the order you asked for (shows all when omitted).
+
+| Key | Orders by |
+|-----|-----------|
+| `updated` | Last update time, newest first (default — the historical order). |
+| `id` | ULID, ascending. |
+| `kind` | Kind, A→Z. |
+| `status` | Status, A→Z. |
+| `about` | Number of `about` edges, fewest first. |
+| `attested` | Fresh, then stale, then unattested. |
+| `verifies` | `✓`, then `✗`, then `–`. |
+
+Sorting runs in the vault service, so a key the listing's kind doesn't have is
+rejected (`--sort title` is only valid for [`intent list`](./intent.md)).
 
 ```bash
 atomic memory list
 atomic memory list --limit 10
+atomic memory list --sort kind
+atomic memory list --sort updated --reverse
+atomic memory list --sort about --limit 5
 atomic memory list --json
 ```
 
