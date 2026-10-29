@@ -9,7 +9,7 @@ After you import or create a repository, Atomic can build a **knowledge graph** 
 
 This isn't just metadata. It's a queryable model of your entire project that powers:
 
-- **Code search** — find source text across your repo with content indexing
+- **Code search** — find source text across your repo's recorded source in the current view
 - **Structural search** — find entities by name, kind, or relationship
 - **Dependency exploration** — trace how files, changes, and entities connect
 - **AI agent workflows** — agents use the KG instead of grep/find for faster, more accurate code discovery
@@ -34,7 +34,6 @@ This builds the graph from what the repository actually contains:
 Enriching views... ✓ 3 view(s)
 Enriching files... ✓ 42 file(s)
 Enriching changes... ✓ 15 change(s)
-Building content index... ✓ 42 file(s) indexed (1.2 MB)
 
 Enriched: 3 views, 42 files, 15 changes
 ```
@@ -46,7 +45,6 @@ Here's what each phase does:
 | **Views** | All views in the repository (main, dev, feature branches) |
 | **Files** | Every file touched by a recorded change, with path metadata |
 | **Changes** | Every recorded change, with author and message |
-| **Content index** | Full-text search index over the files it includes (see exclusions below) |
 
 Structural queries — entity outlines, callers, import relationships — are parsed from file contents on demand at query time, so there is no separate phase to run for them.
 
@@ -57,12 +55,12 @@ Run `enrich` after importing a Git repository or after a large pull. The KG does
 :::
 
 :::warning Ignored files and folders are not included
-Anything your ignore patterns exclude is **intentionally excluded** from code intelligence too — not indexed, not searchable, not graphed. See [What's Indexed — and What's Intentionally Excluded](#whats-indexed--and-whats-intentionally-excluded) below before you conclude a search is broken.
+Anything your ignore patterns exclude is **intentionally excluded** from code intelligence too — not enriched, not searchable, not graphed. See [What's Indexed — and What's Intentionally Excluded](#whats-indexed--and-whats-intentionally-excluded) below before you conclude a search is broken.
 :::
 
 ## What's Indexed — and What's Intentionally Excluded
 
-**Ignored files and folders are not included in the knowledge graph or the content index. They are intentionally excluded.** Ignore patterns define what is not part of your project; code intelligence follows the same policy that `status` and `add` already follow.
+**Ignored files and folders are not included in the knowledge graph or in code search. They are intentionally excluded.** Ignore patterns define what is not part of your project; code intelligence follows the same policy that `status` and `add` already follow.
 
 With this `.gitignore`:
 
@@ -75,11 +73,11 @@ dist/
 
 …`node_modules/`, `target/`, `dist/`, and every `*.log` file are:
 
-- **Not** in the content index — `atomic query code "…"` never returns a match from them
+- **Not** in code search — `atomic query code "…"` never returns a match from them
 - **Not** tracked, and therefore never appear as `file:` nodes or in `search` results
 - **Not** visualized by `atomic query graph`
 
-This is deliberate, not a stale or incomplete index. If a search doesn't find text you know exists, check whether the file matches an ignore pattern before debugging anything else.
+This is deliberate, not a broken search. If a search doesn't find text you know exists, check whether the file matches an ignore pattern before debugging anything else.
 
 ### Which ignore rules apply
 
@@ -93,11 +91,11 @@ This is deliberate, not a stale or incomplete index. If a search doesn't find te
 
 ### Atomic-internal paths are also excluded
 
-`.atomic/`, `.git/`, `.vault/`, and `.atomic-sandbox*` are never enriched or indexed. Vault content is already queryable through its own nodes (`intent:`, `memory:`, `goal:`), so a `file:.vault/…` node would only duplicate it.
+`.atomic/`, `.git/`, `.vault/`, and `.atomic-sandbox*` are never enriched or searched. Vault content is already queryable through its own nodes (`intent:`, `memory:`, `goal:`), so a `file:.vault/…` node would only duplicate it.
 
 ### Size and binary limits
 
-The content index also skips files larger than **10 MiB** and files whose contents are detected as binary.
+Recorded search also skips files larger than **10 MiB** and files whose contents are detected as binary.
 
 ### What happens when a file becomes ignored
 
@@ -105,26 +103,25 @@ Ignore rules govern the *discovery* of new paths, so the effect depends on the s
 
 | Query surface | Behavior for ignored paths |
 |---------------|----------------------------|
-| Content search (`query code`) | Excluded. A pattern that starts matching a file removes it from the index at the next `enrich` or `index --rebuild` — even if the file was already recorded |
+| Content search (`query code`) | Excluded. A pattern that starts matching a file removes it from results immediately — even if the file was already recorded — because search reads the view's current ignore rules on every query |
 | VCS-derived KG nodes (`file:`, `change:`) | A recorded change is an immutable fact: the nodes it created remain until `atomic query enrich --rebuild` reconciles stale entries |
 | Structure queries (`query entities`, `query callers`) | Parsed on demand from tracked file contents, so a file that is tracked but currently ignored still parses |
 
 ### Making an ignored file searchable
 
-Remove the pattern (or re-include the path with `!` in `.atomicignore`), then rebuild:
+Remove the pattern (or re-include the path with `!` in `.atomicignore`). Content search picks the change up on the next query — there is no index to rebuild. To reconcile the graph's file/change nodes as well:
 
 ```bash
-atomic query index --rebuild    # rebuild the content index
 atomic query enrich --rebuild   # reconcile the graph's file/change nodes
 ```
 
-:::tip Why not index everything?
-Ignored directories are where build output and dependencies live. Indexing them multiplies index size and slows every search without adding signal — the same reason `atomic status` skips them. If you genuinely want a file in code intelligence, stop ignoring it.
+:::tip Why not search everything?
+Ignored directories are where build output and dependencies live. Searching them multiplies the work every query does without adding signal — the same reason `atomic status` skips them. If you genuinely want a file in code intelligence, stop ignoring it.
 :::
 
 ## Searching Source Code
 
-The `code` subcommand searches the content index built by `enrich`. Think of it as a faster, KG-aware alternative to grep:
+The `code` subcommand searches the **recorded source in your current view**. Atomic renders file bytes straight from the graph through the view's filter, so results reflect exactly what the view contains — including files that are recorded but not materialized on disk — with no index to build and no checkout required. Think of it as a view-accurate alternative to grep:
 
 ```bash
 atomic vault query code "verify_token" -t rs
@@ -355,11 +352,13 @@ atomic vault query graph "authentication" --json
 For large codebases, use `--kinds` to filter the visualization. For example, `--kinds entity,file` hides change nodes and shows only code structure.
 :::
 
-## Managing the Index
+## Maintaining the Graph
 
-Three subcommands help you maintain the search index and KG:
+These subcommands keep the KG current. Search itself needs neither of them — it reads recorded bytes through the view on every query.
 
-### `index` — Update the content search index
+### `index` — Update the optional content index
+
+Content search no longer uses an index, so this is optional. The content index remains for its maintenance consumers — Git import refresh and post-record updates — and you can still build or refresh it explicitly:
 
 ```bash
 atomic vault query index --stats
@@ -487,7 +486,7 @@ The recommended agent workflow is:
 This approach is faster and more accurate than scanning the filesystem because the KG already knows the structure. An agent doesn't need to guess file paths or parse import statements — the relationships are pre-computed.
 
 :::info Empty results vs. ignored files
-Ignored files and folders are intentionally excluded from the KG and the content index, so `code` and `search` return nothing for them. An agent should treat that as an answer, not a failure — and should not fall back to grep/find to read them. If the file genuinely matters, remove the ignore pattern and rebuild the index.
+Ignored files and folders are intentionally excluded from the KG and from code search, so `code` and `search` return nothing for them. An agent should treat that as an answer, not a failure — and should not fall back to grep/find to read them. If the file genuinely matters, remove the ignore pattern.
 :::
 
 :::tip

@@ -30,7 +30,7 @@ atomic query ask <QUESTION> [-t <MAX_TURNS>] [--json]
 `atomic query` is the read surface of Atomic's **knowledge graph (KG)**, a graph that connects code entities, files, changes, views, and vault content (memories, intents, goals) into one searchable structure. The graph is fed from three directions:
 
 - **VCS data** — recorded changes, files, and views (via [`enrich`](#query-enrich--enrich-the-graph-from-vcs-data))
-- **Code structure** — tree-sitter entities (functions, classes, types) and the syntext content index
+- **Code structure** — tree-sitter entities (functions, classes, types), parsed on demand
 - **Vault content** — memories, intents, and goals ([`atomic vault`](vault.md))
 
 ### Identifier Requirements
@@ -168,9 +168,9 @@ atomic query entities src/auth.rs
 
 ### `query code` — Search Source Code Content
 
-Search source code content using the syntext index (regex supported).
+Search the recorded source in your current view (regex supported). Atomic renders file bytes straight from the graph, so no index build or checkout is required.
 
-Only files the content index includes are searched. **Ignored files and folders are intentionally excluded** — anything matching `.gitignore`, `.ignore`, `.atomicignore`, the global ignore file, or an Atomic-internal path (`.atomic/`, `.git/`, `.vault/`, `.atomic-sandbox*`), plus files over 10 MiB and binary files, never reaches the index and produces no results here. See [What's Indexed — and What's Intentionally Excluded](/getting-started/querying-the-graph#whats-indexed--and-whats-intentionally-excluded) for the full policy.
+Only files the current view contains are searched. **Ignored files and folders are intentionally excluded** — anything matching `.gitignore`, `.ignore`, `.atomicignore`, the global ignore file, or an Atomic-internal path (`.atomic/`, `.git/`, `.vault/`, `.atomic-sandbox*`), plus files over 10 MiB and binary files, produces no results here. See [What's Indexed — and What's Intentionally Excluded](/getting-started/querying-the-graph#whats-indexed--and-whats-intentionally-excluded) for the full policy.
 
 #### Synopsis
 
@@ -309,7 +309,7 @@ atomic query embed [OPTIONS]
 
 Derive KG nodes and edges from VCS data: changes, files, views. Run after recording work to make new changes searchable.
 
-The graph is built from **recorded changes**, so ignored files and folders are not included: they are never tracked, so they are never recorded. Ignore rules (`.gitignore`, `.ignore`, `.atomicignore`, the global ignore file) plus Atomic-internal paths (`.atomic/`, `.git/`, `.vault/`, `.atomic-sandbox*`) also filter the content index that this command builds. A file that was recorded before a pattern started matching it keeps its nodes — pass `--rebuild` to reconcile them.
+The graph is built from **recorded changes**, so ignored files and folders are not included: they are never tracked, so they are never recorded. Ignore rules (`.gitignore`, `.ignore`, `.atomicignore`, the global ignore file) plus Atomic-internal paths (`.atomic/`, `.git/`, `.vault/`, `.atomic-sandbox*`) also filter the file nodes this command derives. A file that was recorded before a pattern started matching it keeps its nodes — pass `--rebuild` to reconcile them.
 
 #### Synopsis
 
