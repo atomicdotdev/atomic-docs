@@ -312,15 +312,14 @@ atomic record src/fix.rs -m "Updated fix"  # New change: ABC124
 **A**: Different dependencies = different hash.
 
 ```bash
-# Change A depends on X
-atomic record -m "Feature" --deps X
-# Hash: AAA111
+# Change A has dependency X in its context
+atomic record -m "Feature"   # Hash: AAA111
 
-# Change B depends on Y
-atomic record -m "Feature" --deps Y
-# Hash: BBB222 (different!)
+# Change B has dependency Y in its context
+atomic record -m "Feature"   # Hash: BBB222 (different!)
 
-# Even if hunks are identical, dependencies differ
+# Even if hunks are identical, differing graph context or
+# dependency closure changes the hash
 ```
 
 ### Q: How does this affect performance?
@@ -335,7 +334,7 @@ atomic record -m "Feature" --deps Y
 **A**: Yes!
 
 ```bash
-atomic show ABC123 --format json
+atomic change ABC123 --json
 # Output:
 # {
 #   "hash": "ABC123DEF456...",
@@ -403,9 +402,9 @@ Hashes are encoded as **base32** for human readability:
 
 ## See Also
 
-- [Virtual Working Copies](../proposals/virtual-working-copies.md) - How sessions use change identity
 - [Git Shadow Sync](../getting-started/git-shadow-sync) - Using change identity across Atomic and Git
 - [Comparison with Git](../getting-started/comparison-with-git.md) - Why change identity matters
+- [Change details](../commands/change.md) - `atomic change <HASH>` for raw hash inspection
 
 ## Summary
 

@@ -7,6 +7,10 @@ keywords: [git, AI coding agents, version control, provenance, code review, atom
 
 # Is Git Good Enough for AI Coding Agents?
 
+:::tip Ready to migrate?
+See the consolidated [Migrating from Git](./migrating-from-git) guide.
+:::
+
 Git is good enough to store and review AI-generated code, especially when a team already depends on GitHub or GitLab. Git alone does not record the agent session, model usage, observed tool activity, or the reason a change was made; Atomic adds those AI-native records and a change-graph workflow while remaining compatible with Git.
 
 ## The short answer
@@ -133,7 +137,7 @@ The default `atomic change` view renders the inline AI metadata and Change Ledge
 
 ## Use Git and Atomic together
 
-[Git Shadow](/getting-started/git-shadow-sync) keeps Git as the collaboration surface while Atomic remains the source of change provenance:
+[Git Shadow](/getting-started/git-shadow-sync) ([guide](./git-shadow-sync.md)) keeps Git as the collaboration surface while Atomic remains the source of change provenance. For tighter colocated integration — reconcile, verify, switch, publish — see [git shim](../commands/git-shim.md):
 
 ```bash
 # Bring an existing Git history into Atomic

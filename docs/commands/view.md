@@ -14,6 +14,7 @@ atomic view <SUBCOMMAND>
 atomic view create <NAME> [OPTIONS]
 atomic view split <NAME> [CHANGES]... [OPTIONS]
 atomic view switch <NAME>
+atomic view show [NAME]
 atomic view list [--short] [--remote [<REMOTE>]]
 atomic view delete <NAME> [--force]
 atomic view promote [NAME]
@@ -321,6 +322,28 @@ matching how the view was scoped locally. Use
 [`atomic clone --all-views`](./clone.md) to reconstruct the full set of remote
 views locally.
 :::
+
+### `view show` — Show a View's Identities (0.20.0)
+
+#### Synopsis
+
+```bash
+atomic view show [NAME]
+```
+
+#### Arguments
+
+**`[NAME]`** — View to inspect. Defaults to the current view.
+
+#### Description
+
+Show one view's **Merkle** and **SetId** identities together: the two content-derived identifiers that remotes, the Git shim, and bindings use to refer to this view's exact state. Useful for cross-checking that two repositories agree about what a view contains.
+
+#### Example
+
+```bash
+atomic view show dev
+```
 
 ### `view delete` — Delete a View
 

@@ -225,6 +225,24 @@ atomic insert
 atomic insert <HASH> --view dev
 ```
 
+Before inserting, run **triage** — Atomic's promotion gate. It projects the candidate change set a feature view would land into a target view and renders a verdict (`blocked`, `stale`, or `ready`) with findings: dependency closure, intent coverage, and whether an independent review intent exists.
+
+```sh
+# Candidate set + verdict for the current view against its parent
+atomic triage review
+
+# A specific feature view and target
+atomic triage review feature-login --into dev
+
+# Guided reading order: candidates grouped into semantic layers
+atomic triage review feature-login --into dev --walkthrough
+
+# Full machine-readable worklist
+atomic triage review feature-login --into dev --json
+```
+
+Triage checks linkage and evidence structure — the reviewer still judges the code itself. See [Atomic Vault](./atomic-vault#triage-review-before-promotion) for the full review workflow and the [triage command reference](/commands/triage) for every option (`--html` browser report, `--attest` signed export).
+
 **Provenance** is the recorded chain of AI work: session, turns, changes, and views. Each change carries its provenance, which you can inspect directly:
 
 ```sh
@@ -343,6 +361,7 @@ atomic intent validate <ID> && atomic intent attest <ID> && atomic intent verify
 atomic view create feature-login --draft --switch
 
 # Review & land
+atomic triage review --into dev --walkthrough
 atomic change <HASH> && atomic diff -c <HASH> --word-diff
 atomic provenance trace <HASH>
 atomic intent new "Review the login flow" --review urn:atomic:intent:<WORK_UID>

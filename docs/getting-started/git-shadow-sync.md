@@ -12,7 +12,7 @@ Two commands keep the systems in sync:
 - **`atomic git import`** — pulls Git commits into Atomic (automatic via hooks or manual)
 - **`atomic git push`** — pushes Atomic changes out to Git with provenance trailers
 
-You get Atomic's patch theory, AI attribution, and conflict-free views for daily development, while your team continues reviewing PRs on GitHub or GitLab exactly as before.
+You get Atomic's patch theory, AI attribution, and views that surface conflicts honestly for daily development, while your team continues reviewing PRs on GitHub or GitLab exactly as before.
 
 ## How It Works
 
@@ -69,6 +69,10 @@ Raw Git commands aren't forbidden. If you use them and drift, the **shadow push 
 
 Every refusal leaves Git, the working copy, and the Atomic graph untouched, and — when run from a hook — logs a `shadow-validate:<rule>` line to `.atomic/hook-errors.log`.
 
+:::info 0.20.0 — unresolved-conflict export policy
+Since 0.20.0, exporting a view that still has **unresolved Atomic conflicts** to a remote is refused by default (RFC §8.3, CB-8B). It can only be forced with `atomic git push --allow-conflicts`, which does not bypass the other gates: the complete conflict-object pack must already be published and verify against the current conflict set, and signing, trust, lease, and publication policy still apply. Never pass `--allow-conflicts` from automation.
+:::
+
 ### Reconcile-then-push (never force)
 
 There is no `--force` that commits a drifted state — that escape hatch is what leads to corruption loops. To recover from drift, make the state coherent first, then push:
@@ -119,7 +123,7 @@ By default, `atomic git import` walks the **first-parent** history of the curren
 atomic git hooks install
 ```
 
-This installs `post-commit`, `post-merge`, and `post-rewrite` hooks. Every Git operation now records into Atomic automatically.
+This installs `post-commit`, `post-merge`, and `post-rewrite` hooks. Every Git operation now records into Atomic automatically. In 0.20.0+ these are managed as an **advisory shim dispatcher** — see [git shim](../commands/git-shim.md); the hooks notice Git events and reconcile, they never rewrite either side silently.
 
 #### 3. Verify
 
@@ -300,7 +304,7 @@ atomic push        # declares the draft's manifest (scope, parent, change log)
 See [Draft Views Across Both Remotes](#draft-views-across-both-remotes) for how the two remotes relate.
 
 :::tip Shared views
-On a shared view like `dev`, `atomic git push` keeps the classic behavior: the commit is pushed to the currently checked-out Git branch. The older flow — `atomic insert from-view feature-auth` into `dev`, then pushing `dev` — still works and remains useful when you want to batch several drafts into one commit.
+On a shared view like `dev`, `atomic git push` keeps the classic behavior: the commit is pushed to the currently checked-out Git branch. The equivalent flow — `atomic insert view feature-auth --to dev`, then pushing `dev` — still works and remains useful when you want to batch several drafts into one commit.
 :::
 
 ### Day 4: After the PR merges
@@ -535,7 +539,7 @@ When a draft view's name can't be used as a Git branch name (spaces, `~`, `^`, `
 
 ## Git Hooks
 
-Git hooks keep Atomic automatically in sync with Git. Every `git commit`, `git merge`, and `git rebase` fires a hook that imports new commits into Atomic.
+Git hooks keep Atomic automatically in sync with Git. Every `git commit`, `git merge`, and `git rebase` fires a hook that imports new commits into Atomic. Since 0.20.0, these hooks are managed as an **advisory shim dispatcher** (see [git shim](../commands/git-shim.md)) — they observe Git events and reconcile; nothing is rewritten silently.
 
 ### Installing hooks
 
