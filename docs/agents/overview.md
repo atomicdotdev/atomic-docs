@@ -115,6 +115,20 @@ atomic provenance trace <change-hash>
 atomic agent explain <session-id> --all --save
 ```
 
+### 4. Check That Hooks Are Working
+
+`atomic agent status` reports the most recent successful hook dispatch and
+outstanding failures. `--json` includes per-session outcomes and parent-session
+IDs, so concurrent agents can be diagnosed independently. A child's successful
+hook cannot hide its parent's failure.
+
+```bash
+atomic agent status
+atomic agent status --json
+```
+
+→ [Hook Health and Troubleshooting](hook-health.md)
+
 ## What Gets Recorded
 
 Each supported turn that modifies files produces an Atomic change containing:
@@ -176,7 +190,7 @@ atomic insert change <change-hash> --to dev
 
 # A current view cannot be deleted, so leave the agent view first
 atomic view switch dev
-atomic view delete agent-ses_3781fc...
+atomic view delete agent-ses_3781fc... --force
 ```
 
 ## Supported Agent Integrations

@@ -26,7 +26,7 @@ Both subcommands take the same two views:
 - **`<FEATURE>`** — the feature (source) view to review
 - **`--into <INTO>`** — the target view the feature would be inserted into
 
-List available views with [`atomic view list`](view.md#view-list---list-views).
+List available views with [`atomic view list`](view.md#view-list--list-views).
 
 ## Subcommands
 

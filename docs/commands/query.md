@@ -29,7 +29,7 @@ atomic query ask <QUESTION> [-t <MAX_TURNS>] [--json]
 
 `atomic query` is the read surface of Atomic's **knowledge graph (KG)**, a graph that connects code entities, files, changes, views, and vault content (memories, intents, goals) into one searchable structure. The graph is fed from three directions:
 
-- **VCS data** — recorded changes, files, and views (via [`enrich`](#query-enrich---enrich-the-graph-from-vcs-data))
+- **VCS data** — recorded changes, files, and views (via [`enrich`](#query-enrich--enrich-the-graph-from-vcs-data))
 - **Code structure** — tree-sitter entities (functions, classes, types) and the syntext content index
 - **Vault content** — memories, intents, and goals ([`atomic vault`](vault.md))
 
@@ -39,8 +39,8 @@ Several subcommands take node or entity IDs. IDs are **namespaced** — use the 
 
 | ID type | Format | Where to find it |
 |---------|--------|------------------|
-| KG node ID | `change:abc123`, `file:src/auth.rs`, `intent:PIMO-1`, `memory:…`, `view:…` | [`query search`](#query-search---search-the-graph) |
-| Entity ID | `entity:src/auth.rs:verify:42` (file : name : line) | [`query entities <PATH>`](#query-entities---list-entities-in-a-file) or `query search --kind entity` |
+| KG node ID | `change:abc123`, `file:src/auth.rs`, `intent:PIMO-1`, `memory:…`, `view:…` | [`query search`](#query-search--search-the-graph) |
+| Entity ID | `entity:src/auth.rs:verify:42` (file : name : line) | [`query entities <PATH>`](#query-entities--list-entities-in-a-file) or `query search --kind entity` |
 | Change hash | full hash only for `enrich --change` | `atomic log --full-hash` |
 
 ## Subcommands
@@ -164,6 +164,8 @@ atomic query entities src/auth.rs
 
 Search source code content using the syntext index (regex supported).
 
+Only files the content index includes are searched. **Ignored files and folders are intentionally excluded** — anything matching `.gitignore`, `.ignore`, `.atomicignore`, the global ignore file, or an Atomic-internal path (`.atomic/`, `.git/`, `.vault/`, `.atomic-sandbox*`), plus files over 10 MiB and binary files, never reaches the index and produces no results here. See [What's Indexed — and What's Intentionally Excluded](/getting-started/querying-the-graph#whats-indexed--and-whats-intentionally-excluded) for the full policy.
+
 #### Synopsis
 
 ```bash
@@ -264,7 +266,9 @@ atomic query ask "what does intent PIMO-1 cover?" --json
 
 ### `query index` — Build the Content Search Index
 
-Build or update the content search index used by [`query code`](#query-code---search-source-code-content).
+Build or update the content search index used by [`query code`](#query-code--search-source-code-content).
+
+Ignored files and folders are intentionally excluded from the index: anything matching `.gitignore`, `.ignore`, `.atomicignore`, or the global ignore file, plus Atomic-internal paths (`.atomic/`, `.git/`, `.vault/`, `.atomic-sandbox*`), plus files over 10 MiB and binary files. Use `--rebuild` after changing ignore patterns so the index re-applies them.
 
 #### Synopsis
 
@@ -298,6 +302,8 @@ atomic query embed [OPTIONS]
 ### `query enrich` — Enrich the Graph from VCS Data
 
 Derive KG nodes and edges from VCS data: changes, files, views. Run after recording work to make new changes searchable.
+
+The graph is built from **recorded changes**, so ignored files and folders are not included: they are never tracked, so they are never recorded. Ignore rules (`.gitignore`, `.ignore`, `.atomicignore`, the global ignore file) plus Atomic-internal paths (`.atomic/`, `.git/`, `.vault/`, `.atomic-sandbox*`) also filter the content index that this command builds. A file that was recorded before a pattern started matching it keeps its nodes — pass `--rebuild` to reconcile them.
 
 #### Synopsis
 

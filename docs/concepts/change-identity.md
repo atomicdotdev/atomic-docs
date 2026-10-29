@@ -402,7 +402,8 @@ Hashes are encoded as **base32** for human readability:
 
 ## See Also
 
-- [Git Shadow Sync](../getting-started/git-shadow-sync) - Using change identity across Atomic and Git
+- [Virtual Working Copies](../proposals/virtual-working-copies.md) - How sessions use change identity
+- [Git Shim](../getting-started/git-shim) - Using change identity across Atomic and Git
 - [Comparison with Git](../getting-started/comparison-with-git.md) - Why change identity matters
 - [Change details](../commands/change.md) - `atomic change <HASH>` for raw hash inspection
 

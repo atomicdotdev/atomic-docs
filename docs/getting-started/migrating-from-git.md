@@ -17,7 +17,7 @@ You do not have to choose between "all Git" and "all Atomic" on day one. Three p
 |----------------|------------------|
 | AI changes are small, a human stays in the loop for every edit, and commit/PR prose is an acceptable record | **Git alone is fine**: keep using Git as-is |
 | Agents make multi-turn or multi-file changes; you need provenance, model attribution, review evidence, and dependency-aware promotion | **Add Atomic**: import your Git history and go Atomic-native |
-| GitHub or GitLab must remain the collaboration surface, but Atomic should record the development and audit trail | **Use both**: Git Shadow sync for a sidecar mirror, or the colocated shim for tighter integration |
+| GitHub or GitLab must remain the collaboration surface, but Atomic should record the development and audit trail | **Use both**: `git import`/`git push` for a sidecar mirror, or the colocated shim for tighter integration |
 
 The full analysis (what Git does not record, what Atomic adds, and the detailed decision guide) lives in [Is Git Good Enough for AI Coding Agents?](./comparison-with-git.md). Read it if you are still evaluating; come back here when you are ready to move.
 
@@ -228,7 +228,7 @@ atomic git import --with-crdt
 ```
 
 :::warning `--all` can produce materialization conflicts
-`--all` imports every local branch, including commits from **both sides of merge commits**. If those branches had overlapping edits, Atomic's graph will contain conflicting changes, and materialization writes conflict markers into the affected files. The default first-parent import avoids this entirely. Use `--all` only when you need per-branch views or individual attribution through squash merges. See [Git Shadow](./git-shadow-sync.md) for the full recovery procedure.
+`--all` imports every local branch, including commits from **both sides of merge commits**. If those branches had overlapping edits, Atomic's graph will contain conflicting changes, and materialization writes conflict markers into the affected files. The default first-parent import avoids this entirely. Use `--all` only when you need per-branch views or individual attribution through squash merges. See [Git Shim](./git-shim) for recovery guidance.
 :::
 
 ### What Gets Imported
@@ -308,7 +308,7 @@ If you keep Git alongside Atomic, remember the essentials:
 - Since 0.20.0, exporting a view with **unresolved Atomic conflicts** to a remote is refused by default. `atomic git push --allow-conflicts` exists as an explicit escape hatch (never for automation); the other gates (conflict-object pack, signing, trust, lease, publication policy) still apply.
 
 :::info Going deeper
-The full shadow-sync walkthrough (hooks, squash-merge detection, ReviewGate tags, troubleshooting) is in [Git Shadow](./git-shadow-sync.md). The colocated shim (reconcile, verify, switch, publish, bindings, cutover) is documented in [git shim](../commands/git-shim.md).
+The full import/push walkthrough (hooks, squash-merge detection, ReviewGate tags, troubleshooting) is in [Git Import and Push](./git-import-push.md). The colocated shim (reconcile, verify, switch, publish, bindings, cutover) is documented in [git shim](./git-shim).
 :::
 
 ## Command Translation Guide
@@ -705,7 +705,7 @@ atomic restore
 ```bash
 # Atomic uses its own protocol
 # Set up Atomic-compatible remotes with: atomic remote add <name> <url>
-# Or keep Git as a bridge via Git Shadow (atomic git push)
+# Or keep Git as a bridge via Git Import and Push (atomic git push)
 ```
 
 **Problem**: Push refused because of unresolved Atomic conflicts
@@ -728,10 +728,11 @@ atomic git push --allow-conflicts
 ## Next Steps
 
 1. **Import your Git repository**: `atomic git import`
-2. **Create your first change**: `atomic record -m "First Atomic change"`
-3. **Explore AI attribution**: `atomic record --ai-assisted`
-4. **Create consolidating tags**: `atomic tag create v1.0.0`
-5. **Try concurrent development**: work in parallel views and pull changes together
+2. **Keep working with Git and GitHub?** Set up the [Git Shim](./git-shim) for verified two-way sync
+3. **Create your first change**: `atomic record -m "First Atomic change"`
+4. **Explore AI attribution**: `atomic record --ai-assisted`
+5. **Create consolidating tags**: `atomic tag create v1.0.0`
+6. **Try concurrent development**: work in parallel views and pull changes together
 
 ## Why Switch from Git?
 

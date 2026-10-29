@@ -16,7 +16,7 @@ Git, along with other version control systems such as Mercurial, Fossil, Perforc
 - **Identity fragments.** A coherent unit of agent work scatters across commits, rebases, and squash merges; agents want stable work-item identity, not commit SHAs.
 - **Merge conflicts are textual, not semantic.** LLM edits are often semantically related but textually different.
 
-For agent-native workflows the commit DAG is the wrong *primary* abstraction, and encoding semantics as Git metadata by hand re-implements, by convention, an algebra the tool does not provide. Atomic changes that algebra. It is built on Darcs/Pijul-style patch theory plus a CRDT layer, where changes are structured patches the system reasons about (commutation, dependencies, conflicts) with native concurrent and offline merging, and a semantic change graph whose work-item identity and provenance stay stable under reordering and merging. Atomic runs alongside Git, so a content-hash DAG (Git) for byte-exact lineage and a semantic/work DAG (Atomic) for intent and provenance can coexist as two different correctness properties. See Change Identity, Graph Model & AI Attribution, Dual-Layer Diff & Semantic Merge, Migrating from Git, and Git Shadow Sync below.
+For agent-native workflows the commit DAG is the wrong *primary* abstraction, and encoding semantics as Git metadata by hand re-implements, by convention, an algebra the tool does not provide. Atomic changes that algebra. It is built on Darcs/Pijul-style patch theory plus a CRDT layer, where changes are structured patches the system reasons about (commutation, dependencies, conflicts) with native concurrent and offline merging, and a semantic change graph whose work-item identity and provenance stay stable under reordering and merging. Atomic runs alongside Git, so a content-hash DAG (Git) for byte-exact lineage and a semantic/work DAG (Atomic) for intent and provenance can coexist as two different correctness properties. See Change Identity, Graph Model & AI Attribution, Dual-Layer Diff & Semantic Merge, Migrating from Git, and Git Shim below.
 
 ## Getting started
 
@@ -28,7 +28,7 @@ For agent-native workflows the commit DAG is the wrong *primary* abstraction, an
 - [Atomic Vault](https://docs.atomic.dev/getting-started/atomic-vault): Record, validate, sign, and review work intent and durable knowledge.
 - [Querying the Graph](https://docs.atomic.dev/getting-started/querying-the-graph): Ask structured questions of the semantic change graph.
 - [Migrating from Git](https://docs.atomic.dev/getting-started/migrating-from-git): Move an existing Git project onto Atomic.
-- [Git Shadow](https://docs.atomic.dev/getting-started/git-shadow-sync): Keep a Git mirror in sync while adopting Atomic.
+- [Git Shim](https://docs.atomic.dev/getting-started/git-shim): Keep a Git mirror in sync while adopting Atomic.
 - [Train Tracks Demo](https://docs.atomic.dev/getting-started/train-tracks-demo): Tour a live Atomic project built end-to-end by an AI agent.
 - [Atomic Setup Skill for Agents](https://docs.atomic.dev/atomic-setup-skill.md): Downloadable agent instruction file that walks a coding agent through installing, configuring, and verifying Atomic end to end. Works with OpenCode, Claude Code, Codex, and Copilot.
 
@@ -36,6 +36,7 @@ For agent-native workflows the commit DAG is the wrong *primary* abstraction, an
 
 - [Overview](https://docs.atomic.dev/agents/overview): How Atomic works alongside Claude Code, Cursor, Copilot, Gemini CLI, and OpenCode.
 - [Installing Integrations](https://docs.atomic.dev/agents/installing-agent-integrations): Configure per-agent provenance capture.
+- [Hook Health and Troubleshooting](https://docs.atomic.dev/agents/hook-health): Inspect session-scoped hook outcomes, diagnose silent failures, and understand parent/child correlation and outage recovery.
 - [Provenance Graphs](https://docs.atomic.dev/agents/provenance): The causal record of what an agent explored, read, changed, and why.
 - [Attestations](https://docs.atomic.dev/agents/attestations): ed25519-signed, content-addressed change attestation.
 

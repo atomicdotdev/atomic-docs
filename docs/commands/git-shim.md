@@ -423,6 +423,5 @@ Shim events are also appended to `.atomic/bridge/events.jsonl` (capped at 4 MiB)
 - [git](git.md) — `git import`, `git push` (including the conflict-export refusal), and hook management
 - [op](op.md) — the journal where the shim records its metadata, and the `undo`/`restore` recovery path
 - [status](status.md) — `atomic status --git` staging status
-- [Git Shadow Sync guide](/getting-started/git-shadow-sync) — When to use plain shadow sync vs. the shim
 - [migrating-from-git guide](/getting-started/migrating-from-git) — Import walkthrough and going Atomic-only
 - [AI Agent Workflows](/getting-started/ai-agent-workflows) — provenance tracking with agents

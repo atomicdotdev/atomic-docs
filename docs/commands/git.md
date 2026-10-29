@@ -130,5 +130,5 @@ The dispatcher is advisory: it notices Git checkout events so the shim can recon
 - [op](op.md) — the immutable operation journal shim metadata is recorded into
 - [pull](pull.md) / [push](push.md) — Atomic-native remote sync
 - [clone](clone.md) — Clone a remote Atomic repository
-- [Git Shadow Sync guide](/getting-started/git-shadow-sync) — Full shadow-sync walkthrough
+- [Git Shim guide](/getting-started/git-shim) — Verified Git interop walkthrough
 - [migrating-from-git guide](/getting-started/migrating-from-git) — Import walkthrough

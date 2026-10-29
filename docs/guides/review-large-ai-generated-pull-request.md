@@ -23,7 +23,7 @@ They are related workflows, but they answer different questions.
 | GitHub pull request or GitLab merge request | Conversation, line comments, approvals, and hosted CI | The hosting platform's branch diff and checks |
 | Atomic triage | Candidate-set calculation, dependency closure, intent coverage, provenance, evidence, and promotion readiness | Content-addressed Atomic changes and view state |
 
-If Git remains the team's collaboration platform, continue the hosted review and use Atomic as the provenance and verification sidecar. See [Git Shadow Sync](/getting-started/git-shadow-sync) for the supported GitHub/GitLab workflow.
+If Git remains the team's collaboration platform, continue the hosted review and use Atomic as the provenance and verification sidecar. See [Git Shim](/getting-started/git-shim) for the supported GitHub/GitLab workflow.
 
 ## What would actually land?
 

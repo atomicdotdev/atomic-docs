@@ -302,21 +302,22 @@ Full Git interoperability is coming soon. See [Migrating from Git](./migrating-f
 Atomic and Git can run side by side. The rule to remember: **Git shadows Atomic, not the other way around.** Atomic is the source of truth; the Git repository is a downstream mirror that Atomic generates. Record work in Atomic first (`atomic record`), then publish it to Git. Avoid committing hand edits directly in Git.
 
 ```sh
-# Import Git history into Atomic (first-time migration)
+# Bring Git history into Atomic (first-time migration)
 atomic git import
 atomic git import --incremental     # only commits not yet in Atomic
 atomic git import --all             # include inner-PR commits, not just first-parent
 atomic git import --dry-run         # preview without creating anything
 
-# Keep the two synchronized automatically
-atomic git hooks install
-atomic git hooks status             # verify all hooks are installed
+# Keep the two synchronized automatically (verified, opt-in per repository)
+atomic git shim enable
+atomic git shim reconcile         # align Git and Atomic, record a checkpoint
+atomic git shim verify            # check both sides agree
 
 # Publish Atomic state as a Git commit, with provenance trailers
 atomic git push
 ```
 
-If the Git side drifts (for example, from a raw `git commit`), reconcile with `atomic git import --incremental` before pushing. The full setup and reconcile-then-push workflow are covered in [Git Shadow](./git-shadow-sync).
+If the Git side drifts (for example, from a raw `git commit`), reconcile with `atomic git shim reconcile` before pushing. The full setup paths, reconcile/verify guidance, and the development workflow are covered in [Git Shim](./git-shim).
 
 ## Cheat Sheet
 
@@ -372,9 +373,9 @@ atomic intent validate <REVIEW_ID> && atomic intent attest <REVIEW_ID> --identit
 atomic insert preview feature-login --to dev
 atomic insert
 
-# Git shadow (optional)
+# Git shim (optional)
 atomic git import
-atomic git hooks install && atomic git hooks status
+atomic git shim enable && atomic git shim reconcile
 atomic git push
 
 # Share
@@ -388,6 +389,6 @@ atomic push
 - [Querying the Graph](./querying-the-graph): build the knowledge graph with `atomic query enrich`, then explore it with `atomic query search "login"` and `atomic query graph "login"`. (`atomic vault query` is an alias for `atomic query`.)  
 - [Comparison with Git](./comparison-with-git): how Atomic differs from Git  
 - [AI Agent Workflows](./ai-agent-workflows): provenance, session isolation, attestation details, and `atomic agent explain`  
-- [Migrating from Git](./migrating-from-git) and [Git Shadow](./git-shadow-sync): the two-way Git workflow  
+- [Migrating from Git](./migrating-from-git) and [Git Shim](./git-shim): the two-way Git workflow  
 - [Command Reference](/commands/overview): full documentation for every command
 

@@ -30,8 +30,13 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "doc",
-      id: "getting-started/git-shadow-sync",
-      label: "Git Shadow",
+      id: "getting-started/git-shim",
+      label: "Git Shim",
+    },
+    {
+      type: "doc",
+      id: "getting-started/git-import-push",
+      label: "Git Import & Push",
     },
     "getting-started/train-tracks-demo",
     {
@@ -60,6 +65,11 @@ const sidebars: SidebarsConfig = {
       type: "doc",
       id: "agents/installing-agent-integrations",
       label: "Installing Integrations",
+    },
+    {
+      type: "doc",
+      id: "agents/hook-health",
+      label: "Hook Health & Troubleshooting",
     },
     {
       type: "doc",
@@ -120,6 +130,11 @@ const sidebars: SidebarsConfig = {
       type: "doc",
       id: "teams/overview",
       label: "Team Collaboration",
+    },
+    {
+      type: "doc",
+      id: "teams/self-hosting",
+      label: "Self-Hosting",
     },
     {
       type: "html",

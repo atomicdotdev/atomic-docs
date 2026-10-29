@@ -17,7 +17,7 @@ Git is good enough to store and review AI-generated code, especially when a team
 
 | If you need… | Git alone | Atomic |
 |---|---|---|
-| A mature hosting and pull-request ecosystem | Excellent | Use [Git Shadow](/getting-started/git-shadow-sync) to keep it |
+| A mature hosting and pull-request ecosystem | Excellent | Use the [Git Shim](/getting-started/git-shim) to keep it |
 | Source history and line diffs | Yes | Yes, plus token-level semantic operations |
 | Automatic turn-level agent recording | Requires custom hooks or wrappers | Built into supported agent integrations |
 | A trace from a change to observed prompts, tools, edits, and checks | Not a native object | Content-addressed provenance graph |
@@ -137,7 +137,7 @@ The default `atomic change` view renders the inline AI metadata and Change Ledge
 
 ## Use Git and Atomic together
 
-[Git Shadow](/getting-started/git-shadow-sync) ([guide](./git-shadow-sync.md)) keeps Git as the collaboration surface while Atomic remains the source of change provenance. For tighter colocated integration — reconcile, verify, switch, publish — see [git shim](../commands/git-shim.md):
+[Git Shim](/getting-started/git-shim) keeps Git as the collaboration surface while Atomic remains the source of change provenance:
 
 ```bash
 # Bring an existing Git history into Atomic
@@ -146,7 +146,7 @@ atomic git import
 # Record and review work in Atomic
 atomic record -m "Reject expired refresh tokens"
 
-# Publish the resulting state to the Git shadow
+# Publish the resulting state to Git
 atomic git push
 ```
 
@@ -195,4 +195,4 @@ No. Session attestations include model, token, and cost data only when the agent
 - [How to Trace What Your AI Coding Agent Changed and Why](/guides/track-ai-agent-changes-and-reasoning)
 - [AI Agent Workflows](/getting-started/ai-agent-workflows)
 - [Migrating from Git](/getting-started/migrating-from-git)
-- [Git Shadow](/getting-started/git-shadow-sync)
+- [Git Shim](/getting-started/git-shim)

@@ -20,7 +20,7 @@ atomic unrecord [CHANGE] [-n]
 Because changes are content-addressed and edges live in the canonical graph, unrecord removes the change's membership in the view; the change data itself remains recoverable until garbage-collected.
 
 :::caution
-Unrecording a change that other changes depend on can leave the view inconsistent. Prefer [`atomic view split`](view.md#view-split---split-changes-into-a-new-draft-view) (with `--cascade`) when you want to move changes — including their dependents — elsewhere rather than discard them.
+Unrecording a change that other changes depend on can leave the view inconsistent. Prefer [`atomic view split`](view.md#view-split--split-changes-into-a-new-draft-view) (with `--cascade`) when you want to move changes — including their dependents — elsewhere rather than discard them.
 :::
 
 ### Choosing the Change
@@ -67,5 +67,5 @@ atomic unrecord --dry-run
 
 - [record](record.md) — Recording changes
 - [revise](revise.md) — Revise a change in-place (edit rather than remove)
-- [view split](view.md#view-split---split-changes-into-a-new-draft-view) — Move changes (with dependents) into another view
+- [view split](view.md#view-split--split-changes-into-a-new-draft-view) — Move changes (with dependents) into another view
 - [log](log.md) — Find change hashes
