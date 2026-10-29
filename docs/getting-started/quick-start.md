@@ -306,6 +306,7 @@ Atomic and Git can run side by side. The rule to remember: **Git shadows Atomic,
 atomic git import
 atomic git import --incremental     # only commits not yet in Atomic
 atomic git import --all             # include inner-PR commits, not just first-parent
+atomic git import --no-stream       # ordinary importer: semantic lifecycle support
 atomic git import --dry-run         # preview without creating anything
 
 # Keep the two synchronized automatically (verified, opt-in per repository)

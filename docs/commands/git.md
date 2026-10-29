@@ -11,8 +11,8 @@ Git interoperability commands.
 
 ```bash
 atomic git <SUBCOMMAND>
-atomic git import [--dry-run] [-b <BRANCH>] [--all] [--incremental] [-k <KIND>] [--no-vault] [--with-crdt]
-atomic git push [-m <MESSAGE>] [--no-push] [--remote <REMOTE>] [-b <BRANCH>] [--allow-conflict-markers] [--allow-conflicts]
+atomic git import [--dry-run] [-b <BRANCH>] [--all] [--incremental] [-k <KIND>] [--no-vault] [--with-crdt] [--stream | --no-stream] [--stream-window-mib <MIB>] [--agent-mode]
+atomic git push [-m <MESSAGE>] [--no-push] [--remote <REMOTE>] [-b <BRANCH>] [--allow-conflict-markers]
 atomic git hooks <SUBCOMMAND>
 atomic git shim <SUBCOMMAND>
 ```
@@ -38,6 +38,8 @@ atomic git import [OPTIONS]
 
 Run inside a Git checkout. Each commit on the imported branch becomes an Atomic change on a view.
 
+A **fresh** repository imports through the rolling stream by default: first-parent history as graph-only changes, with a live dashboard when stdout is a terminal. It verifies the final Git tree rather than every historical state and does not synthesize historical CRDT identities. `--no-stream` selects the ordinary importer — the path with full semantic lifecycle support, and the one `--with-crdt`, `--incremental`, `--all`, and imports into an existing Atomic repository already take.
+
 #### Options
 
 | Option | Description |
@@ -48,7 +50,11 @@ Run inside a Git checkout. Each commit on the imported branch becomes an Atomic 
 | `--incremental` | Only import commits not already in Atomic |
 | `-k, --kind <KIND>` | Project kind for the `.atomicignore` template |
 | `--no-vault` | Skip vault initialization |
-| `--with-crdt` | Eagerly build the semantic (Trunk → Branch → Leaf) layer during import |
+| `--with-crdt` | Eagerly build the semantic (Trunk → Branch → Leaf) layer during import; selects the ordinary importer |
+| `--stream` | Force the rolling first-parent graph stream. Conflicts with `--no-stream`, `--with-crdt`, `--incremental`, and `--all` |
+| `--no-stream` | Use the ordinary importer instead of the default rolling stream. Conflicts with `--stream` |
+| `--stream-window-mib <MIB>` | MiB budget for queued Git blob reservations and prepared stream batches (default 32, range 1–256). Not a total process-memory limit. Requires a streaming import |
+| `--agent-mode` | A special mode for agents doing the importing |
 
 #### Examples
 
@@ -64,6 +70,12 @@ atomic git import --all
 
 # Re-run later to pick up new commits
 atomic git import --incremental
+
+# Force the ordinary importer on a fresh repository
+atomic git import --no-stream
+
+# Raise the stream's memory window for a blob-heavy history
+atomic git import --stream-window-mib 128
 ```
 
 ### `git push` — Push Atomic State to Git

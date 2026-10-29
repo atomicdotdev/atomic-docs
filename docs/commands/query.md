@@ -154,6 +154,12 @@ atomic query entities <PATH> [OPTIONS]
 |--------|-------------|
 | `--json` | Output as JSON |
 
+`--json` is strict about the path: a file Atomic cannot parse (anything that is
+not a supported source file) exits non-zero with `Unsupported file type: <path>`
+on stderr and prints nothing on stdout, so a caller never mistakes a bad path for
+an empty result. Without `--json` the same message is printed and the command
+exits 0.
+
 #### Examples
 
 ```bash
@@ -217,7 +223,7 @@ atomic query graph <QUERY> [OPTIONS]
 | `-k, --limit <LIMIT>` | Maximum seed nodes from search (default: 10) |
 | `--depth <DEPTH>` | Neighbor expansion depth (1 or 2) (default: 1) |
 | `-o, --output <FILE>` | Write output to a file. For HTML output (default), use an `.html` extension. If omitted, writes to stdout (DOT or JSON) or a temp file (HTML) and opens it |
-| `--json` | Output as JSON (`nodes` + `edges` arrays) |
+| `--json` | Output as JSON (`nodes` + `edges` arrays). Always exactly one document: a query that matches nothing still emits `{"nodes":[],"edges":[]}` — to stdout, or to `--output` when given — with no diagnostic on stderr |
 | `--dot` | Output as DOT (Graphviz) format instead of HTML |
 | `--max-nodes <MAX_NODES>` | Maximum nodes in the graph (default: 5000 for HTML, 200 for DOT) |
 | `--kinds <KINDS>` | Node kinds to include, comma-separated (default: all). e.g. `module,file,entity` for structure only, `change,file` for history |

@@ -202,6 +202,8 @@ atomic view list
 
 `atomic git import` takes no path arguments: it always operates on the Git checkout you run it inside. To import a different repository, `cd` into it first. `--all` imports every local branch as its own view; `-b <branch>` imports a single non-default branch.
 
+A **fresh** repository imports through the rolling stream by default: first-parent history as graph-only changes, with a live dashboard when stdout is a terminal. It verifies the final Git tree rather than every historical state and does not synthesize historical CRDT identities. `--no-stream` selects the ordinary importer — the path with full semantic lifecycle support, and the one `--with-crdt`, `--incremental`, `--all`, and imports into an existing Atomic repository already take.
+
 ### Import Options
 
 ```bash
@@ -225,6 +227,9 @@ atomic git import --no-vault
 
 # Eagerly build the semantic layer for token-level blame on imported history
 atomic git import --with-crdt
+
+# Ordinary importer (full semantic lifecycle support) instead of the rolling stream
+atomic git import --no-stream
 ```
 
 :::warning `--all` can produce materialization conflicts
@@ -234,16 +239,19 @@ atomic git import --with-crdt
 ### What Gets Imported
 
 ✅ **Imported:**
-- All commits as Atomic changes (first-parent traversal by default)
+- Every first-parent commit on the imported branch as an Atomic change (the rolling stream; `--no-stream` or `--with-crdt` selects the ordinary importer)
 - Commit messages and descriptions
 - Author information and timestamps
+- Branch structure (as views) — every local branch with `--all`
+- Tags (as Atomic tags)
 - File history
 
 ❌ **Not Imported:**
 - Git-specific metadata
 - Merge commit structure (converted to changes)
-- Submodules (requires manual handling)
-- Git hooks (reimplement in Atomic)
+- Inner commits from merged PRs (first-parent history only; `--all` includes them)
+- Submodule history (the gitlink entry is preserved with its commit ID; the submodule needs its own import)
+- Git hooks (Atomic has its own integration — see the [Git Shim](./git-shim))
 - Other branches' tags (use `atomic tag create` for the equivalents you want)
 
 ### Post-Import Steps
