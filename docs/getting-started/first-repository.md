@@ -5,10 +5,37 @@ title: Your First Repository
 
 # Creating Your First Repository
 
-This guide walks you through creating or cloning an Atomic repository, tracking
-files, and recording your first change. By the end, you'll understand the basic
-local workflow. If you want a hosted project, first complete the optional
+This guide walks you through the everyday Atomic workflow (identity, tracking
+files, recording changes, reviewing, and promoting) in the order you'll
+actually use it. By the end, you'll understand the basic local workflow. If you
+want a hosted project, first complete the optional
 [Atomic Storage setup](./installation#connect-to-atomic-storage-optional).
+
+Command reference: every section links to the full reference page for the
+commands it introduces, starting at the [command overview](../commands/overview).
+
+## First-Time Setup: Your Identity
+
+Before recording changes, configure your identity. This information is included
+in every change you record, and it is what your signature attestations are made
+with.
+
+```bash
+atomic identity new alice --email alice@example.com --set-default
+```
+
+You can also set it per-repository in `.atomic/config.toml`:
+
+```toml
+[author]
+name = "alice"
+full_name = "Alice Developer"
+email = "alice@example.com"
+```
+
+Now when you record changes, Atomic will automatically use this information.
+
+→ Full reference: [`atomic identity`](../commands/identity.md)
 
 ## Create or Clone a Repository
 
@@ -62,6 +89,8 @@ atomic push
 Use the organization, workspace, and project names you chose in place of the
 example values.
 
+→ Full reference: [`atomic init`](../commands/init.md), [`atomic clone`](../commands/clone.md)
+
 ## Understanding the Working Environment
 
 Atomic manages four key areas:
@@ -73,27 +102,75 @@ Atomic manages four key areas:
 
 When you make edits, Atomic compares your working copy with the pristine to generate changes (patches).
 
-## Adding Files
+## Ignoring Files
 
-Before Atomic can track changes to files, you need to explicitly add them:
+Create an `.atomicignore` file in your repository root to exclude files from
+tracking. Set this up *before* adding files so you never track artifacts:
 
 ```bash
-# Add a single file
-atomic add README.md
+# Create .atomicignore file
+cat > .atomicignore << EOF
+# Build artifacts
+target/
+*.o
+*.so
 
-# Add multiple files
-atomic add src/main.rs src/lib.rs
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+
+# Dependencies
+node_modules/
+vendor/
+EOF
+```
+
+The `.atomicignore` file uses glob patterns similar to `.gitignore`. When the Git shim is enabled, `.atomicignore` can be mirrored into Git's `.git/info/exclude` with `atomic git shim mirror-ignores`.
+
+## Adding Files
+
+Before Atomic can track changes to files, you need to explicitly add them.
+The easiest way is to add a directory or everything at once:
+
+```bash
+# Add everything in current directory (respects .atomicignore)
+atomic add .
 
 # Add an entire directory
 atomic add src/
 
-# Add everything in current directory
-atomic add .
+# Add multiple files
+atomic add src/main.rs src/lib.rs
+
+# Add a single file
+atomic add README.md
 ```
 
 :::tip
 Unlike Git, adding files in Atomic only marks them for tracking. The actual content is recorded when you run `atomic record`.
 :::
+
+### Removing Files from Tracking
+
+`atomic remove` is the inverse of `atomic add`; it stops tracking a file:
+
+```bash
+atomic remove src/old_file.rs
+atomic record -m "Remove old file"
+```
+
+:::note `remove` vs `unrecord`
+`remove` stops tracking a *file* going forward. It does not erase history.
+`atomic unrecord` is different: it removes a recorded *change* from the view.
+See [Unrecord a Change](#unrecord-a-change) below.
+:::
+
+→ Full reference: [`atomic add`](../commands/add.md), [`atomic remove`](../commands/remove.md)
 
 ## Checking Status
 
@@ -121,6 +198,12 @@ Untracked files:
   target/
   .DS_Store
 ```
+
+:::tip
+Run `atomic diff` to see exactly what changes will be included in your next record.
+:::
+
+→ Full reference: [`atomic status`](../commands/status.md)
 
 ## Recording Your First Change
 
@@ -152,6 +235,11 @@ atomic record -m "Initial commit"
 4. Applies the patch to the pristine
 5. Creates a change hash (cryptographic identifier)
 
+If you forgot to add a file, no problem: add it now and record again. Each
+record creates a new change, and nothing is lost.
+
+→ Full reference: [`atomic record`](../commands/record.md)
+
 ## Viewing Your History
 
 See the recorded changes:
@@ -163,9 +251,9 @@ atomic log
 Output:
 
 ```
-Change 7k2m9n4p5q6r7s8t9u0v1w2x3y4z5a6b
+Change XMJZ3IPF
 Author: Alice <alice@example.com>
-Date: 2024-12-19 10:30:00 UTC
+Date: 2026-10-27 10:30:00 UTC
 
     Initial commit
     
@@ -177,6 +265,22 @@ For a more compact view:
 ```bash
 atomic log --short
 ```
+
+### Locating and Inspecting a Change
+
+The **hash** shown by `atomic log` (or `atomic status`) is how you refer to a
+change everywhere else: inspection, insertion, provenance.
+
+```bash
+atomic change <change-hash>
+```
+
+This displays:
+- Change metadata (author, timestamp)
+- Dependencies
+- The actual patch content
+
+→ Full reference: [`atomic log`](../commands/log.md), [`atomic change`](../commands/change.md)
 
 ## Making More Changes
 
@@ -228,68 +332,35 @@ atomic diff --short
 atomic diff --short --untracked
 ```
 
-### Inspect a Specific Change
+→ Full reference: [`atomic diff`](../commands/diff.md)
+
+## Unrecord a Change
+
+`atomic unrecord` removes a recorded change from the current view:
 
 ```bash
-atomic show <change-hash>
+atomic unrecord          # remove the last recorded change
+atomic unrecord <HASH>   # remove a specific change
 ```
 
-This displays:
-- Change metadata (author, timestamp)
-- Dependencies
-- The actual patch content
-
-## First-Time Setup
-
-Before recording changes, you should configure your identity. This information is included in every change you record.
-
-Create or edit `~/.config/atomic/config.toml` (Linux), `%AppData%\atomic\config.toml` (Windows), or `~/.atomicconfig` (macOS):
-
-```toml
-[author]
-name = "alice"
-full_name = "Alice Developer"
-email = "alice@example.com"
-```
-
-Now when you record changes, Atomic will automatically use this information.
-
-:::info
-You can also set this per-repository by editing `.atomic/config.toml` in your project directory.
+:::warning
+`unrecord` removes the change from your view but keeps the modifications in your working copy.
 :::
 
-## Ignoring Files
+### `unrecord` vs `remove` vs `restore`
 
-Create a `.ignore` file in your repository root to exclude files from tracking:
+| Command | What it affects | Effect |
+|---------|-----------------|--------|
+| `atomic unrecord` | A recorded **change** | Removes the change from the view; edits stay in your working copy |
+| `atomic remove` | A tracked **file** | Stops tracking the file going forward; history is untouched |
+| `atomic restore` | The **working copy** | Discards unrecorded working-copy edits, back to the last recorded state |
 
-```bash
-# Create .ignore file
-cat > .ignore << EOF
-# Build artifacts
-target/
-*.o
-*.so
+→ Full reference: [`atomic unrecord`](../commands/unrecord.md), [`atomic restore`](../commands/restore.md)
 
-# OS files
-.DS_Store
-Thumbs.db
+## Example Workflow: Intent → Work → Review → Promote
 
-# IDE files
-.vscode/
-.idea/
-*.swp
-
-# Dependencies
-node_modules/
-vendor/
-EOF
-```
-
-The `.ignore` file uses glob patterns similar to `.gitignore`.
-
-## Example Workflow
-
-Here's a complete example of creating and populating a Rust project:
+Here's a complete example of creating and populating a Rust project using the
+genuine Atomic loop: state the *why*, do the work, review, then promote.
 
 ```bash
 # Create project
@@ -299,24 +370,38 @@ cd myapp
 # Initialize Atomic repository
 atomic init
 
-# Add initial files
-atomic add Cargo.toml src/
+# 1. State the why as an intent
+atomic intent new "Add hello message"
+#    → edit the generated directive file in .vault/intents/, then persist it:
+atomic vault sync
 
-# Record first change
+# 2. Track and record the initial state
+atomic add Cargo.toml src/
 atomic record -m "Initial Rust project structure"
 
-# Make changes
+# 3. Do the work on a draft view
+atomic view create feature-hello --draft --switch
 echo 'println!("Hello from Atomic!");' >> src/main.rs
-
-# Check status
 atomic status
-
-# Record changes
 atomic record -m "Add hello message"
 
-# View history
+# 4. Review before promoting
+atomic triage candidates feature-hello --into main
+atomic triage review feature-hello --into main --walkthrough
+
+# 5. Promote the reviewed work
+atomic view switch main
+atomic insert view feature-hello --to main
+
+# 6. View history
 atomic log
 ```
+
+:::tip
+The full intent lifecycle (criteria, verification, attestation, and durable
+memories) is covered in [Atomic Vault](./atomic-vault). Triage and review are
+covered in depth there too; this is the short version.
+:::
 
 ## Understanding Changes vs Commits
 
@@ -330,37 +415,8 @@ If you're coming from Git:
 | Working tree | Working copy | Your editable files |
 
 :::tip Key Insight
-Atomic changes are **semantic patches** that represent the *meaning* of your edits, not just file snapshots. This enables mathematical properties like commutativity (changes can be applied in any order).
+Atomic changes are **semantic patches** that represent the *meaning* of your edits, not just file snapshots. This enables mathematical properties like commutativity (changes can be applied in any order). See [Comparison with Git](./comparison-with-git) for the full picture.
 :::
-
-## Common Operations
-
-### Undo Changes in Working Copy
-
-Reset working copy to pristine state:
-
-```bash
-atomic revert --working-copy
-```
-
-### Unrecord Last Change
-
-Remove the last recorded change:
-
-```bash
-atomic unrecord
-```
-
-:::warning
-`unrecord` removes the change from your repository but keeps the modifications in your working copy.
-:::
-
-### Remove File from Tracking
-
-```bash
-atomic remove src/old_file.rs
-atomic record -m "Remove old file"
-```
 
 ## Next Steps
 
@@ -368,26 +424,5 @@ Now that you understand the local workflow:
 
 1. Set up [AI Agent Workflows](./ai-agent-workflows) to automatically capture agent work.
 2. Learn how [Atomic Vault](./atomic-vault) records work intent and durable knowledge.
-3. Explore the [command reference](../commands/overview) for everyday operations.
-
-## Common Questions
-
-### Why do I need to `atomic add`?
-
-Atomic requires explicit tracking so you have fine-grained control over what's in your repository. This prevents accidentally committing build artifacts, credentials, or other files.
-
-### Can I add everything at once?
-
-Yes! Use `atomic add .` to add all files in the current directory recursively. Just make sure your `.ignore` file is set up first.
-
-### What if I forget to add a file?
-
-No problem! You can add it later and record a new change, or add it before recording if you haven't recorded yet.
-
-### How do I see what will be recorded?
-
-Run `atomic diff` to see exactly what changes will be included in your next record.
-
----
-
-**Ready to collaborate?** Continue learning with the Atomic documentation.
+3. Coming from Git? See [Migrating from Git](./migrating-from-git).
+4. Explore the [command reference](../commands/overview) for everyday operations.

@@ -16,7 +16,7 @@ keywords:
 
 Atomic Vault is the repository-native system for recording **why work exists**, **what must be true before it is done**, **what the project learned**, and **who independently reviewed the resulting change**.
 
-It is not just a folder of Markdown notes. Vault entries are authored in readable Markdown, lifted into typed canonical JSON-LD, checked by a closed-world gate, signed with Atomic identities, projected into the knowledge graph, and recorded with the code they explain.
+Vault entries are more than Markdown notes: they are authored in readable Markdown, lifted into typed canonical JSON-LD, checked by a closed-world gate, signed with Atomic identities, projected into the knowledge graph, and recorded with the code they explain.
 
 ```mermaid
 flowchart TD
@@ -42,20 +42,20 @@ prompt → intent → criterion → task → file ← change → review → prom
                          └──────────────→ memory → future intent
 ```
 
-## What Vault is for
+## What the Vault is for
 
 Vault gives different project facts different durable types:
 
-| Vault object | Purpose |
-|---|---|
-| **Goal** | A focused work session that can group one or more intents. |
-| **Intent** | A unit of work: why it matters, the acceptance bar, tasks, scope, and constraints. |
-| **Acceptance criterion** | A checkable outcome that defines what `done` means. |
-| **Task** | An ordered work item that satisfies criteria and names the files it expects to touch. |
-| **Memory** | Durable knowledge learned from work: a decision, lesson, constraint, preference, or context. |
-| **Attestation** | A signed canonical snapshot proving which identity asserted an intent or memory and whether it has changed. |
-| **Review intent** | An independent, signed judgment about whether another intent's changes genuinely satisfy their criteria. |
-| **Triage report** | A reproducible projection of candidate changes, intent coverage, evidence, provenance, and promotion findings. |
+| Vault object | Purpose | Command |
+|---|---|---|
+| **Goal** | A focused work session that can group one or more intents. | `atomic vault goal start` |
+| **Intent** | A unit of work: why it matters, the acceptance bar, tasks, scope, and constraints. | `atomic intent` |
+| **Acceptance criterion** | A checkable outcome that defines what `done` means. | `atomic intent` |
+| **Task** | An ordered work item that satisfies criteria and names the files it expects to touch. | `atomic intent` |
+| **Memory** | Durable knowledge learned from work: a decision, lesson, constraint, preference, or context. | `atomic memory` |
+| **Attestation** | A signed canonical snapshot proving which identity asserted an intent or memory and whether it has changed. | `atomic intent attest` / `atomic memory attest` |
+| **Review intent** | An independent, signed judgment about whether another intent's changes genuinely satisfy their criteria. | `atomic intent new --review` |
+| **Triage report** | A reproducible projection of candidate changes, intent coverage, evidence, provenance, and promotion findings. | `atomic triage review` |
 
 The Vault complements the change graph rather than replacing it. Source changes still live in Atomic's content-addressed graph. Vault gives those changes typed reasons, proof obligations, durable learning, and review authority.
 
@@ -65,11 +65,21 @@ Atomic keeps authoring, canonical data, and presentation separate:
 
 ```mermaid
 flowchart LR
-    MD[Directive Markdown in .vault] -->|lift| J[Canonical JSON-LD]
+    subgraph L1["Layer 1 · Authoring surface"]
+        MD[Directive Markdown in .vault/]
+    end
+    subgraph L2["Layer 2 · Canonical form"]
+        J[Canonical JSON-LD]
+    end
+    subgraph L3["Layer 3 · Read-time projections"]
+        KG[Knowledge graph]
+        OUT[CLI, HTML, JSON, and agent context]
+    end
+    MD -->|lift| J
     J -->|gate| G[Conformance report]
-    J -->|project| KG[Knowledge graph]
+    J -->|project| KG
     J -->|attest| S[Signed tracked attestation]
-    KG --> CLI[CLI, HTML, JSON, and agent context]
+    KG --> OUT
 ```
 
 ### 1. Authoring surface
@@ -94,17 +104,32 @@ Atomic lifts the Markdown into canonical JSON-LD. Stable `@id` values identify i
 
 `atomic intent show`, `atomic memory show`, graph queries, triage JSON, and the triage HTML report are projections of canonical facts. A projection can be regenerated; the signed facts and content-addressed changes are the durable record.
 
-## Initialize and synchronize the Vault
+## The Vault workflow
 
-`atomic init` initializes Vault for new repositories. To add Vault to an existing Atomic repository, run:
+A complete unit of work follows this lifecycle:
+
+```mermaid
+flowchart TD
+    A[Research existing context] --> B[Create one work intent]
+    B --> C[Fill why, criteria, tasks, scope, constraints]
+    C --> D[Sync Vault]
+    D --> E[Implement while provenance is recorded]
+    E --> F[Run checks and add evidence]
+    F --> G[Mark criteria met and tasks done]
+    G --> H[Grant done, validate, and attest]
+    H --> I[Record durable memories]
+    I --> J[Run triage]
+    J --> K[Independent review intent]
+    K --> L[Promote or remediate]
+```
+
+Before the first workflow, initialize Vault. `atomic init` initializes Vault for new repositories. To add Vault to an existing Atomic repository, run:
 
 ```bash
 atomic vault init
 ```
 
-Vault commands operate on the repository's indexed Vault state. The `.vault/` tree is the editable, materialized authoring surface.
-
-The synchronization direction is explicit:
+Vault commands operate on the repository's indexed Vault state. The `.vault/` tree is the editable, materialized authoring surface, and the synchronization direction is explicit:
 
 ```text
 .vault Markdown -- atomic vault sync --> repository Vault state
@@ -126,50 +151,7 @@ atomic vault materialize
 atomic vault materialize --path intents/<uid>/intent.md
 ```
 
-:::warning Sync before validation or attestation
-`atomic intent show`, `validate`, `attest`, and the corresponding memory commands read the repository's Vault state. If you edit `.vault/` and skip `atomic vault sync`, they can see the previous version rather than your current file.
-:::
-
-## Intent identity: four forms you will see
-
-An intent has several identifiers for different interfaces:
-
-| Form | Example | Used for |
-|---|---|---|
-| Human key | `TRAI::lee::4` | CLI lookup and human conversation. |
-| UID | `01KZE9KMFE9TGASXJRJTYYJ6X8` | Stable entry identity and directory name. |
-| Canonical RDF identity | `urn:atomic:intent:01KZE9KMFE9TGASXJRJTYYJ6X8` | Typed references such as `reviews`, `remediates`, and `derivedFrom`. |
-| Knowledge-graph node ID | `intent:01KZE9KMFE9TGASXJRJTYYJ6X8` | `atomic vault query neighbors` and graph traversal. |
-
-Use the form expected by the interface. In particular, use a **canonical intent URN** when creating a review:
-
-```bash
-atomic intent new "Review route-derived clues" \
-  --review urn:atomic:intent:01KZE9KMFE9TGASXJRJTYYJ6X8
-```
-
-A bare UID is not the same graph identity as `urn:atomic:intent:<UID>`.
-
-## The end-to-end Vault workflow
-
-A complete unit of work follows this lifecycle:
-
-```mermaid
-flowchart TD
-    A[Research existing context] --> B[Create one work intent]
-    B --> C[Fill why, criteria, tasks, scope, constraints]
-    C --> D[Sync Vault]
-    D --> E[Implement while provenance is recorded]
-    E --> F[Run checks and add evidence]
-    F --> G[Mark criteria met and tasks done]
-    G --> H[Grant done, validate, and attest]
-    H --> I[Record durable memories]
-    I --> J[Run triage]
-    J --> K[Independent review intent]
-    K --> L[Promote or remediate]
-```
-
-### 1. Research before authoring
+### Step 1: Research before authoring
 
 Check for existing work and retrieve relevant project knowledge before creating a duplicate intent:
 
@@ -185,9 +167,9 @@ You can seed context retrieval from an existing intent:
 atomic vault context --intent AUTH::alice::12
 ```
 
-`atomic vault context` ranks relevant memories and returns a bounded, prompt-ready block. Use `--json` for tools or `--candidates-only` to inspect ranking without loading memory bodies.
+`atomic vault context` ranks relevant memories and returns a bounded, prompt-ready block. Use `--format json` for tools or `--candidates-only` to inspect ranking without loading memory bodies.
 
-### 2. Create one intent for the unit of work
+### Step 2: Create one intent for the unit of work
 
 ```bash
 atomic intent new "Reject expired refresh tokens" --kind bug
@@ -203,11 +185,7 @@ Kinds come from a closed vocabulary:
 | `review` | Independent judgment of another intent. |
 | `remediation` | Follow-up work that corrects already-promoted behavior. |
 
-The command prints a human key, UID, and path under `.vault/intents/`.
-
-### 3. Define the problem and acceptance bar
-
-Replace every scaffold stub before coding:
+The command prints a human key, UID, and path under `.vault/intents/`. Replace every scaffold stub in that file before coding:
 
 ```text
 :::why
@@ -253,7 +231,13 @@ intent ──HAS_CONSTRAINT────────────→ constraint
 
 The `::file-ref` path must be the exact repository-relative path. Triage joins a task's `TOUCHES` edge with a change's `MODIFIES` edge through that shared file node.
 
-### 4. Synchronize and start work
+:::warning Use exact repository-relative paths
+**Symptom:** `ORPHAN_CHANGE` says no intent covers a modified file.
+
+**Fix:** make `::file-ref{path=...}` exactly match the repository-relative path reported by triage, including case.
+:::
+
+Then synchronize and move the intent into progress:
 
 ```bash
 atomic vault sync
@@ -261,11 +245,47 @@ atomic intent update <INTENT> --status in_progress
 atomic vault sync
 ```
 
+:::warning Sync after every `.vault/` edit
+**Symptom:** `show`, `validate`, or `attest` displays an earlier version of your entry.
+
+**Fix:** run `atomic vault sync` after editing anything under `.vault/` and before any command that reads the repository's Vault state; otherwise those commands see the previous version rather than your current file.
+:::
+
+### Step 3: Synchronize and start work
+
+With the intent synchronized and `in_progress`, open a goal: a focused work session that can group one or more intents:
+
+```bash
+atomic vault goal start --name refresh-token-hardening --intent <INTENT>
+
+# Group additional intents into the same session
+atomic intent link <INTENT> --goal refresh-token-hardening
+```
+
+Useful goal commands throughout the session:
+
+```bash
+atomic vault goal list
+atomic vault goal show <NAME>
+atomic vault goal stop --promote   # or --discard
+atomic vault goal resume refresh-token-hardening
+```
+
 Intent statuses are closed values: `backlog`, `todo`, `in_progress`, `done`, and `icebox`.
 
 When an Atomic agent integration is active, the session view and turn recording are automatic. The prompt becomes a goal in the provenance graph; reads, edits, commands, checks, decisions, and the final patch proposal become typed activity nodes. Do not manually record over an integration-managed turn.
 
-### 5. Verify each criterion
+With an installed [agent integration](./ai-agent-workflows.md), Atomic also manages session views and records turns automatically:
+
+- Session start creates an isolated draft view.
+- The user prompt becomes a goal node.
+- Tool activity becomes typed provenance.
+- Turn end records source and Vault changes together.
+- Session end returns to the original view.
+
+The integration's workflow instructions can require one conforming, attested intent per unit of work and durable memories at turn end. Humans can use the same commands manually.
+
+### Step 4: Verify each criterion
 
 A criterion may declare the checks required before `status=met`:
 
@@ -300,7 +320,7 @@ For review evidence, also pin the observation to the exact view state:
 
 The gate does not decide whether prose is persuasive. It checks the structural claim: when a criterion requires `unit` and `integration`, the latest record of each required kind must pass before a stored `met` status conforms.
 
-### 6. Complete, validate, and attest
+### Step 5: Complete, validate, and attest
 
 After the implementation and checks hold:
 
@@ -321,6 +341,12 @@ atomic intent verify <INTENT>
 
 Before attestation, `validate` can report the fillable `attributedTo` and `proof` violations. `atomic intent attest` refuses every non-fillable violation, fills authorship from the signing identity, signs the canonical node, re-runs the gate, self-verifies the proof, and writes a tracked attestation entry.
 
+:::warning Attest only after the final definition edit
+**Symptom:** `atomic intent verify` reports a stale attestation.
+
+**Fix:** finish edits, synchronize, grant the final status, and attest again.
+:::
+
 After attestation:
 
 ```bash
@@ -329,28 +355,7 @@ atomic intent list
 
 A completed intent should show `done`, a fresh attestation, and a valid signature for the resolving identity.
 
-## The SHACL-style conformance gate
-
-Atomic currently implements the documented SHACL-style, closed-world shape semantics directly in Rust. A general Turtle-backed SHACL evaluator is a later implementation milestone; the gate behavior is already enforced by the CLI.
-
-The gate checks structure and referential integrity, not whether the prose is wise:
-
-| Shape | Enforces |
-|---|---|
-| Intent | Known status and kind, a non-empty `why`, author DID and proof, and scope-out when scope-in is declared. |
-| Review | A `kind=review` intent must declare at least one `reviews` edge; non-review intents cannot carry one. |
-| Acceptance criterion | Known status; a met criterion must have evidence or all required verification kinds passing. |
-| Task | Known task status and every `SATISFIES` target must be a criterion declared by the same intent. |
-| Memory | Known memory kind and status, non-empty text, author DID, and proof. |
-
-A malformed graph receives a `ValidationReport` with the focus node, shape, property path, and message. The gate never silently fixes a load-bearing fact.
-
-:::note Presence is enforced; content is judged in review
-The gate can require a reason, evidence record, or review edge. It does not claim the reason is good or that an observation proves the criterion. That content judgment belongs to the independent reviewer.
-:::
-
-## Attestations and freshness
-
+:::info Attestations and freshness
 An attestation contains canonical JSON-LD with:
 
 - The node's stable `@id` and `@type`.
@@ -374,96 +379,41 @@ the attestation for <INTENT> is stale
 ```
 
 A stale signature is not approval of the current bytes. Re-grant the completed state when needed, then attest the current intent again.
+:::
 
-## Memories: durable knowledge from completed work
+#### The conformance gate
 
-Intents describe a unit of work. Memories preserve what should influence future work after that intent is finished.
+Atomic currently implements the documented SHACL-style, closed-world shape semantics directly in Rust. A general Turtle-backed SHACL evaluator is a later implementation milestone; the gate behavior is already enforced by the CLI.
 
-Memory kinds are closed and intentionally specific:
+The gate checks structure and referential integrity, not whether the prose is wise:
 
-| Kind | Record |
+| Shape | Enforces |
 |---|---|
-| `decision` | A chosen approach, its outcome, and why it was selected. |
-| `lesson` | A corrective insight learned from failure or surprise. |
-| `constraint` | A rule or limitation future work must respect. |
-| `preference` | A durable tooling, style, or workflow preference. |
-| `context` | Background that remains useful but is not one of the above. |
+| Intent | Known status and kind, a non-empty `why`, author DID and proof, and scope-out when scope-in is declared. |
+| Review | A `kind=review` intent must declare at least one `reviews` edge; non-review intents cannot carry one. |
+| Acceptance criterion | Known status; a met criterion must have evidence or all required verification kinds passing. |
+| Task | Known task status and every `SATISFIES` target must be a criterion declared by the same intent. |
+| Memory | Known memory kind and status, non-empty text, author DID, and proof. |
 
-Create one memory per durable insight and link it to the most specific source:
+A malformed graph receives a `ValidationReport` with the focus node, shape, property path, and message. The gate never silently fixes a load-bearing fact.
 
-```bash
-atomic memory new --kind lesson \
-  --text "Refresh expiry must be checked before session allocation; checking later leaves an orphaned session on rejection" \
-  --derived-from urn:atomic:ac:<UID>-ac-1,urn:atomic:task:<UID>-1
-```
+:::note Presence is enforced; content is judged in review
+The gate can require a reason, evidence record, or review edge. It does not claim the reason is good or that an observation proves the criterion. That content judgment belongs to the independent reviewer.
+:::
 
-Then gate, sign, and verify it:
+:::warning Gate conformance is not code approval
+**Symptom:** every field is present, but nobody has judged whether the evidence proves the criterion.
 
-```bash
-atomic memory validate <MEMORY_ID>
-atomic memory attest <MEMORY_ID>
-atomic memory verify <MEMORY_ID>
-```
+**Fix:** use an independent review intent. The gate checks structure; reviewers judge meaning.
+:::
 
-`derivedFrom` becomes a `prov:wasDerivedFrom` edge. Prefer the narrowest source available:
-
-| Source | Canonical form |
-|---|---|
-| Acceptance criterion | `urn:atomic:ac:<UID>-ac-N` |
-| Task | `urn:atomic:task:<UID>-N` |
-| Todo | `urn:atomic:todo:<id>` |
-| Intent fallback | `urn:atomic:intent:<UID>` |
-
-The next unit of work can retrieve those memories directly:
-
-```bash
-atomic vault context --intent <NEW_INTENT>
-atomic vault context --files src/auth/refresh.rs
-```
-
-This creates the knowledge flywheel:
-
-```text
-memory → informs intent → motivates change → produces provenance
-   ↑                                             │
-   └──────────── review and learning ────────────┘
-```
-
-## Query the Vault graph
-
-Vault entries are projected alongside code entities, files, changes, views, and sessions. Query the graph instead of reconstructing relationships from filenames:
-
-```bash
-# Discover an intent's exact graph node ID
-atomic vault query search "expired refresh token"
-
-# Traverse intent → criteria/tasks → files
-atomic vault query neighbors intent:<UID> --depth 2
-
-# See tasks and changes joined at one file node
-atomic vault query neighbors file:src/auth/refresh.rs --depth 1
-
-# Find memories and changes related to a concept
-atomic vault query search "refresh expiry"
-```
-
-The critical code-to-intent join is:
-
-```text
-task ──TOUCHES──→ file:src/auth/refresh.rs ←──MODIFIES── change
-```
-
-This is how triage determines that a candidate change is covered by an intent. No issue number in a message is required.
-
-See [Querying the Knowledge Graph](./querying-the-graph.md) for code search, entity extraction, callers, graph visualization, and structured query plans.
-
-## Triage: review before promotion
+### Step 6: Review before promoting
 
 In Atomic, code already exists in the canonical graph while it is being reviewed. Review decides which change references may be inserted from a draft view into a target view and whether the intents behind those changes are genuinely satisfied.
 
 Triage is therefore not a pull request that applies a diff. It is a projection and promotion gate over existing graph state.
 
-### 1. Compute the candidate set
+**1. Compute the candidate set:**
 
 ```bash
 atomic triage candidates feature-auth --into dev
@@ -471,7 +421,7 @@ atomic triage candidates feature-auth --into dev
 
 This reports changes present in the feature view but absent from the target, plus any dependency-closure additions that would travel with them.
 
-### 2. Build the triage report
+**2. Build the triage report:**
 
 ```bash
 atomic triage review feature-auth --into dev
@@ -509,19 +459,19 @@ The report pins the facts it reviews:
 
 Its verdict is `blocked`, `stale`, or `ready`. Blocking findings win; without blockers, substance drift produces `stale`; otherwise the report is `ready`.
 
-### 3. Investigate the actual changes
+**3. Investigate the actual changes:**
 
 A conforming intent is not proof that the code is good. Inspect each candidate and run the checks required by its criteria:
 
 ```bash
 atomic change <HASH>
 atomic diff -c <HASH> --word-diff
-atomic vault query neighbors change:<HASH> --depth 2
+atomic query neighbors change:<HASH> --depth 2
 ```
 
 Review correctness, security, error handling, concurrency, tests, performance, scope, and the intent's constraints. The report checks linkage and evidence structure; the reviewer judges content.
 
-### 4. Author a separate review intent
+**4. Author a separate review intent:**
 
 The reviewer does not edit the work author's intent. The reviewer creates and signs a new review intent under a different identity:
 
@@ -529,6 +479,12 @@ The reviewer does not edit the work author's intent. The reviewer creates and si
 atomic intent new "Review expired refresh-token rejection" \
   --review urn:atomic:intent:<WORK_UID>
 ```
+
+:::warning Use the canonical URN in `reviews`
+**Symptom:** a review exists, but triage still emits `UNREVIEWED_CHANGE`.
+
+**Fix:** target the canonical URN `urn:atomic:intent:<UID>`; a bare UID is not the same graph identity. Then synchronize, re-grant `done` if reviewable substance changed, and re-attest.
+:::
 
 A review intent has `kind: review` and a canonical `reviews` edge:
 
@@ -561,7 +517,7 @@ atomic intent verify <REVIEW_INTENT> --identity reviewer
 
 For promotion into a shared view, triage requires an independent, completed review: the review intent must be `done`, and its `attributedTo` identity must differ from the work intent's author. Reviews of reviews are not required.
 
-### 5. Re-run triage
+**5. Re-run triage:**
 
 ```bash
 atomic triage review feature-auth --into dev
@@ -569,7 +525,7 @@ atomic triage review feature-auth --into dev
 
 Only recommend promotion when the candidate set is current, required reviews are complete, and no blocking finding remains.
 
-## Triage finding reference
+#### Triage finding reference
 
 Triage findings use a closed code vocabulary so agents, CLI output, JSON consumers, and HTML reports agree on their meaning.
 
@@ -587,19 +543,15 @@ Triage findings use a closed code vocabulary so agents, CLI output, JSON consume
 | `OPEN_REMEDIATION` | Info | Already-promoted work has a remediation intent in flight. Track it; it does not block promotion. |
 | `UNREVIEWED_CHANGE` | Block into shared; warn into draft | A work intent lacks a completed review signed by a different identity. Create and attest a canonical review intent. |
 
-The JSON report includes each finding's focus node, message, and—when available—a suggested query and concrete remedy.
+The JSON report includes each finding's focus node, message, and (when available) a suggested query and concrete remedy.
 
-## Pre-promotion flaws and post-promotion remediation
+#### Pre-promotion flaws and post-promotion remediation
 
 Where a flaw is found determines how it should be represented:
 
-### Before insertion
+**Before insertion:** the code is still in a draft view. Leave the relevant review criterion unmet, make a fix in the same work line, rerun the checks, and regenerate triage. No separate remediation intent is needed because the work has not been promoted.
 
-The code is still in a draft view. Leave the relevant review criterion unmet, make a fix in the same work line, rerun the checks, and regenerate triage. No separate remediation intent is needed because the work has not been promoted.
-
-### After insertion
-
-The change is already part of shared history. Create a new remediation intent that points to the original:
+**After insertion:** the change is already part of shared history. Create a new remediation intent that points to the original:
 
 ```text
 :::ref{to=urn:atomic:intent:<ORIGINAL_UID> edge=remediates}
@@ -608,123 +560,147 @@ The change is already part of shared history. Create a new remediation intent th
 
 Give the remediation a new acceptance criterion containing the check that would have caught the flaw. Triage surfaces the in-flight relationship as `OPEN_REMEDIATION` until the follow-up is complete.
 
-## Goals and agent-managed sessions
+### Step 7: Capture durable memory
 
-Goals group focused work sessions:
+Intents describe a unit of work. Memories preserve what should influence future work after that intent is finished.
+
+Memory kinds are closed and intentionally specific:
+
+| Kind | Record |
+|---|---|
+| `decision` | A chosen approach, its outcome, and why it was selected. |
+| `lesson` | A corrective insight learned from failure or surprise. |
+| `constraint` | A rule or limitation future work must respect. |
+| `preference` | A durable tooling, style, or workflow preference. |
+| `context` | Background that remains useful but is not one of the above. |
+
+Create one memory per durable insight and link it to the most specific source:
 
 ```bash
-atomic vault goal start "refresh-token-hardening"
-atomic intent link <INTENT> --goal refresh-token-hardening
-
-# Later
-atomic vault goal stop
-atomic vault goal resume refresh-token-hardening
+atomic memory new --kind lesson \
+  --text "Refresh expiry must be checked before session allocation; checking later leaves an orphaned session on rejection" \
+  --derived-from urn:atomic:ac:<UID>-ac-1,urn:atomic:task:<UID>-1
 ```
 
-With an installed [agent integration](./ai-agent-workflows.md), Atomic also manages session views and records turns automatically:
-
-- Session start creates an isolated draft view.
-- The user prompt becomes a goal node.
-- Tool activity becomes typed provenance.
-- Turn end records source and Vault changes together.
-- Session end returns to the original view.
-
-The integration's workflow instructions can require one conforming, attested intent per unit of work and durable memories at turn end. Humans can use the same commands manually.
-
-## Common mistakes
-
-### Editing `.vault/` without synchronizing
-
-**Symptom:** `show`, `validate`, or `attest` displays an earlier version.
-
-**Fix:**
+Then synchronize, gate, sign, and verify it:
 
 ```bash
 atomic vault sync
+atomic memory validate <MEMORY_ID>
+atomic memory attest <MEMORY_ID>
+atomic memory verify <MEMORY_ID>
 ```
 
-### Attesting before the final definition edit
-
-**Symptom:** `atomic intent verify` reports a stale attestation.
-
-**Fix:** finish edits, synchronize, grant the final status, and attest again.
-
-### Using the wrong intent identity in `reviews`
-
-**Symptom:** a review exists, but triage still emits `UNREVIEWED_CHANGE`.
-
-**Fix:** use the canonical target:
-
-```text
-urn:atomic:intent:<UID>
-```
-
-Then synchronize, re-grant `done` if reviewable substance changed, and re-attest.
-
-### Using a partial file path
-
-**Symptom:** `ORPHAN_CHANGE` says no intent covers a modified file.
-
-**Fix:** make `::file-ref{path=...}` exactly match the repository-relative path reported by triage, including case.
-
-### Treating gate conformance as code approval
-
-**Symptom:** every field is present, but nobody has judged whether the evidence proves the criterion.
-
-**Fix:** use an independent review intent. The gate checks structure; reviewers judge meaning.
-
-### Recording a vague memory
-
+:::warning Do not record vague memories
 **Symptom:** future context retrieval returns a restatement of the task rather than reusable knowledge.
 
 **Fix:** record the decision, corrective lesson, constraint, preference, or context as a self-contained statement and link it to the most specific criterion or task that produced it.
+:::
 
-## A compact command checklist
+`derivedFrom` becomes a `prov:wasDerivedFrom` edge. Prefer the narrowest source available:
+
+| Source | Canonical form |
+|---|---|
+| Acceptance criterion | `urn:atomic:ac:<UID>-ac-N` |
+| Task | `urn:atomic:task:<UID>-N` |
+| Todo | `urn:atomic:todo:<id>` |
+| Intent fallback | `urn:atomic:intent:<UID>` |
+
+The next unit of work can retrieve those memories directly:
 
 ```bash
-# Research
-atomic intent list
-atomic vault context --files <PATH>
-
-# Author
-atomic intent new "<TITLE>" --kind <KIND>
-# Edit the printed .vault path
-atomic vault sync
-atomic intent update <INTENT> --status in_progress
-
-# Complete
-# Run checks; add verification records; mark tasks done and criteria met
-atomic vault sync
-atomic intent update <INTENT> --status done
-atomic vault sync
-atomic intent validate <INTENT>
-atomic intent attest <INTENT>
-atomic intent verify <INTENT>
-
-# Learn
-atomic memory new --kind <KIND> --text "<INSIGHT>" \
-  --derived-from urn:atomic:ac:<UID>-ac-1
-atomic memory validate <MEMORY>
-atomic memory attest <MEMORY>
-
-# Review
-atomic triage review <FEATURE_VIEW> --into <TARGET_VIEW> --json
-atomic intent new "Review <WORK>" \
-  --review urn:atomic:intent:<WORK_UID>
-# Run review checks and pin observations to inputs.view_merkle
-atomic vault sync
-atomic intent update <REVIEW> --status done
-atomic vault sync
-atomic intent attest <REVIEW> --identity <REVIEWER>
-atomic triage review <FEATURE_VIEW> --into <TARGET_VIEW>
+atomic vault context --intent <NEW_INTENT>
+atomic vault context --files src/auth/refresh.rs
 ```
+
+This creates a feedback loop:
+
+```text
+memory → informs intent → motivates change → produces provenance
+   ↑                                             │
+   └──────────── review and learning ────────────┘
+```
+
+## Intent identity: four forms
+
+An intent has several identifiers for different interfaces:
+
+| Form | Example | Used for |
+|---|---|---|
+| Human key | `TRAI::lee::4` | CLI lookup and human conversation. |
+| UID | `01KZE9KMFE9TGASXJRJTYYJ6X8` | Stable entry identity and directory name. |
+| Canonical RDF identity | `urn:atomic:intent:01KZE9KMFE9TGASXJRJTYYJ6X8` | Typed references such as `reviews`, `remediates`, and `derivedFrom`. |
+| Knowledge-graph node ID | `intent:01KZE9KMFE9TGASXJRJTYYJ6X8` | `atomic vault query neighbors` and graph traversal. |
+
+Use the form expected by the interface. In particular, use a **canonical intent URN** when creating a review:
+
+```bash
+atomic intent new "Review route-derived clues" \
+  --review urn:atomic:intent:01KZE9KMFE9TGASXJRJTYYJ6X8
+```
+
+A bare UID is not the same graph identity as `urn:atomic:intent:<UID>`.
+
+## Query the Vault graph
+
+Vault entries are projected alongside code entities, files, changes, views, and sessions. Query the graph instead of reconstructing relationships from filenames (`atomic vault query …` is a documented alias of the canonical `atomic query …` form used below):
+
+```bash
+# Discover an intent's exact graph node ID
+atomic query search "expired refresh token"
+
+# Traverse intent → criteria/tasks → files
+atomic query neighbors intent:<UID> --depth 2
+
+# See tasks and changes joined at one file node
+atomic query neighbors file:src/auth/refresh.rs --depth 1
+
+# Find memories and changes related to a concept
+atomic query search "refresh expiry"
+```
+
+The critical code-to-intent join is:
+
+```text
+task ──TOUCHES──→ file:src/auth/refresh.rs ←──MODIFIES── change
+```
+
+This is how triage determines that a candidate change is covered by an intent. No issue number in a message is required.
+
+See [Querying the Knowledge Graph](./querying-the-graph.md) for code search, entity extraction, callers, graph visualization, and structured query plans.
+
+## Provenance
+
+Vault records never stand alone: every intent, memory, attestation, and review is linked into the provenance graph that records how the work happened: prompts, goals, tool activity, decisions, and changes. Trace the causal history behind any recorded object:
+
+```bash
+atomic provenance trace <HASH>
+```
+
+Projections follow the W3C PROV model, and you can export a portable, signed provenance document:
+
+```bash
+atomic provenance show --sign > provenance.signed.json
+```
+
+See [Provenance Graphs](/agents/provenance) for the model and the [`atomic provenance` command reference](/commands/provenance) for every option.
+
+## Common mistakes at a glance
+
+- **Editing `.vault/` without synchronizing**: `show`, `validate`, or `attest` shows an earlier version. Fix: run `atomic vault sync` (Step 2).
+- **Attesting before the final definition edit**: `atomic intent verify` reports a stale attestation. Fix: finish edits, synchronize, grant the final status, and attest again (Step 5).
+- **Using the wrong intent identity in `reviews`**: the review exists but triage still emits `UNREVIEWED_CHANGE`. Fix: target `urn:atomic:intent:<UID>`, then synchronize, re-grant `done` if needed, and re-attest (Step 6).
+- **Using a partial file path**: `ORPHAN_CHANGE` says no intent covers a modified file. Fix: make `::file-ref{path=...}` exactly match the repository-relative path, including case (Step 2).
+- **Treating gate conformance as code approval**: every field is present, but nobody has judged the evidence. Fix: use an independent review intent; the gate checks structure, reviewers judge meaning (Step 5).
+- **Recording a vague memory**: context retrieval returns a restatement of the task. Fix: record a self-contained decision, lesson, constraint, preference, or context linked to the most specific criterion or task (Step 7).
 
 ## Next steps
 
-- [`atomic intent` command reference](/commands/intent) — complete intent syntax and options.
-- [`atomic memory` command reference](/commands/memory) — memory kinds, creation, signing, and retrieval.
-- [Querying the Knowledge Graph](./querying-the-graph.md) — inspect Vault and code relationships.
-- [AI Agent Workflows](./ai-agent-workflows.md) — automatic session views, provenance, and recording.
-- [Train Tracks Demo](./train-tracks-demo.md) — explore intents, memories, changes, and review evidence in a live project.
-- [Attestations](/agents/attestations) — cryptographic identity, signatures, freshness, and verification.
-- [Provenance Graphs](/agents/provenance) — how prompts, tools, decisions, and changes form a causal ledger.
+- [`atomic intent` command reference](/commands/intent): complete intent syntax and options.
+- [`atomic memory` command reference](/commands/memory): memory kinds, creation, signing, and retrieval.
+- [`atomic provenance` command reference](/commands/provenance): trace, inspect, and export the provenance graph.
+- [Querying the Knowledge Graph](./querying-the-graph.md): inspect Vault and code relationships.
+- [AI Agent Workflows](./ai-agent-workflows.md): automatic session views, provenance, and recording.
+- [Train Tracks Demo](./train-tracks-demo.md): explore intents, memories, changes, and review evidence in a live project.
+- [Attestations](/agents/attestations): cryptographic identity, signatures, freshness, and verification.
+- [Provenance Graphs](/agents/provenance): how prompts, tools, decisions, and changes form a causal ledger.

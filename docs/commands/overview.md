@@ -22,10 +22,15 @@ Every command listed here corresponds to a real subcommand in the `atomic` CLI b
 | [`record`](record.md) | Record changes from the working copy |
 | [`revise`](revise.md) | Revise a change in-place |
 | [`diff`](diff.md) | Show differences in the working copy |
+| [`blame`](blame.md) | Show line-level ownership for a tracked text file |
 | [`log`](log.md) | Show change history |
 | [`change`](change.md) | Inspect a specific change |
+| [`op`](op.md) | Inspect the immutable repository operation journal |
+| [`compact`](compact.md) | Reclaim unused space in the repository database |
 | [`insert`](insert.md) | Insert changes into a view |
 | [`restore`](restore.md) | Restore working copy to last recorded state |
+| [`stage`](git-shim.md#colocated-mode-atomic-stage--atomic-unstage) | Stage worktree content into the Git index (colocated mode) |
+| [`unstage`](git-shim.md#colocated-mode-atomic-stage--atomic-unstage) | Move Git index entries back to the baseline (colocated mode) |
 | [`split`](split.md) | Create a new view from an existing one |
 | [`view`](view.md) | Manage views (create, switch, list, delete) |
 | [`stash`](stash.md) | Temporarily save uncommitted changes |
@@ -42,14 +47,18 @@ Every command listed here corresponds to a real subcommand in the `atomic` CLI b
 | [`agent`](agent.md) | Manage AI agent integration |
 | [`doctor`](doctor.md) | Verify working-copy consistency and repair indexes |
 | [`git`](git.md) | Git interoperability (import, push, hooks) |
+| [`git shim`](git-shim.md) | Colocated Git shim (reconcile, verify, publish, bindings) |
 | [`sandbox`](sandbox.md) | Provision concurrent agent sandboxes (copy-on-write working trees) |
 | [`session`](session.md) | Inspect the agent session ledger |
 | [`query`](query.md) | Query the knowledge graph |
 | [`vault`](vault.md) | Manage the vault (shared project knowledge store) |
+| [`intent`](intent.md) | Record the "why": validate, attest, and verify intents |
+| [`memory`](memory.md) | Record durable memories: validate, attest, and verify |
 | [`provenance`](provenance.md) | W3C PROV projections for changes |
 | [`unrecord`](unrecord.md) | Remove the last change from the current view |
 | [`update`](update.md) | Check for available CLI updates |
 | [`triage`](triage.md) | Review a feature view's candidate changes against a target |
+| [`completions`](completions.md) | Generate a shell completion script |
 
 ## Command Categories
 
@@ -71,11 +80,14 @@ atomic log                        # View history
 - **[`status`](status.md)** — Show modified, added, deleted, and untracked files
 - **[`conflicts`](conflicts.md)** — List files in a conflicted state on the current view
 - **[`diff`](diff.md)** — Show differences between working copy and last recorded state
+- **[`blame`](blame.md)** — Show line-level ownership for a tracked text file
 - **[`record`](record.md)** — Create a new change from tracked file modifications
 - **[`revise`](revise.md)** — Modify a previously recorded change in-place
 - **[`unrecord`](unrecord.md)** — Remove the last change (or a specific change) from the current view
 - **[`log`](log.md)** — Display the history of changes on the current view
 - **[`change`](change.md)** — Inspect details of a specific change by hash or sequence number
+- **[`op`](op.md)** — Inspect the immutable repository operation journal (`op log`/`show`/`undo`/`restore`)
+- **[`compact`](compact.md)** — Reclaim unused space in the repository database
 
 ### Repository Management
 
@@ -92,6 +104,8 @@ atomic restore --force            # Discard uncommitted changes
 - **[`restore`](restore.md)** — Restore the working copy to the last recorded state
 - **[`split`](split.md)** — Create a new view from an existing one
 - **[`git`](git.md)** — Import Git repositories into Atomic and sync back to Git
+- **[`git shim`](git-shim.md)** — Colocated Git shim: reconcile, verify, switch, publish, and bind Git HEAD ↔ Atomic view state (0.20.0+)
+- **[`stage`](git-shim.md#colocated-mode-atomic-stage--atomic-unstage)** / **[`unstage`](git-shim.md#colocated-mode-atomic-stage--atomic-unstage)** — Project the Git index from Atomic state in colocated mode
 
 ### Knowledge Graph & Vault
 
@@ -184,8 +198,10 @@ atomic agent status --verbose
 atomic agent explain <session-id> --all --save
 ```
 
-- **[`agent`](agent.md)** — Enable, disable, and manage AI agent hooks for Claude Code, Gemini CLI, and OpenCode
+- **[`agent`](agent.md)** — Enable, disable, and manage AI agent hooks for all supported agents (see the [integration matrix](/agents/installing-agent-integrations))
 - **[`agent lifecycle`](agent-lifecycle.md)** — Declare and track managed runs for orchestrated agents
+- **[`agent identity`](agent.md#agent-identity)** — Select or inspect the agent identity that recording hooks sign as
+- **[`agent repair`](agent.md#agent-repair)** — Resume a managed session under leases while retaining durable evidence
 - **[`session`](session.md)** — Inspect, fork, and rebuild the agent session ledger
 - **[`sandbox`](sandbox.md)** — Provision concurrent agent sandboxes and OCI images
 

@@ -145,10 +145,10 @@ The `insert` command moves changes between views or inserts change files:
 atomic insert ABC12345
 
 # Insert changes from another view
-atomic insert from-view feature --to-view main
+atomic insert view feature --to-view main
 
 # Cherry-pick specific changes
-atomic insert pick ABC123 DEF456 --to-view main
+atomic insert change ABC123 DEF456 --to-view main
 
 # Preview what would be inserted
 atomic insert preview feature --to-view main

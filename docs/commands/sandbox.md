@@ -14,6 +14,10 @@ atomic sandbox <SUBCOMMAND>
 atomic sandbox create <n> [--dest <PATH>] [--view <VIEW>] [--from <VIEW>]
 atomic sandbox stage <VIEW> --out <DIR> [--base <VIEW>]
 atomic sandbox seal <VIEW> --out <DIR> [--entrypoint <ARG>] [--env <KEY=VAL>]
+atomic sandbox open <VIEW> [--acting-as <DID>] [--ttl <SECS>] [--capability <CAP>] [--dest <DIR>]
+atomic sandbox renew <VIEW> [--ttl <SECS>]
+atomic sandbox close <VIEW>
+atomic sandbox materialize [--prefix <PATH>]
 ```
 
 ## Description
@@ -26,6 +30,8 @@ Sandboxes also bridge to the container world:
 
 - **`stage`** packages a sandbox's draft view as a **layered OCI image** — a shared base plus a thin delta — so identical bases are stored once across many sandboxes.
 - **`seal`** flattens a view into a **self-contained OCI runtime image** with a fixed entrypoint and environment, suitable for running or shipping.
+- **`open` / `renew` / `close`** grant, extend, and revoke a remote sandbox's access to one view, with a TTL and explicit capabilities.
+- **`materialize`** runs inside a remote sandbox to write its view's tree and cache.
 
 ## Subcommands
 
@@ -122,8 +128,75 @@ atomic sandbox seal release-candidate -o out/oci \
 
 Unlike `stage`, the sealed image is flattened and self-contained — no shared base required.
 
+### `sandbox open` — Grant a Remote Sandbox One View
+
+#### Synopsis
+
+```bash
+atomic sandbox open <VIEW> [OPTIONS]
+```
+
+#### Arguments
+
+**`<VIEW>`** — The view the sandbox reaches.
+
+#### Options
+
+| Option | Description |
+|--------|-------------|
+| `--acting-as <DID>` | The identity the sandbox's work is attributed to (an agent's DID) |
+| `--ttl <SECS>` | How long the grant lasts, in seconds (1..31536000; renew with `atomic sandbox renew`) (default: 7200) |
+| `--capability <CAP>` | A capability to grant (repeatable). Defaults to reading and submitting the view, its provenance, and its vault |
+| `--dest <DIR>` | Write the pointer into this directory (created if needed, mode 0600) |
+
+#### Examples
+
+```bash
+# Grant a sandbox read/submit access to feature-auth for 2 hours
+atomic sandbox open feature-auth --acting-as did:atomic:agent-01
+
+# Grant for 30 seconds with the pointer written to a specific dir
+atomic sandbox open feature-auth --ttl 30 --dest /tmp/sandbox-pointer
+```
+
+### `sandbox renew` — Extend a Grant
+
+```bash
+atomic sandbox renew <VIEW> [--ttl <SECS>]
+```
+
+Extend a remote sandbox's grant. `--ttl` is the new lifetime from now, in seconds (default: 7200).
+
+### `sandbox close` — Revoke a Grant
+
+```bash
+atomic sandbox close <VIEW>
+```
+
+Revoke a remote sandbox's grant now.
+
+### `sandbox materialize` — Materialize Inside a Remote Sandbox
+
+```bash
+atomic sandbox materialize [--prefix <PATH>]
+```
+
+Inside a remote sandbox: write its view's tree and make its cache.
+
+| Option | Description |
+|--------|-------------|
+| `--prefix <PATH>` | Materialize only entries at or under this path (a monorepo folder), plus the directories that lead to it. Default: the whole view |
+
+#### Example
+
+```bash
+# Inside the sandbox: fetch only the crates/ subtree
+atomic sandbox materialize --prefix crates/
+```
+
 ## See Also
 
 - [view](view.md) — Views and the filter hierarchy sandboxes attach to
 - [session](session.md) — The agent session ledger
 - [agent lifecycle](agent-lifecycle.md) — Declaring managed agent runs
+- [multiple-ai-agents guide](/guides/multiple-ai-agents-without-merge-conflicts) — Sandboxes for multi-agent isolation

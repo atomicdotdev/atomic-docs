@@ -5,18 +5,18 @@ title: Quick Start
 
 # Quick Start
 
-This guide walks you from installing Atomic to landing a reviewed, provenance-backed change. It covers the core workflow end to end: install, make a project, work with an AI agent, and promote the result.
+This guide covers the core Atomic workflow: install, create a project, work with an AI agent, and land a reviewed, provenance-backed change.
 
 **What you'll do:**
 
 - Install Atomic and set up your identity with Atomic Storage  
 - Initialize a repository and record your first change  
-- Install the OpenCode plugin and direct the agent's work with intents  
-- Verify the work, sign it, and capture durable memories  
+- Install an agent integration (OpenCode, Claude Code, Codex, or Copilot) and direct the agent's work with intents  
+- Verify the work and sign it  
 - Branch with views, review, and promote changes  
 - Push everything to a remote
 
-**Prerequisites:** a bash/Linux environment. Installing from source instead? See [Installation](./installation).
+**Prerequisites:** a bash environment (Linux, macOS, or WSL2). For source installs, see [Installation](./installation).
 
 ## 1\. Install Atomic
 
@@ -27,6 +27,8 @@ curl -sSf https://atomic.storage/install.sh | sh
 ```
 
 For other installation methods (including building from source), see [Installing Atomic](./installation).
+
+> **Tip:** An AI agent can run this setup for you. Download the [Atomic Setup skill for agents](/atomic-setup-skill.md) and give it to your coding agent. The skill covers installation, identity setup, registration, and agent integration, and asks for confirmation before each step that changes your system. Works with OpenCode, Claude Code, Codex, and Copilot.
 
 ## 2\. Set Up Your Identity
 
@@ -42,18 +44,6 @@ atomic identity whoami
 - `--set-default` makes `alice-acme` the identity used for signing  
 - `identity register` connects your identity to Atomic Storage  
 - `identity whoami` confirms who you are signed in as
-
-### Coming from Git?
-
-| Git | Atomic | Key Difference |
-| :---- | :---- | :---- |
-| `git commit` | `atomic record` | Action of submitting a change as a patch (semantic change), instead of a snapshot |
-| `git commit` | `atomic change` | Change itself |
-| `git branch` | `atomic view` | Creates a new set of changes, instead of a linear branch |
-| git repo | `atomic project` | Manage related/associated files |
-| Commit hash | Change hash | Cryptographic identifier for the change |
-| Staging area | Add to tree | Files marked for tracking |
-| Working tree | Working copy | Your editable files |
 
 ## 3\. Initialize a Project
 A project groups files and agent intent across changes, similar to a repository.
@@ -74,7 +64,7 @@ This creates an `.atomic` directory, or repository, containing:
 | `changes/` | Storage for change patches |
 
 ## 4\. Record Your First Change
-Manual changes are recorded to the change log.
+Changes are recorded as patches. A patch is a semantic change to the repository database rather than a linear snapshot.
 
 ```sh
 atomic add *                          # track files ("add to tree")
@@ -92,27 +82,73 @@ atomic record file.txt
 
 For a deeper walkthrough of the local workflow, see [Your First Repository](./first-repository).
 
-## 5\. Install the OpenCode Plugin
+## 5\. Install an Agent Integration
 
-Atomic records every agent turn automatically, with full provenance (model, tokens, cost, and a causal decision graph). Install the OpenCode plugin with one command:
+Atomic records every agent turn automatically, with full provenance (model, tokens, cost, and a causal decision graph). Pick your agent — each command installs hooks, the Atomic prompt, and the skills:
 
 ```sh
-atomic agent enable --agent opencode
-opencode   # start OpenCode and switch to the Atomic agent
+atomic agent enable --agent opencode      # plugin + skills; switch to the Atomic agent
+atomic agent enable --agent claude-code   # repo hooks; add -g for global ~/.claude/settings.json
+atomic agent enable --agent codex         # hooks in ~/.codex/hooks.json
+atomic agent enable --agent copilot       # hooks in ~/.copilot/ (cloud agent: .github/ manifest)
 ```
 
-This installs the OpenCode plugin, the Atomic agent prompt, and the Atomic skills, and registers the plugin in your OpenCode config without clobbering existing settings. In OpenCode, switch to the Atomic agent. OpenCode records on session idle / turn end.
+Each `--agent` value maps to an integration package (`opencode` → `atomic-opencode`, `claude-code` → `atomic-claude`, `codex` → `atomic-codex`, `copilot` → `atomic-copilot`). You rarely need the package name itself — it matters only for `--hooks <manifest>` or `--from <checkout>` installs.
 
-Confirm the install:
+Per-harness notes:
+
+- **OpenCode:** after enabling, start `opencode` and switch to the Atomic agent. Recording happens when a session goes idle or a turn ends.
+- **Claude Code:** no agent switching — hooks record automatically on every session. Repo hooks live in the repo where you enabled; add `-g` for user-level hooks in `~/.claude/settings.json`.
+- **Codex:** hooks are global (`~/.codex/hooks.json`). Add `--agents-md` to install an always-on `AGENTS.md` at the repository root.
+- **Copilot:** no TurnEnd hooks — recording happens only when the session ends, in one batch.
+
+### Confirm the install
 
 ```sh
 atomic agent status --verbose
 ```
-Atomic records every agent turn automatically, with full provenance. Activate an agent using `atomic agent enable --agent <agent name>`. Supported agents are listed under the [Integration Matrix](https://docs.atomic.dev/agents/installing-agent-integrations#integration-matrix). `atomic agent enable` auto-detects from directories like `.claude/` or `.cursor/`. Supported agents include Claude Code, Gemini CLI, Codex, Cursor, Copilot, Cline, and more.
+
+Each agent's line should read `✓ <Agent> — hooks installed` (before enabling it reads `○ <Agent> — detected but hooks not installed`).
+
+### Prove a turn records
+
+A session row alone doesn't prove recording works — a stale session or an
+earlier run's change can satisfy it. Run this once per integration, in a
+fresh throwaway repo each time:
+
+```sh
+TEST_DIR=$(mktemp -d /tmp/test-atomic.XXXXXX) && cd "$TEST_DIR" && atomic init
+```
+
+A fresh repo starts with only the two init changes (`Initialize repository`,
+`Initialize vault`), so any change beyond them came from this run. **Lead** the
+test prompt with a marker no earlier run has used, e.g.
+`hello-$(date +%s): Create a file called …` — the marker lands in the recorded
+change's message, and because `atomic log` truncates messages, the marker must
+be at the front to stay visible in the log output.
+
+Trigger one real turn, per harness:
+
+- **OpenCode:** `cd "$TEST_DIR" && opencode run --auto "hello-$(date +%s): Create a file called HELLO.md in the current directory containing exactly the text: hello"` (OpenCode v2: add `--standalone`), or start `opencode` in the test repo and switch to the Atomic agent.
+- **Claude Code:** start `claude` in the test repo with the marker prompt, then end the session. Repo-local hooks (enabled without `-g`) do not carry into the test repo — run `atomic agent enable --agent claude-code` once inside it first, or enable with `-g`.
+- **Codex:** start `codex` in the test repo with the marker prompt, then end the session — the session row appears only after close.
+- **Copilot:** run a Copilot session in the test repo and **end it completely** — recording arrives only at session end, in one batch (the most common "it's not working" false alarm).
+
+Then assert a new change (from inside `$TEST_DIR`):
+
+```sh
+atomic log -n 3                 # newest change's message contains hello-
+atomic change                   # shows the Attestation block (model, tokens)
+atomic agent status --verbose   # a session row for this run appears
+```
+
+**If nothing recorded:** repair with `atomic agent enable --agent <name> -f` (force reinstall), or remove hooks first with `atomic agent disable --agent <name>` and re-enable. The full per-agent procedure with troubleshooting tables is in the [Atomic Setup skill](/atomic-setup-skill.md) (Phase 7).
+
+You can activate other agents the same way; auto-detection works from directories like `.claude/`, `.opencode/`, `.codex/`, or `.github/`. Supported agents include Claude Code, Gemini CLI, Codex, Cursor, Copilot, Cline, and more; see the [Integration Matrix](https://docs.atomic.dev/agents/installing-agent-integrations#integration-matrix). Any other integration verifies the same way: one marker-prompt session in a fresh test repo, then the same three-command assertion.
 
 ## 6\. Turn a Prompt into an Intent
 
-An **intent** records the *why* behind a unit of work. Each intent is structured to include a `:::why`, checkable acceptance criteria, and ordered tasks that name the files they touch. An intent is not done until it conforms and is signed.
+An **intent** records the *why* behind a unit of work. Each intent is structured to include a `:::why`, checkable acceptance criteria, and ordered tasks that name the files they touch. An intent is complete once it validates and is signed.
 
 ```sh
 # 1. Scaffold a directive-based intent
@@ -130,7 +166,7 @@ atomic intent list
 atomic intent show <ID>
 ```
 
-Note that `validate`, `attest`, and `show` read from the vault **database**. Always run `atomic vault sync` after editing an intent file and before validating or attesting, otherwise these commands see the stale on-disk scaffold. `vault sync` after editing an intent file and before validating or attesting, otherwise they see the stale on-disk scaffold. :::
+`validate`, `attest`, and `show` read from the vault **database**, so always run `atomic vault sync` after editing an intent file and before validating or attesting.
 
 To track the work itself, start a goal linked to the intent:
 
@@ -140,28 +176,10 @@ atomic vault goal start --intent <ID>
 atomic vault goal stop --promote
 ```
 
-See atomic intent and atomic vault for the full lifecycle. Additionally, the vault can be queried and mapped using a knowledge graph.
+See [Atomic Vault](./atomic-vault) for the full intent lifecycle. The vault can also be queried and mapped as a knowledge graph; see [Querying the Graph](./querying-the-graph).
 
-## 7\. Record Your First Change
-
-Run the checks your acceptance criteria require, then record the evidence in the intent file:
-
-With Atomic’s graphical structure, changes use patches. `atomic record` creates a patch (semantic change), instead of a linear snapshot.
-```sh
-atomic add *                          # track files ("add to tree")
-atomic status                         # see what changed
-atomic diff                           # review the diff
-atomic record -m "Initial change"     # record a change (creates a patch)
-atomic log                            # view history
-```
-You can also record a specific file directly:
-
-```sh
-atomic record file.txt
-```
-
-## 8\. Review What Happened
-Now work with your agent for a bit, then review what was recorded:
+## 7\. Review What Happened
+Work with your agent, then review what was recorded:
 
 ```sh
 # See the recorded changes with AI provenance (includes change hashes)
@@ -180,9 +198,9 @@ atomic agent attest --hash XMJZ3IPF
 atomic agent explain <session-id> --all --save
 ```
 
-## 9\. Branch with Views
+## 8\. Branch with Views
 
-Views are Atomic's equivalent of branches, but they are **filtered perspectives on the same graph**, not forks. Every edge lives in one canonical graph; a view decides which changes are visible through it.
+Views are Atomic's equivalent of branches, but they are **filtered perspectives on the same graph**, not forks. All changes are stored in one canonical graph, and a view decides which are visible.
 
 ```sh
 # Create a draft feature view and switch to it
@@ -193,11 +211,11 @@ atomic view list
 atomic view switch dev
 ```
 
-Agent sessions already work this way: each session starts on an isolated draft view forked from your current view, and returns you to the original when it ends. See [AI Agent Workflows](./ai-agent-workflows#agent-isolation-with-views).
+Agent sessions already work this way: each session starts on an isolated draft view forked from your current view, and returns you to your original view when it ends. See [AI Agent Workflows](./ai-agent-workflows#agent-isolation-with-views).
 
-## 10\. Review and Land Your Changes
+## 9\. Review and Land Your Changes
 
-There are two ways to bring changes into a view, you may either insert the full change or select a specific change hash to insert :
+Bring changes into a view in two ways: insert all of the current view's changes, or insert a single change by hash.
 
 ```sh
 # Insert the current view's changes to its parent
@@ -207,7 +225,25 @@ atomic insert
 atomic insert <HASH> --view dev
 ```
 
-**Provenance** is the recorded causal chain of AI work: session, turns, changes, and views. Every change generates additional metadata, and you can inspect it directly:
+Before inserting, run **triage** — Atomic's promotion gate. It projects the candidate change set a feature view would land into a target view and renders a verdict (`blocked`, `stale`, or `ready`) with findings: dependency closure, intent coverage, and whether an independent review intent exists.
+
+```sh
+# Candidate set + verdict for the current view against its parent
+atomic triage review
+
+# A specific feature view and target
+atomic triage review feature-login --into dev
+
+# Guided reading order: candidates grouped into semantic layers
+atomic triage review feature-login --into dev --walkthrough
+
+# Full machine-readable worklist
+atomic triage review feature-login --into dev --json
+```
+
+Triage checks linkage and evidence structure — the reviewer still judges the code itself. See [Atomic Vault](./atomic-vault#triage-review-before-promotion) for the full review workflow and the [triage command reference](/commands/triage) for every option (`--html` browser report, `--attest` signed export).
+
+**Provenance** is the recorded chain of AI work: session, turns, changes, and views. Each change carries its provenance, which you can inspect directly:
 
 ```sh
 # Inspect a specific change (hash from atomic log)
@@ -231,7 +267,7 @@ atomic intent validate <REVIEW_ID>
 atomic intent attest <REVIEW_ID> --identity reviewer
 ```
 
-## 11\. Push Everything
+## 10\. Push Everything
 
 Changes, provenance, and session data travel together:
 
@@ -239,9 +275,19 @@ Changes, provenance, and session data travel together:
 atomic push
 ```
 
-Collaborators within your organization receive your changes **and** the context behind them: intents, memories, attestation, and provenance. `atomic pull` brings remote changes in the same way.
+Collaborators within your organization receive your changes **and** the context behind them: intents, attestations, and provenance. `atomic pull` brings remote changes in the same way.
 
-## 12\. Coming from Git?
+## 11\. Coming from Git?
+
+| Git | Atomic | Key Difference |
+| :---- | :---- | :---- |
+| `git commit` | `atomic record` | Submits a change as a semantic patch, not a snapshot |
+| `git commit` | `atomic change` | The recorded change itself (inspect with `atomic change <HASH>`) |
+| `git branch` | `atomic view` | A filtered perspective on the shared change graph, not a linear branch |
+| git repo | `atomic project` | Manage related/associated files |
+| Commit hash | Change hash | Cryptographic identifier for the change |
+| Staging area | Add to tree | Files marked for tracking |
+| Working tree | Working copy | Your editable files |
 
 Existing Git repositories can be imported into Atomic, and Atomic can continue to publish to Git for teammates who stay on Git tooling:
 
@@ -249,9 +295,9 @@ Existing Git repositories can be imported into Atomic, and Atomic can continue t
 atomic git import
 ```
 
-Full Git interoperability parity is coming soon. See [Migrating from Git](./migrating-from-git) for the current workflow.
+Full Git interoperability is coming soon. See [Migrating from Git](./migrating-from-git) for the current workflow.
 
-### Git Cheat Sheet
+### Git interop commands
 
 Atomic and Git can run side by side. The rule to remember: **Git shadows Atomic, not the other way around.** Atomic is the source of truth; the Git repository is a downstream mirror that Atomic generates. Record work in Atomic first (`atomic record`), then publish it to Git. Avoid committing hand edits directly in Git.
 
@@ -276,9 +322,7 @@ If the Git side drifts (for example, from a raw `git commit`), reconcile with `a
 
 ## Cheat Sheet
 
-The whole session, in order:
-
-Copy-paste the complete workflow 
+The full workflow in order. Copy and paste each block:
 
 ```sh
 # Install & identity
@@ -295,10 +339,9 @@ atomic status && atomic diff
 atomic record -m "Initial commit"
 atomic log
 
-# Install the OpenCode plugin
-atomic agent enable --agent opencode
-opencode
-atomic agent status --verbose
+# Install an agent integration
+atomic agent enable --agent <opencode|claude-code|codex|copilot>
+atomic agent status --verbose   # expect: ✓ <Agent> — hooks installed
 
 # Intent: prompt -> criterion -> task -> file
 atomic intent list
@@ -316,15 +359,11 @@ atomic intent update <ID> --status done
 atomic vault sync
 atomic intent validate <ID> && atomic intent attest <ID> && atomic intent verify <ID>
 
-# Memories
-atomic memory new --kind decision --text "..." \
-  --derived-from urn:atomic:ac:<UID>-ac-1
-atomic memory validate <ID> && atomic memory attest <ID> && atomic memory verify <ID>
-
 # Views
 atomic view create feature-login --draft --switch
 
 # Review & land
+atomic triage review --into dev --walkthrough
 atomic change <HASH> && atomic diff -c <HASH> --word-diff
 atomic provenance trace <HASH>
 atomic intent new "Review the login flow" --review urn:atomic:intent:<WORK_UID>

@@ -11,6 +11,14 @@ Manage AI agent integration for automatic turn-level recording with full provena
 
 ```bash
 atomic agent <SUBCOMMAND>
+atomic agent enable --agent <NAME>
+atomic agent disable --agent <NAME>
+atomic agent status [--verbose]
+atomic agent explain <SESSION_ID> [--all] [--save]
+atomic agent attest [--hash <PREFIX>] [--view <NAME>] [--verbose]
+atomic agent repair <SESSION> [--verify-only]
+atomic agent lifecycle <SUBCOMMAND>
+atomic agent identity set|unset|show
 ```
 
 ## Description
@@ -239,6 +247,38 @@ Coverage:
   dev                  ████████████░░░░░░░░ 2/5 (40%)
 ```
 
+### `repair`
+
+Resume a managed session under leases while retaining every piece of durable evidence (CB-12A AC3).
+
+```bash
+atomic agent repair <SESSION> [--verify-only]
+```
+
+| Argument | Description |
+|----------|-------------|
+| `<SESSION>` | The managed session identifier to repair |
+
+| Option | Description |
+|--------|-------------|
+| `--verify-only` | Verify evidence only (attestation/capture MACs); no state changes |
+
+Use `repair` after an orchestrator or machine crash: it resumes the managed run under its lease, validates the recorded evidence, and preserves every attestation and provenance artifact already captured. Pair it with `atomic agent lifecycle stop`/`resume` for controlled shutdowns; see [agent lifecycle](agent-lifecycle.md).
+
+### `identity`
+
+Select or inspect the agent identity that recording hooks sign as.
+
+```bash
+atomic agent identity set <IDENTITY>   # Select the agent identity for hook recording (machine-wide)
+atomic agent identity unset            # Clear the agent identity selection
+atomic agent identity show             # Show the effective agent identity and where it comes from
+```
+
+### `hooks` (internal)
+
+`atomic agent hooks <AGENT_NAME> <VERB>` is the **internal hook-callback entrypoint invoked by the installed agent integrations**. Do not call it manually; the integrations pass lifecycle verbs (session start/stop, turn end) to it as part of `atomic agent enable`. There is no supported manual workflow around this subcommand.
+
 ## How It Works
 
 ```
@@ -287,9 +327,10 @@ Agent author:    claude+60f5 <lee@atomic.dev>
 | Agent | Example Author |
 |-------|---------------|
 | Claude Code | `claude+60f5 <lee@atomic.dev>` |
-| Gemini CLI | `gemini+abcd <lee@atomic.dev>` |
 | Grok Build | `grok+019f <lee@atomic.dev>` |
 | OpenCode | `opencode+9876 <lee@atomic.dev>` |
+
+The identity used for hook recording can be selected explicitly with `atomic agent identity set <IDENTITY>` and inspected with `atomic agent identity show`; `atomic agent identity unset` clears the selection.
 
 ## Supported Integration Packages
 

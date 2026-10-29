@@ -1,35 +1,27 @@
 ---
-sidebar_position: 3
+sidebar_position: 5
 title: Migrating from Git
 ---
 
 # Migrating from Git to Atomic
 
-Welcome, Git users! This guide will help you transition from Git to Atomic. While Git is a version control system that tracks snapshots, Atomic is a semantic change graph that tracks memories, intents, provenance, attestations, and patches as a single unit of change — fundamentally changing how you work with code.
+Welcome, Git users. This guide walks you through moving from Git to Atomic. Git tracks snapshots; Atomic is a semantic change graph that records patches together with memories, intents, provenance, and attestations. That changes how you work with code, and this page shows you how.
 
-## Quick Start: Import Your Git Repository
+This page is the single getting-started path: pick an adoption mode, do the one-time import, learn the daily coexistence rules, then use the command translation, scenarios, checklist, and troubleshooting sections as reference.
 
-The fastest way to get started is to import your existing Git repository:
+## Which path is right for you?
 
-```bash
-# Navigate to your Git repository
-cd /path/to/your/git/repo
+You do not have to choose between "all Git" and "all Atomic" on day one. Three paths cover every team:
 
-# Import into Atomic (creates .atomic directory)
-atomic git import
+| Your situation | Recommended path |
+|----------------|------------------|
+| AI changes are small, a human stays in the loop for every edit, and commit/PR prose is an acceptable record | **Git alone is fine**: keep using Git as-is |
+| Agents make multi-turn or multi-file changes; you need provenance, model attribution, review evidence, and dependency-aware promotion | **Add Atomic**: import your Git history and go Atomic-native |
+| GitHub or GitLab must remain the collaboration surface, but Atomic should record the development and audit trail | **Use both**: `git import`/`git push` for a sidecar mirror, or the colocated shim for tighter integration |
 
-# Start using Atomic!
-atomic log
-```
+The full analysis (what Git does not record, what Atomic adds, and the detailed decision guide) lives in [Is Git Good Enough for AI Coding Agents?](./comparison-with-git.md). Read it if you are still evaluating; come back here when you are ready to move.
 
-That's it! Atomic will:
-- Import your entire Git history
-- Convert commits to Atomic changes
-- Preserve author information and timestamps
-- Create equivalent branches as views
-- Maintain your working copy
-
-## Understanding the Differences
+## Key differences to understand first
 
 ### Terminology Mapping
 
@@ -37,16 +29,14 @@ That's it! Atomic will:
 |----------|-------------|-------|
 | Commit | Change | Immutable semantic patches |
 | Branch | View | Independent lines of development |
-| Merge | Pull/Insert | Conflict-free by design |
-| Tag | Tag | Consolidating boundaries (more powerful!) |
+| Merge | Pull/Insert | Change references compose; genuine conflicts are surfaced, not hidden |
+| Tag | Tag | Consolidating boundaries (more efficient) |
 | Remote | Remote | Same concept |
 | Staging Area | _(none)_ | No staging - direct recording |
 | HEAD | Current View | Explicit view selection |
 | Working Directory | Working Copy | Your editable files |
 
-### Key Conceptual Differences
-
-#### 1. Views Share Working Copy (NOT Like Git Branches!)
+### Views Share Working Copy (NOT Like Git Branches!)
 
 **Critical Understanding**: Atomic views are fundamentally different from Git branches.
 
@@ -63,8 +53,7 @@ ls
 # Output: test.txt
 
 # Create and switch to new view
-atomic view create new-feature
-atomic view switch new-feature
+atomic view create new-feature --switch
 
 # Create and record a new file
 vi new-file.txt
@@ -110,7 +99,7 @@ Atomic:
 
 **Think of views as different perspectives on patch history, NOT different workspaces.**
 
-#### 2. No Merge Conflicts
+### No Merge Conflicts
 
 **Git**: Merge conflicts require manual resolution
 ```bash
@@ -119,15 +108,15 @@ git merge feature
 # Automatic merge failed; fix conflicts and then commit the result.
 ```
 
-**Atomic**: Mathematically guaranteed conflict-free merging
+**Atomic**: Pull the changes; independent edits compose cleanly
 ```bash
 atomic pull . --from-view feature
-# Changes applied successfully (no conflicts ever!)
+# Changes applied successfully
 ```
 
-Why? Atomic uses **patch theory** - changes are semantic operations, not text diffs.
+Why? Atomic uses **patch theory** - changes are semantic operations, not text diffs. When two changes edit the same content, Atomic materializes honest conflict markers instead of guessing (see [Merging and Conflicts](../concepts/merging-and-conflicts.md)).
 
-#### 3. No Staging Area
+### No Staging Area
 
 **Git**: Requires staging before commit
 ```bash
@@ -146,14 +135,14 @@ To record specific files:
 atomic record -m "Update config" config.toml
 ```
 
-#### 4. Consolidating Tags
+### Consolidating Tags
 
 **Git**: Tags are just pointers to commits
 ```bash
 git tag v1.0.0
 ```
 
-**Atomic**: Tags consolidate dependencies (revolutionary!)
+**Atomic**: Tags consolidate dependencies, keeping history compact
 ```bash
 atomic tag create v1.0.0 -m "First release"
 # Reduces O(n²) to O(n) complexity
@@ -165,15 +154,170 @@ Atomic tags are **first-class nodes** in the dependency graph, enabling:
 - Efficient hotfix workflows
 - Mathematical semantic guarantees
 
-#### 5. Changes vs Commits
+### Changes vs Commits
 
 **Git commits** are snapshots of the entire repository at a point in time.
 
 **Atomic changes** are semantic patch operations:
 - Represent the actual operations performed
 - Can be applied in any order (commutative)
-- Enable conflict-free merging
+- Compose cleanly when independent; conflicts surface only on genuine overlap
 - Cryptographically identified by content
+
+## One-time import
+
+### Import Your Git Repository
+
+The fastest way to get started is to import your existing Git repository:
+
+```bash
+# Navigate to your Git repository
+cd /path/to/your/git/repo
+
+# Import into Atomic (creates .atomic directory)
+atomic git import
+
+# Start using Atomic!
+atomic log
+```
+
+That's all. Atomic will:
+- Import your entire Git history
+- Convert commits to Atomic changes
+- Preserve author information and timestamps
+- Create equivalent branches as views
+- Maintain your working copy
+
+### Full Repository Import
+
+```bash
+# Import entire Git history (run inside the Git checkout)
+cd your-git-repo
+atomic git import
+
+# Verify import
+atomic log -n 10
+atomic view list
+```
+
+`atomic git import` takes no path arguments: it always operates on the Git checkout you run it inside. To import a different repository, `cd` into it first. `--all` imports every local branch as its own view; `-b <branch>` imports a single non-default branch.
+
+A **fresh** repository imports through the rolling stream by default: first-parent history as graph-only changes, with a live dashboard when stdout is a terminal. It verifies the final Git tree rather than every historical state and does not synthesize historical CRDT identities. `--no-stream` selects the ordinary importer — the path with full semantic lifecycle support, and the one `--with-crdt`, `--incremental`, `--all`, and imports into an existing Atomic repository already take.
+
+### Import Options
+
+```bash
+# Preview what would be imported without creating an Atomic repository
+atomic git import --dry-run
+
+# Import a specific branch
+atomic git import --branch main
+
+# Import all local branches, each as its own view
+atomic git import --all
+
+# Only import commits not already in Atomic
+atomic git import --incremental
+
+# Project kind for the .atomicignore template
+atomic git import --kind rust
+
+# Skip vault initialization
+atomic git import --no-vault
+
+# Eagerly build the semantic layer for token-level blame on imported history
+atomic git import --with-crdt
+
+# Ordinary importer (full semantic lifecycle support) instead of the rolling stream
+atomic git import --no-stream
+```
+
+:::warning `--all` can produce materialization conflicts
+`--all` imports every local branch, including commits from **both sides of merge commits**. If those branches had overlapping edits, Atomic's graph will contain conflicting changes, and materialization writes conflict markers into the affected files. The default first-parent import avoids this entirely. Use `--all` only when you need per-branch views or individual attribution through squash merges. See [Git Shim](./git-shim) for recovery guidance.
+:::
+
+### What Gets Imported
+
+✅ **Imported:**
+- Every first-parent commit on the imported branch as an Atomic change (the rolling stream; `--no-stream` or `--with-crdt` selects the ordinary importer)
+- Commit messages and descriptions
+- Author information and timestamps
+- Branch structure (as views) — every local branch with `--all`
+- Tags (as Atomic tags)
+- File history
+
+❌ **Not Imported:**
+- Git-specific metadata
+- Merge commit structure (converted to changes)
+- Inner commits from merged PRs (first-parent history only; `--all` includes them)
+- Submodule history (the gitlink entry is preserved with its commit ID; the submodule needs its own import)
+- Git hooks (Atomic has its own integration — see the [Git Shim](./git-shim))
+- Other branches' tags (use `atomic tag create` for the equivalents you want)
+
+### Post-Import Steps
+
+After importing:
+
+```bash
+# 1. Verify the import
+atomic log -n 20
+atomic view list
+
+# 2. Create a consolidating tag for better performance
+atomic tag create v1.0.0 -m "Initial import from Git"
+
+# 3. Set up your remotes with the remote CLI (no config editing)
+atomic remote add origin https://acme.atomic.storage/workspaces/platform/projects/api/code
+
+# 4. Continue with Atomic
+atomic record -m "First Atomic change"
+atomic push
+```
+
+:::warning Never hand-edit `config.toml`
+Remotes are managed exclusively with `atomic remote add|remove|list|set-url|default`. Hand-editing a `[remote]` section in `.atomic/config.toml` is not a supported configuration path and will be ignored or rejected by the CLI.
+:::
+
+To keep the original Git checkout synchronized going forward, prefer the colocated shim (`atomic git shim cutover`); see [git shim](../commands/git-shim.md).
+
+### Setting Up Your Identity
+
+```bash
+atomic identity new default \
+  --email you@example.com \
+  -d "Your Name" \
+  --set-default
+
+atomic identity default default
+atomic identity list
+```
+
+If you created the identity without `--set-default`, switch to it with `atomic identity default default`. Verify with `atomic identity whoami`.
+
+### Remotes Configuration
+
+Remotes are managed with the `atomic remote` command (like `git remote`):
+
+```bash
+# Multiple remotes (like Git)
+atomic remote add origin https://acme.atomic.storage/workspaces/platform/projects/api/code
+atomic remote add upstream https://upstream.atomic.storage/workspaces/acme/fork/code
+atomic remote add backup https://backup.atomic.storage/workspaces/acme/archive/code
+atomic remote -v
+```
+
+## Daily coexistence
+
+If you keep Git alongside Atomic, remember the essentials:
+
+- **Git shadows Atomic**: Atomic is the source of truth for content and provenance; the Git repo is a downstream mirror you publish with `atomic git push`.
+- **`atomic git hooks install`** enables the advisory shim dispatcher: Git-side events are noticed and reconciled, never rewritten silently.
+- **`atomic git push`** publishes the current Atomic state to Git with provenance trailers (`Atomic-View`, `Atomic-State`, `Atomic-Changes`).
+- Since 0.20.0, exporting a view with **unresolved Atomic conflicts** to a remote is refused by default. `atomic git push --allow-conflicts` exists as an explicit escape hatch (never for automation); the other gates (conflict-object pack, signing, trust, lease, publication policy) still apply.
+
+:::info Going deeper
+The full import/push walkthrough (hooks, squash-merge detection, ReviewGate tags, troubleshooting) is in [Git Import and Push](./git-import-push.md). The colocated shim (reconcile, verify, switch, publish, bindings, cutover) is documented in [git shim](./git-shim).
+:::
 
 ## Command Translation Guide
 
@@ -214,7 +358,7 @@ git log --graph --all
 # Atomic
 atomic log
 atomic log -n 10
-atomic log --state  # Shows state hashes (Merkle trees)
+atomic log --full-hash
 ```
 
 ### Branching
@@ -228,10 +372,10 @@ git checkout -b new-feature
 # Atomic
 atomic view create feature-branch
 atomic view switch feature-branch
-# Or combine: atomic view create feature-branch && atomic view switch feature-branch
+# Or combine: atomic view create feature-branch --switch
 ```
 
-> **⚠️ Important**: Unlike `git checkout`, `atomic view switch` does NOT change untracked files in your working copy. Views share the same workspace - only the patch history is isolated. See [Views Share Working Copy](#1-views-share-working-copy-not-like-git-branches) above for details.
+> **⚠️ Important**: Unlike `git checkout`, `atomic view switch` does NOT change untracked files in your working copy. Views share the same workspace - only the patch history is isolated. See [Views Share Working Copy](#views-share-working-copy-not-like-git-branches) above for details.
 
 ### Merging
 
@@ -257,7 +401,7 @@ git show commit-hash
 # Atomic
 atomic diff
 # (No staging area needed)
-atomic change CHANGE-HASH --diff
+atomic change CHANGE-HASH --show-hunks
 ```
 
 ### Undoing Changes
@@ -269,9 +413,9 @@ git reset HEAD~1
 git revert commit-hash
 
 # Atomic
-atomic restore --force              # Discard working copy changes
-atomic unrecord                   # Remove recorded changes
-atomic unrecord CHANGE-HASH       # Remove specific change
+atomic restore                 # Discard working copy changes
+atomic unrecord                # Remove recorded changes
+atomic unrecord CHANGE-HASH    # Remove specific change
 ```
 
 ### Remote Operations
@@ -284,11 +428,13 @@ git pull origin main
 git push origin main
 
 # Atomic
-# Edit .atomic/config.toml to add remote
+atomic remote add origin https://acme.atomic.storage/workspaces/platform/projects/api/code
 atomic pull origin
 atomic pull origin --from-view main
 atomic push origin
 ```
+
+Remotes are managed with `atomic remote`; you do not need to edit configuration files by hand.
 
 ### Tagging
 
@@ -313,70 +459,6 @@ git stash pop
 atomic record -m "WIP: save work"
 # ... do other work ...
 atomic unrecord  # Remove WIP change, keeps working copy
-```
-
-## Importing Git History
-
-### Full Repository Import
-
-```bash
-# Import entire Git history
-cd your-git-repo
-atomic git import
-
-# Verify import
-atomic log -n 10
-atomic view list
-```
-
-### Import a Repo in a Different Location
-
-```bash
-# Import a Git repo from another directory into a new Atomic repo
-cd /path/to/git/repo
-atomic git import
-
-# Or pick the branch to import
-atomic git import --branch main --no-vault
-```
-
-### What Gets Imported
-
-✅ **Imported:**
-- Every first-parent commit on the imported branch as an Atomic change (the rolling stream; `--no-stream` or `--with-crdt` selects the ordinary importer)
-- Commit messages and descriptions
-- Author information and timestamps
-- Branch structure (as views) — every local branch with `--all`
-- Tags (as Atomic tags)
-- File history
-
-❌ **Not Imported:**
-- Git-specific metadata
-- Merge commit structure (converted to changes)
-- Inner commits from merged PRs (first-parent history only; `--all` includes them)
-- Submodule history (the gitlink entry is preserved with its commit ID; the submodule needs its own import)
-- Git hooks (Atomic has its own integration — see the [Git Shim](./git-shim))
-
-### Post-Import Steps
-
-After importing:
-
-```bash
-# 1. Verify the import
-atomic log -n 20
-atomic view list
-
-# 2. Create a consolidating tag for better performance
-atomic tag create v1.0.0 -m "Initial import from Git"
-
-# 3. Set up your remotes
-# Edit .atomic/config.toml:
-# [remote "origin"]
-# ssh = "ssh://git@github.com/user/repo.git"
-
-# 4. Continue with Atomic
-atomic record -m "First Atomic change"
-atomic push
 ```
 
 ## Workflow Comparison
@@ -407,8 +489,7 @@ git push origin v1.0.0
 
 ```bash
 # Feature view workflow
-atomic view create feature-auth
-atomic view switch feature-auth
+atomic view create feature-auth --draft --switch
 # ... make changes ...
 atomic record -m "Add authentication"
 atomic push --from-view feature-auth
@@ -420,12 +501,12 @@ atomic push
 
 # Tag release (with consolidation!)
 atomic tag create v1.0.0 -m "First release"
-atomic push --with-tags
+atomic push
 ```
 
 ## Advanced Features for Git Users
 
-### 1. AI Attribution (Not Available in Git)
+### AI Attribution (Not Available in Git)
 
 Track AI contributions cryptographically:
 
@@ -434,14 +515,17 @@ Track AI contributions cryptographically:
 atomic record -m "AI generated feature" \
   --ai-assisted \
   --ai-provider cursor \
-  --ai-model gpt-4 \
-  --ai-confidence 0.95
+  --ai-model gpt-4
 
-# View AI contributions
-atomic log --attribution --ai-only
+# View AI contributions in the change itself
+atomic change <HASH>
 ```
 
-### 2. Consolidating Tags (Revolutionary)
+:::note
+Manual AI attribution flags are a fallback. With an agent integration enabled (`atomic agent enable`), turn-level recording fills the `--ai-*` provenance fields automatically, so you don't need the flags at all. See [AI Agent Workflows](./ai-agent-workflows.md).
+:::
+
+### Consolidating Tags
 
 Unlike Git tags, Atomic tags reduce dependency complexity:
 
@@ -453,9 +537,9 @@ atomic tag create v1.0.0 -m "Major release"
 # Result: 96% reduction in dependencies!
 ```
 
-### 3. Conflict-Free Distributed Collaboration
+### Concurrent Distributed Collaboration
 
-Multiple developers can work simultaneously without conflicts:
+Multiple developers can work simultaneously; independent edits merge without conflicts, and genuine conflicts are surfaced honestly rather than silently auto-resolved:
 
 ```bash
 # Alice and Bob both work on main
@@ -466,12 +550,13 @@ Multiple developers can work simultaneously without conflicts:
 # Alice: atomic push
 # Bob:   atomic push
 
-# Bob pulls Alice's work - no conflicts!
+# Bob pulls Alice's work
 # Bob:   atomic pull
-# Result: Both changes applied correctly (mathematical guarantee)
+# Result: Independent changes apply cleanly; any true conflict is reported
+# and resolved explicitly (see Concepts: Merging and Conflicts)
 ```
 
-### 4. View Independence
+### View Independence
 
 Views are truly independent (unlike Git branches):
 
@@ -488,49 +573,6 @@ atomic view switch main
 atomic pull . --from-view feature-1
 atomic pull . --from-view feature-2
 # No merge conflicts!
-```
-
-## Configuration for Git Users
-
-### Setting Up Your Identity
-
-```bash
-# Similar to git config
-atomic identity new default \
-  --username yourname \
-  --display-name "Your Name" \
-  --email your.email@example.com
-
-# Or use existing Git config
-# Atomic reads from .atomic/config.toml:
-```
-
-Example `.atomic/config.toml`:
-
-```toml
-[author]
-username = "yourname"
-display_name = "Your Name"
-
-[remote "origin"]
-ssh = "ssh://git@github.com/user/repo.git"
-
-[identity]
-default = "default"
-```
-
-### Remotes Configuration
-
-```toml
-# Multiple remotes (like Git)
-[remote "origin"]
-ssh = "ssh://git@github.com/user/repo.git"
-
-[remote "upstream"]
-ssh = "ssh://git@github.com/original/repo.git"
-
-[remote "backup"]
-ssh = "ssh://backup@server.com/repos/project.git"
 ```
 
 ## Common Git Scenarios in Atomic
@@ -572,16 +614,17 @@ git checkout main
 git merge hotfix
 ```
 
-**Atomic (Revolutionary!):**
+**Atomic:**
 ```bash
-# Checkout tag to new view
-atomic tag checkout v1.0.0 --to-view hotfix
+# Create a view at the tagged state, then fix and record
+atomic view create hotfix --draft
+atomic insert tag v1.0.0 --to-view hotfix --from-view main
 atomic view switch hotfix
 # fix bug...
 atomic record -m "Hotfix"
 
-# Create incremental tag (only depends on v1.0.0!)
-atomic tag create v1.0.1 --since v1.0.0 -m "Hotfix"
+# Tag the hotfix state
+atomic tag create v1.0.1 -m "Hotfix"
 
 # Merge back to main
 atomic view switch main
@@ -601,8 +644,11 @@ git rebase main  # Can cause conflicts
 # Just pull changes - no rebasing needed!
 atomic view switch feature
 atomic pull . --from-view main
-# Conflict-free!
 ```
+
+:::note
+Independent changes compose without manual intervention. When two changes genuinely edit the same content, Atomic materializes honest conflict markers instead of auto-resolving. Resolve them, then record. See [Merging and Conflicts](../concepts/merging-and-conflicts.md).
+:::
 
 ## Performance at Scale
 
@@ -615,25 +661,25 @@ atomic pull . --from-view main
 ### Atomic Performance Benefits
 
 - O(n) history growth with tags
-- No merge conflicts (mathematical guarantee)
+- Honest conflict handling (see [Merging and Conflicts](../concepts/merging-and-conflicts.md))
 - Consolidating tags keep repos fast
 
 Example with 100 changes:
 - **Git**: ~5,050 potential merge points
-- **Atomic with tags**: ~200 dependencies (96% reduction!)
+- **Atomic with tags**: ~200 dependencies (a 96% reduction)
 
 ## Migration Checklist
 
 - [ ] Install Atomic: `curl -sSf https://atomic.storage/install.sh | sh`
 - [ ] Import Git repo: `atomic git import`
-- [ ] Verify import: `atomic log`
-- [ ] Configure identity: `atomic identity new`
-- [ ] Set up remotes in `.atomic/config.toml`
-- [ ] Create consolidating tag: `atomic tag create initial`
+- [ ] Verify import: `atomic log -n 20` and `atomic view list`
+- [ ] Configure identity: `atomic identity new default --email you@example.com -d "Your Name" --set-default`
+- [ ] Set up remotes: `atomic remote add`
+- [ ] Create consolidating tag: `atomic tag create v1.0.0 -m "Initial import from Git"`
 - [ ] Update team documentation
 - [ ] Train team on Atomic workflow
 - [ ] Set up CI/CD with Atomic
-- [ ] Celebrate conflict-free development! 🎉
+- [ ] Adopt the review-and-promote workflow for agent work
 
 ## Troubleshooting
 
@@ -647,12 +693,18 @@ git commit -am "Pending changes"
 atomic git import
 ```
 
+**Problem**: Not sure what an import would do
+```bash
+# Solution: Preview first (creates nothing)
+atomic git import --dry-run
+```
+
 ### Working Copy Differences
 
 **Problem**: Files look different after import
 ```bash
 # Solution: Restore working copy
-atomic restore --force
+atomic restore
 ```
 
 ### Remote Push Issues
@@ -660,8 +712,18 @@ atomic restore --force
 **Problem**: Can't push to Git remotes
 ```bash
 # Atomic uses its own protocol
-# Set up Atomic-compatible remotes
-# Or use Git as a bridge (advanced)
+# Set up Atomic-compatible remotes with: atomic remote add <name> <url>
+# Or keep Git as a bridge via Git Import and Push (atomic git push)
+```
+
+**Problem**: Push refused because of unresolved Atomic conflicts
+```bash
+# Resolve the conflicts, then record and push
+atomic conflicts --short
+# ... resolve ...
+atomic push
+# Only if you truly must export a conflicted view (never in automation):
+atomic git push --allow-conflicts
 ```
 
 ## Getting Help
@@ -678,24 +740,23 @@ atomic restore --force
 3. **Create your first change**: `atomic record -m "First Atomic change"`
 4. **Explore AI attribution**: `atomic record --ai-assisted`
 5. **Create consolidating tags**: `atomic tag create v1.0.0`
-6. **Experience conflict-free merging**: Try parallel development!
+6. **Try concurrent development**: work in parallel views and pull changes together
 
 ## Why Switch from Git?
 
 ### Key Advantages
 
-✅ **No Merge Conflicts** - Mathematical guarantees  
-✅ **AI Attribution** - Cryptographic tracking of AI contributions  
-✅ **Consolidating Tags** - O(n) instead of O(n²) complexity  
-✅ **Semantic Patches** - Operations, not text diffs  
-✅ **True Distribution** - Every repo is complete and independent  
-✅ **Production Ready** - Enterprise workflow integration  
+- **Honest conflict handling** - independent changes compose cleanly; genuine conflicts are surfaced, not hidden
+- **AI attribution** - cryptographic tracking of AI contributions
+- **Consolidating tags** - O(n) instead of O(n²) dependency growth
+- **Semantic patches** - operations, not text diffs
+- **True distribution** - every repo is complete and independent
 
-Welcome to the future of software development! 🚀
+You lose nothing you rely on in Git, and you gain provenance that Git cannot record.
 
 ---
 
-**Ready to make the switch?** Import your first Git repository and experience conflict-free development:
+**Ready to make the switch?** Import your first Git repository:
 
 ```bash
 cd your-git-repo

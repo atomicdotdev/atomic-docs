@@ -228,7 +228,7 @@ $ claude
 
 The intent agent:
 
-1. Creates an intent: `atomic vault intent create --title "Semaphore: non-panicking try_acquire_many_owned"`
+1. Creates an intent: `atomic intent new "Semaphore: non-panicking try_acquire_many_owned"`
 2. **Uses code intelligence to search** — not grep, not find:
 
 ```
