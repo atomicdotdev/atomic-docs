@@ -67,8 +67,9 @@ $ atomic query search "sync" -t Change -k 5
 
 ### Search source code
 
-`code` is the grep replacement — it searches file contents using the indexed
-content. Supports regex, path filtering (`-g`), and file type filtering (`-t`).
+`code` is the grep replacement — it searches the recorded source in your current
+view, rendered straight from the graph. Supports regex, path filtering (`-g`),
+and file type filtering (`-t`).
 
 ```
 $ atomic query code "Semaphore" -t rs -n 10
