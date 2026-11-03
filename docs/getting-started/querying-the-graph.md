@@ -300,7 +300,7 @@ atomic query search "auth" -t file
 ```
 
 :::tip
-`search` is structural: it finds nodes in the KG by their descriptions and names. For finding text *inside* files, use `code` instead ([Find code](#find-code)).
+`search` is structural: it finds nodes in the KG by their descriptions and names. For finding text *inside* files, use `code` instead ([Searching source code](#searching-source-code)).
 :::
 
 ## Explore relationships
