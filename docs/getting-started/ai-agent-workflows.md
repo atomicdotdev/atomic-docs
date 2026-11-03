@@ -5,7 +5,7 @@ title: AI Agent Workflows
 
 # AI Agent Workflows with Atomic
 
-Atomic has built-in support for AI coding agents. When enabled, every agent turn is automatically recorded as an Atomic change with full provenance — model, provider, tokens, cost, session tracking, and a causal decision graph explaining why the agent made each change.
+Atomic has built-in support for AI coding agents. When enabled, every agent turn is automatically recorded as an Atomic change with full provenance: model, provider, tokens, cost, session tracking, and a causal decision graph explaining why the agent made each change.
 
 No manual flags. No wrapper scripts. No environment variables.
 
@@ -23,26 +23,28 @@ atomic agent enable --agent opencode
 atomic agent enable
 ```
 
-`enable` fetches the integration package from Atomic storage and installs its hooks, plugins, extensions, skills, and instruction files — no clone, no `npm`/`npx`, no shell script. Supported agents:
+`enable` fetches the integration package from Atomic storage and installs its hooks, plugins, extensions, skills, and instruction files. No clone, no `npm`/`npx`, no shell script. Supported agents:
 
-| Integration | Agent |
-|-------------|-------|
-| `atomic-agy` | Antigravity CLI |
-| `atomic-claude` | Claude Code |
-| `atomic-cline` | Cline |
-| `atomic-codex` | Codex |
-| `atomic-copilot` | GitHub Copilot |
-| `atomic-cursor` | Cursor |
-| `atomic-devin` | Devin |
-| `atomic-grok` | Grok Build |
-| `atomic-kilo` | Kilo Code |
-| `atomic-kiro` | Kiro |
-| `atomic-opencode` | OpenCode |
-| `atomic-pi` | Pi |
+| Integration | Agent | Install Model | Notes |
+|-------------|-------|---------------|-------|
+| **atomic-agy** | Antigravity CLI | Plugin (hooks + skills) | Writes a managed `AGENTS.md` section |
+| **atomic-claude** | Claude Code | Hooks + skills | Auto-detected from `.claude/` |
+| **atomic-cline** | Cline | Hook scripts | Enable hooks in Cline's VS Code Hooks tab |
+| **atomic-codex** | Codex | Hooks + feature flag | Codex hook support is experimental |
+| **atomic-copilot** | GitHub Copilot | Repository hook manifest | Manifest must be on the default branch for the cloud agent |
+| **atomic-cursor** | Cursor | Hooks + rules | Follows the Atomic intent workflow in-project |
+| **atomic-devin** | Devin | Hook wiring | — |
+| **atomic-grok** | Grok Build | Global hooks + rules + skills | Installs to `~/.grok/`; requires CLI >= 0.12.0 |
+| **atomic-kilo** | Kilo Code | Rules + agent config | Reads `.kilo/` config |
+| **atomic-kiro** | Kiro | IDE steering + hooks | Configure hooks in the Kiro IDE panel |
+| **atomic-opencode** | OpenCode | Plugin + agent + skills | Select the Atomic agent in OpenCode |
+| **atomic-pi** | Pi | Pi extension | Activates in Atomic repositories |
 
 → [Install an agent integration](/agents/installing-agent-integrations)
 
-All integrations call back to `atomic agent hooks <agent> <verb>` on lifecycle events.
+All integrations call back to `atomic agent hooks <agent> <verb>` (an internal command you should never need to run yourself) on lifecycle events.
+
+All integrations share the same Rust-side orchestrator (`TurnOrchestrator`). The only difference is how each agent reports lifecycle events and how project instructions are discovered. Each adapter normalizes events into common `TurnEvent` values before Atomic records provenance.
 
 ### 2. Work Normally
 
@@ -73,6 +75,53 @@ atomic agent attest --hash XMJZ3IPF
 atomic agent explain <session-id> --all --save
 ```
 
+## Agent Isolation with Views
+
+When a session starts, Atomic automatically creates an **isolated agent view** forked from the current view:
+
+```
+  dev  (Shared — your working view)
+    │
+    └── agent-ses_3781fc7a... (Draft, parent: dev)
+          ├── Turn 1: Change ABC123
+          ├── Turn 2: Change DEF456
+          └── Turn 3: Change GHI789
+```
+
+The agent view uses the [single GRAPH + view filter model](/concepts/graph-model-explained):
+- All edges are stored in the canonical `GRAPH` (single source of truth)
+- The agent view's change filter determines which edges are visible
+- The agent sees the parent view's changes plus its own: full project context with isolated changes
+
+When the session ends, Atomic switches back to your original view. You then decide what to promote:
+
+```bash
+# Insert specific changes from the agent view into dev
+# (--to-view is the canonical flag; --to is an accepted alias)
+atomic insert change <change-hash> --to-view dev
+
+# Or insert the most recent change
+atomic insert change @~1 --to-view dev
+
+# Delete the agent view — removes VIEW_CHANGES entries, orphaned edges cleaned by GC
+atomic view delete agent-ses_3781fc7a...
+```
+
+:::tip Review Before Promoting
+Agent changes live on an isolated view. Review them before inserting into your shared view:
+
+```bash
+# See what the agent changed
+atomic log --view agent-ses_3781fc...
+
+# Diff against the parent
+atomic diff --view agent-ses_3781fc...
+
+# Insert only the changes you want
+atomic insert change <hash> --to-view dev
+```
+:::
+
 ## What Gets Recorded
 
 Every agent turn produces an Atomic change containing:
@@ -90,76 +139,59 @@ Because provenance and the session envelope are in the **hashed** section, they'
 
 ## How Agent Recording Works
 
-```
-You prompt Claude Code → agent reads files, makes edits, runs tests
-                                          │
-                         hooks fire on each tool call
-                                          │
-                                          ▼
-                              TurnOrchestrator
-                                ├── Appends nodes to ProvenanceAccumulator
-                                │     (Goal, Exploration, Commitment, Verification)
-                                │
-                                ▼
-                           Agent goes idle (turn end)
-                                │
-                         ┌──────┴──────┐
-                         │  record_turn │
-                         │  ├── status  │
-                         │  ├── add     │
-                         │  └── record  │
-                         └──────┬──────┘
-                                │
-                         ┌──────┴──────────────────┐
-                         │  Save ProvenanceGraph     │
-                         │  ├── PatchProposal node   │
-                         │  ├── Convert to postcard  │
-                         │  └── Content-address hash │
-                         └──────┬──────────────────┘
-                                │
-                                ▼
-                    .atomic/changes/AB/ABC123.change
-                    .atomic/changes/XM/XMJZ3I.provenance
-```
+```mermaid
+flowchart LR
+    subgraph Harness["Lane 1: Agent harness (e.g. Claude Code)"]
+        direction TB
+        E1["SessionStart"]
+        E2["UserPromptSubmit"]
+        E3["PostToolUse<br/>(each tool call)"]
+        E4["Stop<br/>(turn end)"]
+        E5["SessionEnd"]
+        E1 --> E2 --> E3 --> E4 --> E5
+    end
 
-Each hook invocation is a separate process — no daemon required. The provenance accumulator is persisted to `.atomic/sessions/{session_id}/graph.json` between invocations using atomic writes (temp file + rename).
+    subgraph Hooks["Lane 2: Hook process (standalone, one per event)"]
+        direction TB
+        H1["atomic agent hooks &lt;agent&gt; &lt;verb&gt;<br/>internal CLI entry point"]
+        H2["Opens the repo, does its work, exits<br/>no daemon"]
+        H3["Persists state to<br/>.atomic/sessions/&lt;session_id&gt;/graph.json<br/>(temp file + rename)"]
+        H1 --> H2 --> H3
+    end
 
-## Agent Isolation with Views
+    subgraph Repo["Lane 3: Repository writes"]
+        direction TB
+        R1["Turn end:<br/>status → add → record"]
+        R2["PatchProposal node appended<br/>to ProvenanceAccumulator"]
+        R3["ProvenanceGraph content-addressed<br/>→ .atomic/changes/…"]
+        R4["Session end:<br/>attestation aggregation"]
+        R5["Switch back to the user's<br/>original view"]
+        R1 --> R2 --> R3
+        R4 --> R5
+    end
 
-When a session starts, Atomic automatically creates an **isolated agent view** forked from the current view:
-
-```
-  dev  (Shared — your working view)
-    │
-    └── agent-ses_3781fc7a... (Draft, parent: dev)
-          ├── Turn 1: Change ABC123
-          ├── Turn 2: Change DEF456
-          └── Turn 3: Change GHI789
+    E1 --> H1
+    E2 --> H1
+    E3 --> H1
+    E4 --> H1
+    E5 --> H1
+    H1 -- "turn end" --> R1
+    H1 -- "session end" --> R4
 ```
 
-The agent view uses the [single GRAPH + view filter model](/concepts/graph-model-explained):
-- All edges are stored in the canonical `GRAPH` (single source of truth)
-- The agent view's change filter determines which edges are visible
-- The agent sees the parent view's changes plus its own — full project context with isolated changes
+The **TurnOrchestrator** is Atomic's Rust-side state machine that normalizes each harness's lifecycle events into common `TurnEvent` values and drives recording. The **ProvenanceAccumulator** is the in-progress provenance graph for the current session: the buffer of Goal, Exploration, Commitment, and Verification nodes that each hook invocation appends to.
 
-When the session ends, Atomic switches back to your original view. You then decide what to promote:
+Exact event names differ per harness: Grok fires all six lifecycle events, while agy fires `PreInvocation`, `Stop`, and `PostToolUse`. Each adapter maps its harness's events onto the same internal verbs.
 
-```bash
-# Insert specific changes from the agent view into dev
-atomic insert <change-hash> --to dev
+Each hook invocation is a separate process; no daemon required. The provenance accumulator is persisted to `.atomic/sessions/{session_id}/graph.json` between invocations using atomic writes (temp file + rename).
 
-# Or insert the most recent change
-atomic insert @~1 --to dev
-
-# Delete the agent view — removes VIEW_CHANGES entries, orphaned edges cleaned by GC
-# --force: anything you did not insert would be orphaned, and agent sessions
-# have no terminal to answer the orphan-confirmation prompt
-atomic view delete agent-ses_3781fc7a... --force
-```
+:::tip Let Atomic Handle Recording
+Don't run `atomic record` manually during agent sessions; the hooks do this automatically on each turn end. Manual recording can interfere with the session state machine.
+:::
 
 ## Provenance Graphs
 
-Every agent session builds a **causal decision DAG** — not just what changed, but why:
+Every agent session builds a **causal decision DAG**: it records what changed and why.
 
 ```
 Goal: "Fix the authentication bug"
@@ -174,20 +206,20 @@ Tool calls are classified automatically by a rule-based classifier:
 
 | Tool | Classification |
 |------|---------------|
-| `read`, `grep`, `glob`, `list_directory` | **Exploration** — read-only understanding |
-| `edit`, `write`, `edit_file`, `create_file` | **Commitment** — file-modifying actions |
-| `bash` with `test`, `check`, `lint` | **Verification** — validation |
-| `bash` with `install`, `build` | **Execution** — non-test commands |
+| `read`, `grep`, `glob`, `list_directory` | **Exploration**: read-only understanding |
+| `edit`, `write`, `edit_file`, `create_file` | **Commitment**: file-modifying actions |
+| `bash` with `test`, `check`, `lint` | **Verification**: validation |
+| `bash` with `install`, `build` | **Execution**: non-test commands |
 
 Causal edges are inferred automatically: explorations link to the current goal, commitments link to preceding explorations, verifications link to the last commitment.
 
-Provenance graphs are content-addressed and pushed to remotes alongside the changes they explain. Your team can review not just the code, but the agent's reasoning.
+Provenance graphs are content-addressed and pushed to remotes alongside the changes they explain. Your team can review the code and the reasoning behind it.
 
 → [Learn more about Provenance Graphs](/agents/provenance)
 
 ## Attestations
 
-When a session ends, Atomic creates an **attestation** — a graph-level audit node covering the session:
+When a session ends, Atomic creates an **attestation**, a graph-level audit node covering the session:
 
 ```bash
 $ atomic agent attest
@@ -211,6 +243,29 @@ For resumed sessions, the new attestation chains to the previous one via `previo
 
 → [Learn more about Attestations](/agents/attestations)
 
+:::tip Use Explain for Complex Sessions
+For long or complex sessions, generate reasoning summaries:
+
+```bash
+# Generate reasoning for all turns and save to the changes
+atomic agent explain <session-id> --all --save
+```
+
+This stores structured reasoning (intent, outcome, learnings, friction) in the change's unhashed section and appends learnings to the agent's context file (`CLAUDE.md`, `GEMINI.md`, or `opencode.md`).
+:::
+
+:::tip Check Attestations Before Code Review
+Attestations give reviewers context about the AI session that produced the code:
+
+```bash
+$ atomic agent attest --hash XMJZ3IPF --verbose
+
+# Shows: model, tokens, cost, duration, files changed, coverage per view
+```
+
+This is especially useful when reviewing pull requests: you can see exactly how much AI assistance was involved and what model was used.
+:::
+
 ## Agent Identity
 
 Agent changes are attributed using Ed25519 signatures with a `+tag` email format:
@@ -220,7 +275,7 @@ User identity:    Lee Faus <lee@atomic.dev>
 Agent author:     claude+60f5 <lee@atomic.dev>
 ```
 
-The `+tag` is a short hash of the session ID — every agent turn traces back to a specific session and a specific human who initiated it.
+The `+tag` is a short hash of the session ID: every agent turn traces back to a specific session and a specific human who initiated it.
 
 | Agent | Example Author |
 |-------|---------------|
@@ -228,27 +283,6 @@ The `+tag` is a short hash of the session ID — every agent turn traces back to
 | Gemini CLI | `gemini+abcd <lee@atomic.dev>` |
 | Grok Build | `grok+019f <lee@atomic.dev>` |
 | OpenCode | `opencode+9876 <lee@atomic.dev>` |
-
-## Supported Agent Integrations
-
-| Integration | Agent | Install Model | Notes |
-|-------------|-------|---------------|-------|
-| **atomic-agy** | Antigravity CLI | Plugin (hooks + skills) | Writes a managed `AGENTS.md` section |
-| **atomic-claude** | Claude Code | Hooks + skills | Auto-detected from `.claude/` |
-| **atomic-cline** | Cline | Hook scripts | Enable hooks in Cline's VS Code Hooks tab |
-| **atomic-codex** | Codex | Hooks + feature flag | Codex hook support is experimental |
-| **atomic-copilot** | GitHub Copilot | Repository hook manifest | Manifest must be on the default branch for the cloud agent |
-| **atomic-cursor** | Cursor | Hooks + rules | Follows the Atomic intent workflow in-project |
-| **atomic-devin** | Devin | Hook wiring | — |
-| **atomic-grok** | Grok Build | Global hooks + rules + skills | Installs to `~/.grok/`; requires CLI >= 0.12.0 |
-| **atomic-kilo** | Kilo Code | Rules + agent config | Reads `.kilo/` config |
-| **atomic-kiro** | Kiro | IDE steering + hooks | Configure hooks in the Kiro IDE panel |
-| **atomic-opencode** | OpenCode | Plugin + agent + skills | Select the Atomic agent in OpenCode |
-| **atomic-pi** | Pi | Pi extension | Activates in Atomic repositories |
-
-All integrations share the same Rust-side orchestrator (`TurnOrchestrator`). The only difference is how each agent reports lifecycle events and how project instructions are discovered. Each adapter normalizes events into common `TurnEvent` values before Atomic records provenance.
-
-→ [Installing Agent Integrations](/agents/installing-agent-integrations)
 
 ## Pushing Agent Data
 
@@ -277,49 +311,12 @@ Attestations are only uploaded when all their covered changes have been pushed. 
 | **Conflict granularity** | Whole lines | Token-level (two agents editing different tokens on same line merge cleanly) |
 | **Identity** | Name + email string | Ed25519 cryptographic identity with delegation |
 
-## Best Practices
+## Best Practices Summary
 
-### Let Atomic Handle Recording
-
-Don't run `atomic record` manually during agent sessions — the hooks do this automatically on each turn end. Manual recording can interfere with the session state machine.
-
-### Review Before Promoting
-
-Agent changes live on an isolated view. Review them before inserting into your shared view:
-
-```bash
-# See what the agent changed
-atomic log --view agent-ses_3781fc...
-
-# Diff against the parent
-atomic diff --view agent-ses_3781fc...
-
-# Insert only the changes you want
-atomic insert <hash> --to dev
-```
-
-### Use Explain for Complex Sessions
-
-For long or complex sessions, generate reasoning summaries:
-
-```bash
-# Generate reasoning for all turns and save to the changes
-atomic agent explain <session-id> --all --save
-```
-
-This stores structured reasoning (intent, outcome, learnings, friction) in the change's unhashed section and appends learnings to the agent's context file (`CLAUDE.md`, `GEMINI.md`, or `opencode.md`).
-
-### Check Attestations Before Code Review
-
-Attestations give reviewers context about the AI session that produced the code:
-
-```bash
-$ atomic agent attest --hash XMJZ3IPF --verbose
-
-# Shows: model, tokens, cost, duration, files changed, coverage per view
-```
-
-This is especially useful when reviewing pull requests — you can see exactly how much AI assistance was involved and what model was used.
+- **Let Atomic handle recording**: the hooks record automatically on each turn end; don't run `atomic record` manually during agent sessions.
+- **Review before promoting**: agent changes live on an isolated view; review with `atomic log --view` / `atomic diff --view` and insert only the changes you want.
+- **Use Explain for complex sessions**: generate reasoning summaries with `atomic agent explain <session-id> --all --save`.
+- **Check attestations before code review**: `atomic agent attest --hash <hash> --verbose` shows model, tokens, cost, duration, files changed, and coverage per view.
 
 ## Troubleshooting
 
@@ -359,7 +356,10 @@ affected hook.
 
 ## Next Steps
 
-- [Provenance Graphs](/agents/provenance) — Deep dive into causal decision DAGs
-- [Attestations](/agents/attestations) — Session-level audit and cost tracking
-- [`atomic agent` command reference](/commands/agent) — Full CLI documentation
-- [Comparison with Git](/getting-started/comparison-with-git) — Why patch theory matters for agents
+- [Agent Integration Overview](/agents/overview): How Atomic records what your agent did
+- [Installing Agent Integrations](/agents/installing-agent-integrations): Per-agent setup notes and the integration matrix
+- [Provenance Graphs](/agents/provenance): Deep dive into causal decision DAGs
+- [Attestations](/agents/attestations): Session-level audit and cost tracking
+- [`atomic agent` command reference](/commands/agent): Full CLI documentation
+- [Atomic Vault](/getting-started/atomic-vault): The intent and review workflow agents follow
+- [Comparison with Git](/getting-started/comparison-with-git): Why patch theory matters for agents

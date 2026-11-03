@@ -1,6 +1,6 @@
 # Command Documentation Status
 
-This document tracks the CLI command reference coverage in `docs/commands/` against the `atomic` binary (verified against CLI **0.17.1** `--help` output).
+This document tracks the CLI command reference coverage in `docs/commands/` against the `atomic` binary (verified against CLI **0.20.0** `--help` output).
 
 ## Documentation Progress
 
@@ -23,11 +23,14 @@ Every top-level command of the CLI has a reference page in `docs/commands/`:
 | revise.md | `revise` | Revise a change in-place |
 | unrecord.md | `unrecord` | Remove a change from the current view |
 | diff.md | `diff` | Working-copy diffs (incl. `-c/--change`, `--word-diff`, `--name-status`) |
-| log.md | `log` | History (incl. `-f/--format`, `--full-hash`) |
+| blame.md | `blame` | Line-level ownership (0.20.0) |
+| log.md | `log` | History (incl. `-f/--format`, `--full-hash`, `--short`) |
 | change.md | `change` | Change details (incl. `--format`, `--show-hunks`, `--full-hash`) |
+| op.md | `op` | Immutable operation journal: log, show, undo, restore (0.20.0) |
+| compact.md | `compact` | Reclaim unused database space (0.20.0) |
 | insert.md | `insert` | Insert changes into a view |
 | split.md | `split` | Create a view from an existing one |
-| view.md | `view` | Views: create, split, switch, list, delete, **promote** |
+| view.md | `view` | Views: create, split, switch, list, delete, promote, **show** (0.20.0) |
 | stash.md | `stash` | Rewritten to 0.17.x interface (`push` + `-u`/`-k`, 7 subcommands) |
 | tag.md | `tag` | create, delete, list, show |
 | clone.md | `clone` | Remote clone (incl. `--into-existing`, `--all-views`) |
@@ -40,14 +43,15 @@ Every top-level command of the CLI has a reference page in `docs/commands/`:
 | project.md | `project` / `proj` | Hosted projects |
 | org.md | `org` | Organizations, incl. **upgrade** and **member** (list/add/update/remove) |
 | team.md | `team` | Teams, incl. **member** (list/add/update/remove) |
-| agent.md | `agent` | enable, disable, status, explain, attest |
+| agent.md | `agent` | enable, disable, status, explain, attest, **repair** (0.20.0), **identity**, internal `hooks` |
 | agent-lifecycle.md | `agent lifecycle` | Managed runs: begin, renew, end, status |
 | session.md | `session` | Session ledger: show, fork, rebuild |
-| sandbox.md | `sandbox` | Agent sandboxes: create, stage, seal |
+| sandbox.md | `sandbox` | Agent sandboxes: create, stage, seal, **open/renew/close/materialize** (0.20.0) |
 | doctor.md | `doctor` | Diagnose and repair indexes |
-| git.md | `git` | Git interop: import, push, hooks (install/uninstall/status) |
+| git.md | `git` | Git interop: import, push (incl. 0.20.0 `--allow-conflicts`), hooks (advisory shim dispatcher) |
+| git-shim.md | `git shim` | Colocated shim: reconcile, verify, switch, status, publish, enable, mirror-ignores, disable, binding, review, verify-receive, watch, cutover + colocated `stage`/`unstage` (0.20.0) |
 | query.md | `query` | Knowledge graph: search, neighbors, callers, entities, code, graph, index, embed, enrich, reindex, plan, ask |
-| vault.md | `vault` | Knowledge store: init, show, list, materialize, sync, goal, context, summaries |
+| vault.md | `vault` | Knowledge store: init, show, list, materialize, sync, goal, context, summaries; `vault intent`/`vault memory` are REMOVED redirect shims |
 | intent.md | `intent` | Directive-based intents |
 | memory.md | `memory` | Durable memories |
 | provenance.md | `provenance` | W3C PROV trace/show |
@@ -57,7 +61,11 @@ Every top-level command of the CLI has a reference page in `docs/commands/`:
 ### Verification
 
 - Options, subcommands, and arguments were transcribed from `atomic <command> --help`
-  (CLI 0.17.1) and cross-checked against the live binary.
+  (CLI 0.20.0) and cross-checked against the live binary.
+- 0.20.0 additions verified from the release binary: `stage`, `unstage`, `op`,
+  `blame`, `compact`, `view show`, `git shim` (13 subcommands), `git push
+  --allow-conflicts`, `sandbox open/renew/close/materialize`, `agent repair`,
+  `agent identity`, `insert --deps` default semantics.
 - Identifier requirements (change hashes, KG node/entity IDs, session IDs, run IDs,
   stash refs) are documented on the pages that need them, with pointers to the
   discovery command (`log`, `query search`, `query entities`, `session show`,
