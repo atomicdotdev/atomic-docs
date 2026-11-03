@@ -114,6 +114,11 @@ const sidebars: SidebarsConfig = {
       label: "Atomic Performance: Benchmarks at Agent Scale",
     },
     {
+      type: "doc",
+      id: "concepts/software-supply-chain",
+      label: "Software Supply Chain",
+    },
+    {
       type: "html",
       value: '<div class="sidebar-section-label">PROPOSALS</div>',
       defaultStyle: false,
