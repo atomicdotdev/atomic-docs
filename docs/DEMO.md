@@ -10,8 +10,7 @@
 ### Build the knowledge graph
 
 After importing a project from Git, enrich the knowledge graph. This extracts
-files, modules, changes, tree-sitter entities, include relationships, and builds
-a full-text content index.
+files, modules, changes, tree-sitter entities, and include relationships.
 
 ```
 $ atomic query enrich
@@ -22,7 +21,6 @@ Enriching modules... ✓ 64 module(s)
 Enriching changes... ✓ 4511 change(s)
 Extracting entities (tree-sitter)... ✓ 12,847 entit(ies)
 Resolving includes... ✓ 1,203 include(s)
-Building content index... ✓ 483 file(s) indexed (4.7 MB)
 
 Enriched: 2 views, 483 files, 64 modules, 4511 changes, 12847 entities, 1203 includes
 ```
@@ -71,8 +69,9 @@ $ atomic vault query search "sync" -t change -k 5
 
 ### Search source code
 
-`code` is the grep replacement — it searches file contents using the indexed
-content. Supports regex, path filtering (`-g`), and file type filtering (`-t`).
+`code` is the grep replacement — it searches the recorded source in your current
+view, rendered straight from the graph. Supports regex, path filtering (`-g`),
+and file type filtering (`-t`).
 
 ```
 $ atomic query code "Semaphore" -t rs -n 10

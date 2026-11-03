@@ -179,7 +179,7 @@ This lets teams keep pull requests, CI, releases, and existing permissions while
 
 ### Does Atomic replace pull requests?
 
-Atomic's native review operation is [triage](/getting-started/atomic-vault#triage-review-before-promotion): review the candidate changes, dependency closure, intent coverage, evidence, and exact view state before insertion. Teams can also publish the reviewed state to a conventional Git pull request.
+Atomic's native review operation is [triage](/getting-started/atomic-vault#step-6-review-before-promoting): review the candidate changes, dependency closure, intent coverage, evidence, and exact view state before insertion. Teams can also publish the reviewed state to a conventional Git pull request.
 
 ### Does Atomic require a specific coding agent?
 

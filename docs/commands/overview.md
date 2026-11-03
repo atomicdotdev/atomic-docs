@@ -201,7 +201,7 @@ atomic agent explain <session-id> --all --save
 - **[`agent`](agent.md)** — Enable, disable, and manage AI agent hooks for all supported agents (see the [integration matrix](/agents/installing-agent-integrations))
 - **[`agent lifecycle`](agent-lifecycle.md)** — Declare and track managed runs for orchestrated agents
 - **[`agent identity`](agent.md#agent-identity)** — Select or inspect the agent identity that recording hooks sign as
-- **[`agent repair`](agent.md#agent-repair)** — Resume a managed session under leases while retaining durable evidence
+- **[`agent repair`](agent.md#repair)** — Resume a managed session under leases while retaining durable evidence
 - **[`session`](session.md)** — Inspect, fork, and rebuild the agent session ledger
 - **[`sandbox`](sandbox.md)** — Provision concurrent agent sandboxes and OCI images
 
