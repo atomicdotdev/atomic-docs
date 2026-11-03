@@ -20,7 +20,7 @@ atomic intent validate <ID_OR_PATH> [--json]
 atomic intent show <ID> [--json]
 atomic intent attest <ID> [--identity <IDENTITY>] [--json]
 atomic intent verify <ID> [--identity <IDENTITY>]
-atomic intent list [--identity <IDENTITY>] [--json]
+atomic intent list [--identity <IDENTITY>] [--sort <KEY>] [-r] [--json]
 atomic intent update <ID> [OPTIONS]
 atomic intent delete <ID> [--force] [--json]
 atomic intent link <ID> --goal <GOAL>
@@ -133,6 +133,11 @@ node, re-gates the result, and writes the attested node (with embedded
 mutated. `--identity` selects the signing identity (defaults to the current
 default identity).
 
+`--json` emits the attested canonical node as JSON-LD — the same document
+[`intent show --json`](#intent-show--render-a-read-time-projection) prints, now
+with the `proof` embedded — and nothing else, so stdout stays one parseable
+document.
+
 ```bash
 atomic intent attest PIMO-1
 atomic intent attest PIMO-1 --identity alice-work
@@ -158,16 +163,34 @@ atomic intent verify PIMO-1 --identity alice-work
 ### `intent list` — list intents, attestation-aware
 
 ```bash
-atomic intent list [--identity <IDENTITY>] [--json]
+atomic intent list [--identity <IDENTITY>] [--sort <KEY>] [-r] [--json]
 ```
 
 Alongside the human key and status, adds an `attested` column (fresh / stale /
 `–`) and a `verifies` column (`✓` / `✗` / `–`). `verifies` is `✓` only when a
 fresh attestation signed by the resolving identity cryptographically checks out.
 
+`--sort <KEY>` picks the column to order by. Every key sorts ascending and ties
+keep id order; `-r, --reverse` flips the chosen order (the id tiebreak stays
+ascending). The default is `id`, which is the order the listing has always had.
+
+| Key | Orders by |
+|-----|-----------|
+| `id` | Human key, ascending (default). |
+| `title` | Title, A→Z. |
+| `status` | Status, A→Z. |
+| `kind` | Kind, A→Z. |
+| `attested` | Fresh, then stale, then unattested. |
+| `verifies` | `✓`, then `✗`, then `–`. |
+
+Sorting runs in the vault service, so a key the listing's kind doesn't have is
+rejected (`--sort about` is only valid for [`memory list`](./memory.md)).
+
 ```bash
 atomic intent list
 atomic intent list --identity alice-work
+atomic intent list --sort status
+atomic intent list --sort attested --reverse
 atomic intent list --json
 ```
 

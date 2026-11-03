@@ -341,26 +341,21 @@ In Atomic, **Unrecord** preserves everything:
 
 ---
 
-## Credit Command: Who Wrote What?
+## Blame: Who Wrote What?
 
-The graph model enables powerful attribution queries:
+The graph model enables line-level attribution queries:
 
 ```bash
-$ atomic credit src/auth.rs
+$ atomic blame src/auth.rs
 
-Lines 1-50:   Alice (human)           - original implementation
-Lines 51-80:  Claude Opus 4 (AI)      - generated for Bob
-Lines 81-95:  Carol (human)           - bug fix
-Lines 96-120: Claude Opus 4 (AI)      - generated for Bob
-              └── modified by Dave (human) - security review
-
-AI Summary:
-- 45% of current code has AI provenance
-- Original AI cost: $0.12 (2,847 tokens)
-- AI code modified 2x by humans
+src/auth.rs
+1   XMJZ3IPF  Alice   initial implementation
+51  R3KQP7YN  Claude  generate refresh-token path (AI, authored by Bob)
+81  P2XWVU8K  Carol   fix expired-token check
+96  R3KQP7YN  Claude  generate rate limiter (AI, authored by Bob)
 ```
 
-This is only possible because we **never delete the original vertices**.
+Line-level ownership is only possible because we **never delete the original vertices**. Deletions only remove ordering edges, so every line's originating change (and the provenance recorded inside it) remains reachable. For richer attribution (model, session, cost), combine `atomic blame` with `atomic provenance trace <HASH>`.
 
 ---
 

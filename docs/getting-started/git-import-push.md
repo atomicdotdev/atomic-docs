@@ -19,6 +19,8 @@ Converts Git commit history into Atomic changes, preserving:
 - File additions, modifications, deletions, and renames
 - The Git commit SHA (stored in change metadata)
 
+A first import into a **fresh** repository runs the [rolling stream](#the-rolling-stream-default-for-fresh-imports); every other import uses the ordinary importer.
+
 ```bash
 cd /path/to/your/git/repo
 
@@ -47,7 +49,24 @@ After import, your repo has both `.git/` and `.atomic/` — it's dual-tracked. T
 | `--incremental` | Only import commits not already in Atomic (SHA-indexed) |
 | `-k, --kind <kind>` | Project kind for the `.atomicignore` template (auto-detected if omitted) |
 | `--no-vault` | Skip `.vault/` initialization (skills, prompts, memory) |
-| `--with-crdt` | Eagerly build the semantic (line/token) layer for imported history instead of deriving it on demand |
+| `--with-crdt` | Eagerly build the semantic (line/token) layer for imported history instead of deriving it on demand; selects the ordinary importer |
+| `--stream` | Force the rolling first-parent graph stream. Conflicts with `--no-stream`, `--with-crdt`, `--incremental`, and `--all` |
+| `--no-stream` | Use the ordinary importer instead of the default rolling stream |
+| `--stream-window-mib <mib>` | MiB budget for queued Git blob reservations and prepared stream batches (default 32, range 1–256). Not a total process-memory limit; requires a streaming import |
+| `--agent-mode` | A special mode for agents doing the importing |
+
+### The rolling stream (default for fresh imports)
+
+The first import into a repository that has no `.atomic/` yet runs the **rolling stream**. It walks first-parent history and writes graph-only changes — no historical CRDT FileOps — while a live dashboard shows progress, staging throughput and ETA, CPU and memory history, and the rolling window. The ETA excludes final verification.
+
+Two consequences to know before you rely on it:
+
+- **No historical CRDT identities.** Git stores no token-level data, so the stream does not synthesize the semantic layer for imported history, and it verifies the final Git tree rather than every historical state. Unsupported history is refused rather than silently falling back. Reach for the ordinary importer when you need its semantic lifecycle support.
+- **First-parent only.** Inner commits from merged PRs are not in the streamed history; `--all` brings every local branch in as a view.
+
+Read-ahead is capped at 500 commits, and publication batches at 100 commits or the byte budget, whichever comes first. `--stream-window-mib` raises the 32 MiB default (1–256 MiB) on queued Git blob reservations and prepared batches — it is not a limit on total process memory.
+
+Explicit `--stream` keeps that strict fresh-import route and refuses anything else; `--no-stream` forces the ordinary importer. A repository carrying Atomic binding refs selects the ordinary importer up front, and the stream is Unix-only — on other platforms a fresh import refuses and you want `--no-stream`.
 
 ### Verify the import
 
@@ -62,6 +81,16 @@ atomic view list
 git log --oneline -5
 ```
 
+### What import refuses
+
+`atomic git import` never writes over work Git has not recorded. Importing a branch that is not checked out (a detached HEAD, or `-b <other>`) materializes that branch into the worktree, so it refuses when there are tracked edits or untracked files the branch tree would overwrite; commit, stash or move them first, or check the branch out.
+
+### File names
+
+Git tree names are opaque bytes, and both importers carry them through a reversible `%XX` encoding that decodes back to the exact original bytes. Spaces, Unicode (NFC and NFD spellings), case variants, raw non-UTF-8 bytes, control characters, backslashes and literal percent-escape lookalikes all import, and `atomic status` is clean straight afterward. Case and normalization collisions are surfaced explicitly rather than silently folded.
+
+Names are tracked under their on-disk spelling; a name containing a literal `%` keeps its escaped identity, so `a%41.txt`, `aA.txt` and `a%2541.txt` stay three distinct files. Regular files, executables, symlinks and gitlinks (submodule entries) are supported — a submodule's own history is not imported.
+
 ### Incremental imports
 
 After new commits land in Git, `--incremental` brings Atomic up to date:
@@ -70,7 +99,7 @@ After new commits land in Git, `--incremental` brings Atomic up to date:
 atomic git import --incremental
 ```
 
-It compares Git SHAs against the `GIT_SHA_INDEX` (an index inside `.atomic/atomic.redb`) and skips commits that were already imported, so it's O(1) per commit and idempotent — running it twice is harmless. The index is backfilled automatically on first use for repositories imported before it existed. You never interact with it directly.
+`--incremental` always uses the ordinary importer — the rolling stream is a fresh-import route only. It compares Git SHAs against the `GIT_SHA_INDEX` (an index inside `.atomic/atomic.redb`) and skips commits that were already imported, so it's O(1) per commit and idempotent — running it twice is harmless. The index is backfilled automatically on first use for repositories imported before it existed. You never interact with it directly.
 
 ## `atomic git push`
 
@@ -211,7 +240,7 @@ The hooks subcommands manage the Atomic-owned advisory Git hook dispatchers — 
 ```bash
 atomic git hooks install     # install/refresh the advisory dispatchers
 atomic git hooks status      # show which hooks are installed and owned
-atomic git hooks uninstall   # remove Atomic's post-checkout hook
+atomic git hooks uninstall   # remove every Atomic-owned dispatcher (foreign hooks are kept)
 ```
 
 What the dispatchers do has changed from earlier releases: they no longer run `atomic git import --incremental` automatically. They now journal advisory evidence for the Git shim (checkout, commit-time captures, rewrites, ref movements) and perform local advisory verification — they never block a Git operation and never change your history. See [the shim documentation](./git-shim#hooks-are-advisory) for the full list and semantics.
@@ -219,7 +248,7 @@ What the dispatchers do has changed from earlier releases: they no longer run `a
 Atomic only writes a hook file when it is missing or already an exact Atomic-owned dispatcher; foreign hooks and custom `core.hooksPath` setups are reported and left untouched. Legacy import-sync hooks from earlier releases are migrated automatically when the integration is installed.
 
 :::note
-`atomic git hooks uninstall` currently removes only the post-checkout hook. Remove the other dispatchers separately if you're fully decommissioning the integration.
+`atomic git hooks uninstall` removes every Atomic-owned dispatcher (post-checkout, pre-commit, pre-push, post-rewrite, reference-transaction) and any Atomic-only legacy import hook, reporting each one removed or kept. `atomic git shim disable` runs the same removal after recording the opt-out, so disabling the shim is the full inverse of enabling it.
 :::
 
 ## Troubleshooting
