@@ -28,7 +28,7 @@ curl -sSf https://atomic.storage/install.sh | sh
 
 For other installation methods (including building from source), see [Installing Atomic](./installation).
 
-> **Tip:** An AI agent can run this setup for you. Download the [Atomic Setup skill for agents](pathname:///atomic-setup-skill.md) and give it to your coding agent. The skill covers installation, identity setup, registration, and agent integration, and asks for confirmation before each step that changes your system. Works with OpenCode, Claude Code, Codex, and Copilot.
+> **Tip:** An AI agent can run this setup for you. Download the [Atomic Setup skill for agents](/atomic-setup-skill.md) and give it to your coding agent. The skill covers installation, identity setup, registration, and agent integration, and asks for confirmation before each step that changes your system. Works with OpenCode, Claude Code, Codex, and Copilot.
 
 ## 2\. Set Up Your Identity
 
@@ -142,7 +142,7 @@ atomic change                   # shows the Attestation block (model, tokens)
 atomic agent status --verbose   # a session row for this run appears
 ```
 
-**If nothing recorded:** repair with `atomic agent enable --agent <name> -f` (force reinstall), or remove hooks first with `atomic agent disable --agent <name>` and re-enable. The full per-agent procedure with troubleshooting tables is in the [Atomic Setup skill](pathname:///atomic-setup-skill.md) (Phase 7).
+**If nothing recorded:** repair with `atomic agent enable --agent <name> -f` (force reinstall), or remove hooks first with `atomic agent disable --agent <name>` and re-enable. The full per-agent procedure with troubleshooting tables is in the [Atomic Setup skill](/atomic-setup-skill.md) (Phase 7).
 
 You can activate other agents the same way; auto-detection works from directories like `.claude/`, `.opencode/`, `.codex/`, or `.github/`. Supported agents include Claude Code, Gemini CLI, Codex, Cursor, Copilot, Cline, and more; see the [Integration Matrix](https://docs.atomic.dev/agents/installing-agent-integrations#integration-matrix). Any other integration verifies the same way: one marker-prompt session in a fresh test repo, then the same three-command assertion.
 
