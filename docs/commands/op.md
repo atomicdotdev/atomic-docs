@@ -7,13 +7,13 @@ title: op
 
 Inspect the immutable repository operation journal. Introduced in Atomic 0.20.0.
 
-> **Verified against CLI 0.20.0.**
+> **Verified against CLI 0.21.0.**
 
 ## Synopsis
 
 ```bash
 atomic op <SUBCOMMAND>
-atomic op log [-n <LIMIT>] [--reverse] [--repository]
+atomic op log [-n <LIMIT>] [--reverse] [--repository] [--json]
 atomic op show <ID_OR_PREFIX> [--json]
 atomic op undo [ID_OR_PREFIX] [--json]
 atomic op restore <ID_OR_PREFIX> [--json]
@@ -38,6 +38,7 @@ atomic op log [OPTIONS]
 | `-n, --limit <LIMIT>` | Limit the number of operations printed |
 | `--reverse` | Show parents before children |
 | `--repository` | Inspect the repository-wide operation scope instead of this working copy |
+| `--json` | Emit stable machine-readable JSON |
 
 ### `op show` — Show One Operation
 

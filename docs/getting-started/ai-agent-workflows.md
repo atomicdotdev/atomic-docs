@@ -34,7 +34,7 @@ atomic agent enable
 | **atomic-copilot** | GitHub Copilot | Repository hook manifest | Manifest must be on the default branch for the cloud agent |
 | **atomic-cursor** | Cursor | Hooks + rules | Follows the Atomic intent workflow in-project |
 | **atomic-devin** | Devin | Hook wiring | — |
-| **atomic-grok** | Grok Build | Global hooks + rules + skills | Installs to `~/.grok/`; requires CLI >= 0.12.0 |
+| **atomic-grok** | Grok Build | Global hooks + rules + skills | Installs to `~/.grok/`; requires Atomic CLI 0.12.0 or later |
 | **atomic-kilo** | Kilo Code | Rules + agent config | Reads `.kilo/` config |
 | **atomic-kiro** | Kiro | IDE steering + hooks | Configure hooks in the Kiro IDE panel |
 | **atomic-opencode** | OpenCode | Plugin + agent + skills | Select the Atomic agent in OpenCode |

@@ -334,13 +334,14 @@ atomic record -m "Feature"   # Hash: BBB222 (different!)
 **A**: Yes!
 
 ```bash
-atomic change ABC123 --json
-# Output:
+atomic change ABC123 -f json
+# Output (shape):
 # {
 #   "hash": "ABC123DEF456...",
-#   "blake3": "f8e9a7b6c5d4e3f2a1b0...",
-#   "hunks": [...],
-#   "dependencies": [...]
+#   "message": "...",
+#   "authors": [ ... ],
+#   "dependencies": [...],
+#   "has_provenance": true
 # }
 ```
 

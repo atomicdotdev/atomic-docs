@@ -108,9 +108,9 @@ git merge feature
 # Automatic merge failed; fix conflicts and then commit the result.
 ```
 
-**Atomic**: Pull the changes; independent edits compose cleanly
+**Atomic**: Insert the changes; independent edits compose cleanly
 ```bash
-atomic pull . --from-view feature
+atomic insert view feature
 # Changes applied successfully
 ```
 
@@ -386,7 +386,7 @@ git merge feature-branch
 
 # Atomic
 atomic view switch main
-atomic pull . --from-view feature-branch
+atomic insert view feature-branch
 # No merge conflicts - mathematically guaranteed!
 ```
 
@@ -496,7 +496,7 @@ atomic push --from-view feature-auth
 
 # Review, then merge (no conflicts!)
 atomic view switch main
-atomic pull . --from-view feature-auth
+atomic insert view feature-auth
 atomic push
 
 # Tag release (with consolidation!)
@@ -570,8 +570,8 @@ atomic record -m "Work on feature 2"
 
 # Insert changes between views
 atomic view switch main
-atomic pull . --from-view feature-1
-atomic pull . --from-view feature-2
+atomic insert view feature-1
+atomic insert view feature-2
 # No merge conflicts!
 ```
 
@@ -597,7 +597,7 @@ atomic view create feature
 # work...
 atomic record -m "Feature"
 atomic view switch main
-atomic pull . --from-view feature
+atomic insert view feature
 # no conflicts!
 atomic view delete feature
 ```
@@ -628,7 +628,7 @@ atomic tag create v1.0.1 -m "Hotfix"
 
 # Merge back to main
 atomic view switch main
-atomic pull . --from-view hotfix
+atomic insert view hotfix
 ```
 
 ### Scenario 3: Rebasing (Not Needed!)
@@ -643,7 +643,7 @@ git rebase main  # Can cause conflicts
 ```bash
 # Just pull changes - no rebasing needed!
 atomic view switch feature
-atomic pull . --from-view main
+atomic insert view main
 ```
 
 :::note

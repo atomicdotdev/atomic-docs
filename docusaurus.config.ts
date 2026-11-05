@@ -139,12 +139,20 @@ gtag('config', 'G-NWP8LGDP27');`,
               to: "/getting-started/installation",
             },
             {
+              label: "Quick Start",
+              to: "/getting-started/quick-start",
+            },
+            {
               label: "First Repository",
               to: "/getting-started/first-repository",
             },
             {
               label: "Migrating from Git",
               to: "/getting-started/migrating-from-git",
+            },
+            {
+              label: "Command Reference",
+              to: "/commands/overview",
             },
           ],
         },

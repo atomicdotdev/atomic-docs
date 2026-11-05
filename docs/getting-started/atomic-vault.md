@@ -680,7 +680,7 @@ atomic provenance trace <HASH>
 Projections follow the W3C PROV model, and you can export a portable, signed provenance document:
 
 ```bash
-atomic provenance show --sign > provenance.signed.json
+atomic provenance show <HASH> --sign > provenance.signed.json
 ```
 
 See [Provenance Graphs](/agents/provenance) for the model and the [`atomic provenance` command reference](/commands/provenance) for every option.

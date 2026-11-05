@@ -12,7 +12,8 @@ knowledge graph.
 
 It is fully **self-contained and local**: no hosted server, no clone from
 Atomic Storage. Every command was executed against Atomic CLI 0.20.0 and the
-outputs you see are the real ones.
+outputs you see are the real ones. The command surface has been re-verified
+against Atomic CLI 0.21.0.
 
 - **Time:** about 15 minutes.
 - **As a demo script.** Run the commands in order to show the story.

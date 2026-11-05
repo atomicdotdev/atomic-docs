@@ -284,7 +284,7 @@ atomic query search "authentication"
 |------|-------------|
 | `<query>` | Search query text |
 | `-k, --limit <N>` | Maximum results (default: 10) |
-| `-t, --kind <KIND>` | Filter by class IRI suffix: `Change`, `File`, `View`, `Identity`, `WorkIntent`, `Goal`, etc. |
+| `-t, --kind <KIND>` | Filter by canonical class IRI, e.g. `https://atomic.dev/ns/workflow#File` (`Change`, `File`, `View`, `Identity`, `WorkIntent`, `Goal`, …) |
 | `--json` | Output as JSON |
 
 ### Filtering by Kind
