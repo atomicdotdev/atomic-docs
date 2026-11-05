@@ -13,7 +13,7 @@ Manage views (filtered perspectives on the repository graph).
 atomic view <SUBCOMMAND>
 atomic view create <NAME> [OPTIONS]
 atomic view split <NAME> [CHANGES]... [OPTIONS]
-atomic view switch <NAME>
+atomic view switch [NAME]
 atomic view show [NAME]
 atomic view list [--short] [--remote [<REMOTE>]]
 atomic view delete <NAME> [--force]
@@ -246,12 +246,19 @@ $ atomic view split wip --from dev --last 2
 #### Synopsis
 
 ```bash
-atomic view switch <NAME>
+atomic view switch [NAME]
 ```
 
 #### Arguments
 
-**`<NAME>`** — Name of the view to switch to.
+**`[NAME]`** — Name of the view to switch to. Optional in the CLI usage (`atomic view switch [OPTIONS] [NAME]`); the examples below pass it explicitly.
+
+#### Options
+
+| Option | Description |
+|--------|-------------|
+| `--force`, `-f` | Force switch even with unrecorded changes |
+| `--stash`, `-s` | Stash unrecorded changes before switching |
 
 #### Examples
 
@@ -271,7 +278,7 @@ When you switch views:
 2. Files are created, updated, or removed to reflect the new view's graph filter
 3. The new view becomes the current view
 
-**Note**: Switching views updates your working copy files. Unrecorded changes may be affected.
+**Note**: Switching views updates your working copy files. Unrecorded changes may be affected — pass `--force` to switch anyway, or `--stash` to stash them before switching.
 
 ### `view list` — List Views
 
@@ -288,6 +295,8 @@ atomic view list [OPTIONS]
 | Option | Description |
 |--------|-------------|
 | `--short`, `-s` | Show only view names (no metadata) |
+| `--json` | Emit a versioned JSON document for IDEs and other integrations |
+| `--all`, `-a` | Show all views, including those with no changes of their own |
 | `--remote [<REMOTE>]` | List views on a remote instead of locally. Pass `--remote` alone to use the default remote, or `--remote <name\|url>` to target a specific one |
 | `--identity <IDENTITY>` | Identity to authenticate to the remote (only with `--remote`) |
 | `--insecure`, `-k` | Skip TLS verification when querying a remote (only with `--remote`) |

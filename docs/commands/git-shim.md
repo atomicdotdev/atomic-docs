@@ -7,7 +7,7 @@ title: git shim
 
 The colocated Git shim: reconcile, verify, and publish between a Git checkout and the current Atomic view. Introduced in Atomic 0.20.0.
 
-> **Verified against CLI 0.20.0.**
+> **Verified against CLI 0.21.0.**
 
 The shim lets Atomic and Git share a single working copy and a single history. You get Atomic's patch theory, AI provenance, and conflict-free views for daily development, while your team keeps reviewing PRs on GitHub or GitLab exactly as before — and every transition between the two is verified, journaled, and recoverable.
 
@@ -284,7 +284,7 @@ atomic git shim binding queue --remote origin
 | `verify` | Verify a published binding: signature, bound fields, and Git content |
 | `fetch` | Fetch a published binding's change closure: Atomic remote first, bounded `changes.pack` fallback (RFC §8.6, CB-6B) |
 | `resurrect` | Resurrect a published binding's exact original state into a view (RFC §5.2, CB-6C): closure fetch (remote first, pack fallback), isolated projection proof against the bound Git tree and SetId, then exact membership restoration in binding Merkle order |
-| `queue` | Bounded create-only publication queue (RFC §8.6, §8.5, CB-10B). Options: `--remote <REMOTE>`, `--degraded-head-fallback` |
+| `queue` | Bounded create-only publication queue (RFC §8.6, §8.5, CB-10B). Options: `--remote <REMOTE>`, `--max <MAX>`, `--degraded-head-fallback` |
 
 Bindings publish to `refs/atomic/bindings/<shard>/<id>` and view refs to `refs/atomic/views/*` — create-only, never force-updated. For servers that reject that namespace, `binding queue --degraded-head-fallback` uses `refs/heads/atomic/bindings/*` instead. Those refs look like ordinary branches and can be disturbed by ordinary branch tools; the fallback is never selected automatically. Check what actually published with `git ls-remote`.
 
@@ -390,7 +390,7 @@ atomic git shim disable
 
 Record `[git.shim] enabled = false` in the repository configuration. This is the tested rollback path (review R4): the shim's state is disabled, not deleted.
 
-`disable` also stops automatic shim telemetry. Installed hooks and existing checkpoints remain in place; a previously anchored workspace still checks for a stale baseline. Run `atomic git shim enable` again to re-enroll. (`atomic git hooks uninstall` currently removes only the post-checkout hook; remove the other dispatchers separately when decommissioning.)
+`disable` also stops automatic shim telemetry. Installed hooks and existing checkpoints remain in place; a previously anchored workspace still checks for a stale baseline. Run `atomic git shim enable` again to re-enroll. (`atomic git hooks uninstall` removes every Atomic-owned shim dispatcher; foreign hooks are kept.)
 
 ### Recovery operations
 

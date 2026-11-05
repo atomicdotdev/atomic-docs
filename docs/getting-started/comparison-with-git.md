@@ -25,7 +25,7 @@ Git is good enough to store and review AI-generated code, especially when a team
 | Isolated units of agent work | Branches and separate worktrees | Draft views; separate working directories are still needed for simultaneous file writers |
 | Promotion based on intent, evidence, and dependency closure | Usually implemented in CI and PR conventions | Native triage and change insertion |
 
-The practical choice is not always “Git or Atomic.” Teams can develop and record work in Atomic, then publish a Git shadow for existing forge and pull-request workflows.
+The practical choice is not always "Git or Atomic." Teams can develop and record work in Atomic, then publish a Git shadow for existing forge and pull-request workflows.
 
 ## Where Git works well for AI-generated code
 

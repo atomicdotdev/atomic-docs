@@ -255,7 +255,7 @@ automatically recorded as an Atomic change with full provenance:
 ### View the project state
 
 ```
-$ atomic view list --verbose
+$ atomic view list -a
 
   dev     [shared]    (0 changes)  state: AAAAAAAAAAAA
 * master  [shared]    (4511 changes)  state: KJRM7HJVZNX2
@@ -264,7 +264,7 @@ $ atomic view list --verbose
 When an agent session runs, it creates a draft view:
 
 ```
-$ atomic view list --verbose
+$ atomic view list -a
 
   dev                            [shared]  (0 changes)  state: AAAAAAAAAAAA
   agent-ses_a7f3bc12...          [draft]   (3 changes)  parent: master
@@ -273,11 +273,11 @@ $ atomic view list --verbose
 
 ### Inspect a change with AI attestation
 
-For agent-recorded changes, `-a` shows the AI metadata baked into the
-change hash:
+For agent-recorded changes, the default output renders the AI provenance
+baked into the change:
 
 ```
-$ atomic change -a <hash>
+$ atomic change <hash>
 
 change XMJZ3IPF (#4512)
 Author: claude+60f5 <lee@atomic.dev>
@@ -311,10 +311,10 @@ identity. Tamper with the attribution, and the hash changes.
 
 ### Inspect the provenance decision graph
 
-`-p` shows the causal DAG — not just what changed, but **why**:
+The provenance graph renders in the same default output — not just what changed, but **why**:
 
 ```
-$ atomic change -p <hash>
+$ atomic change <hash>
 
 change XMJZ3IPF (#4512)
 Author: claude+60f5 <lee@atomic.dev>
@@ -361,9 +361,9 @@ claude                             # Agent uses code-intelligence skill
                                    # → creates intents with real file paths
                                    # → changes recorded with full provenance
 
-atomic view list --verbose         # See agent views
-atomic change -a <hash>            # AI attestation (model, tokens, cost)
-atomic change -p <hash>            # Provenance graph (why it changed)
+atomic view list -a                # See agent views
+atomic change <hash>               # AI attestation (model, tokens, cost)
+atomic provenance trace <hash>     # Provenance graph (why it changed)
 ```
 
 One system. From code intelligence to agent development to cryptographic

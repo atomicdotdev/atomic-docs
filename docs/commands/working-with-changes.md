@@ -21,6 +21,8 @@ The core workflow in Atomic — track files, record changes, review diffs, and n
 | [`log`](log.md) | Display the history of changes on the current view |
 | [`change`](change.md) | Inspect details of a specific change by hash or sequence number |
 | [`insert`](insert.md) | Insert changes from another view or change file |
+| [`unrecord`](unrecord.md) | Remove the last change from the current view |
+| [`restore`](restore.md) | Restore the working copy to the last recorded state |
 
 ## The Record Workflow
 

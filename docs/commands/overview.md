@@ -39,13 +39,16 @@ Every command listed here corresponds to a real subcommand in the `atomic` CLI b
 | [`pull`](pull.md) | Pull changes from a remote |
 | [`clone`](clone.md) | Clone a remote repository |
 | [`remote`](remote.md) | Manage named remote repositories |
+| [`server`](server.md) | Manage server profiles (staging, production, etc.) |
+| `repo` | Inspect local repository identity and metadata (no dedicated page yet) |
 | [`org`](org.md) | Manage Atomic Storage organizations and members |
-| [`workspace`](workspace.md) | Manage hosted workspaces |
-| [`project`](project.md) | Manage hosted projects and project remotes |
+| [`workspace`](workspace.md) | Manage hosted workspaces [alias: `ws`] |
+| [`project`](project.md) | Manage hosted projects and project remotes [alias: `proj`] |
 | [`team`](team.md) | Manage organization teams and team members |
 | [`identity`](identity.md) | Manage user identities and signing keys |
 | [`agent`](agent.md) | Manage AI agent integration |
 | [`doctor`](doctor.md) | Verify working-copy consistency and repair indexes |
+| `diagnostics` | Print a read-only support report (no dedicated page yet) |
 | [`git`](git.md) | Git interoperability (import, push, hooks) |
 | [`git shim`](git-shim.md) | Colocated Git shim (reconcile, verify, publish, bindings) |
 | [`sandbox`](sandbox.md) | Provision concurrent agent sandboxes (copy-on-write working trees) |
@@ -162,6 +165,7 @@ atomic pull                       # Pull changes from default remote
 - **[`pull`](pull.md)** — Download and insert changes from a remote
 - **[`clone`](clone.md)** — Create a new local repository from a remote
 - **[`remote`](remote.md)** — Add, remove, list, and configure named remotes
+- **[`server`](server.md)** — Manage server profiles (staging, production, etc.)
 
 ### Tags
 
@@ -216,6 +220,7 @@ atomic doctor check               # Verify the working copy matches the graph
 
 - **[`conflicts`](conflicts.md)** — List conflicted files, with the kind and line of each conflict
 - **[`doctor`](doctor.md)** — Verify working-copy consistency (materialization drift + conflict honesty) and repair derived indexes
+- **`diagnostics`** — Print a read-only support report for issue triage
 - **[`update`](update.md)** — Check for available CLI updates and print the upgrade path
 
 ## Global Options
@@ -226,8 +231,8 @@ These flags are available on every command:
 |------|-------------|
 | `-v`, `--verbose` | Enable verbose output for debugging |
 | `--no-color` | Disable colored output (useful for piping) |
-| `--version` | Print version information |
-| `--help` | Display help for a command |
+| `-V`, `--version` | Print version information |
+| `-h`, `--help` | Display help for a command |
 
 ## Basic Workflow
 

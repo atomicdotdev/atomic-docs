@@ -423,7 +423,9 @@ atomic record -m "Edit hello"
 
 # See what's in the change
 atomic change
-# Shows: ± hello.txt (+1 vertex, ~1 edge: replace)
+# Shows (abridged):
+# Files changed: 1
+#   ± hello.txt (+1 span, ~1 edge: replace)
 ```
 
 ---

@@ -112,7 +112,7 @@ atomic git push -b feature/token-refresh
 atomic git push --no-push -m "sync checkpoint"
 ```
 
-### `git hooks` — Manage the Advisory Shim Dispatcher
+### `git hooks` — Manage the Advisory Shim Dispatchers
 
 #### Synopsis
 
@@ -124,8 +124,8 @@ atomic git hooks <SUBCOMMAND>
 
 | Subcommand | Description |
 |------------|-------------|
-| `install` | Enable the advisory shim `post-checkout` dispatcher |
-| `uninstall` | Remove an Atomic-owned shim dispatcher |
+| `install` | Install or refresh the advisory shim dispatchers |
+| `uninstall` | Remove every Atomic-owned shim dispatcher (foreign hooks are kept) |
 | `status` | Show advisory shim hook status |
 
 ```bash
@@ -134,7 +134,7 @@ atomic git hooks status
 atomic git hooks uninstall
 ```
 
-The dispatcher is advisory: it notices Git checkout events so the shim can reconcile on demand; it does not silently rewrite either side. See [git shim](git-shim.md) for the reconciliation commands it feeds.
+The dispatchers are advisory: they notice Git checkout events so the shim can reconcile on demand; they do not silently rewrite either side. See [git shim](git-shim.md) for the reconciliation commands they feed.
 
 ## See Also
 

@@ -1,12 +1,12 @@
 # Command Documentation Status
 
-This document tracks the CLI command reference coverage in `docs/commands/` against the `atomic` binary (verified against CLI **0.20.0** `--help` output).
+This document tracks the CLI command reference coverage in `docs/commands/` against the `atomic` binary (verified against CLI **0.21.0** `--help` output).
 
 ## Documentation Progress
 
 ### ✅ Completed (Comprehensive Documentation)
 
-Every top-level command of the CLI has a reference page in `docs/commands/`:
+Four top-level commands have no dedicated reference page yet: `stage` and `unstage` are documented in [git-shim.md](docs/commands/git-shim.md) (colocated mode); `diagnostics` and `repo` are documented only in the [overview table](docs/commands/overview.md). Every other top-level command of the CLI has a reference page in `docs/commands/`:
 
 | Page | Command | Notes |
 |------|---------|-------|
@@ -61,7 +61,7 @@ Every top-level command of the CLI has a reference page in `docs/commands/`:
 ### Verification
 
 - Options, subcommands, and arguments were transcribed from `atomic <command> --help`
-  (CLI 0.20.0) and cross-checked against the live binary.
+  (CLI 0.21.0) and cross-checked against the live binary.
 - 0.20.0 additions verified from the release binary: `stage`, `unstage`, `op`,
   `blame`, `compact`, `view show`, `git shim` (13 subcommands), `git push
   --allow-conflicts`, `sandbox open/renew/close/materialize`, `agent repair`,

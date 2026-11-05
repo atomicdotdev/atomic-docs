@@ -11,7 +11,7 @@ Provision concurrent agent sandboxes (copy-on-write working trees).
 
 ```bash
 atomic sandbox <SUBCOMMAND>
-atomic sandbox create <n> [--dest <PATH>] [--view <VIEW>] [--from <VIEW>]
+atomic sandbox create <NAME> [--dest <PATH>] [--view <VIEW>] [--from <VIEW>]
 atomic sandbox stage <VIEW> --out <DIR> [--base <VIEW>]
 atomic sandbox seal <VIEW> --out <DIR> [--entrypoint <ARG>] [--env <KEY=VAL>]
 atomic sandbox open <VIEW> [--acting-as <DID>] [--ttl <SECS>] [--capability <CAP>] [--dest <DIR>]
@@ -40,12 +40,12 @@ Sandboxes also bridge to the container world:
 #### Synopsis
 
 ```bash
-atomic sandbox create <n> [OPTIONS]
+atomic sandbox create <NAME> [OPTIONS]
 ```
 
 #### Arguments
 
-**`<n>`** — Name of the sandbox (used in the default destination path).
+**`<NAME>`** — Name of the sandbox (used in the default destination path).
 
 #### Options
 
@@ -147,7 +147,7 @@ atomic sandbox open <VIEW> [OPTIONS]
 | `--acting-as <DID>` | The identity the sandbox's work is attributed to (an agent's DID) |
 | `--ttl <SECS>` | How long the grant lasts, in seconds (1..31536000; renew with `atomic sandbox renew`) (default: 7200) |
 | `--capability <CAP>` | A capability to grant (repeatable). Defaults to reading and submitting the view, its provenance, and its vault |
-| `--dest <DIR>` | Write the pointer into this directory (created if needed, mode 0600) |
+| `--dest <DIR>` | Write the pointer into this directory (created if needed, mode 0600) instead of printing it |
 
 #### Examples
 

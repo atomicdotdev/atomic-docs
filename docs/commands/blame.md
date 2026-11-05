@@ -46,6 +46,6 @@ atomic change <HASH>
 
 ## See Also
 
-- [change](change.md) — inspect the change that owns a line
+- [change](change.md) — Inspect the change that owns a line
 - [provenance](provenance.md) — W3C PROV projection for a change (model, session, cost)
-- [query](query.md) — graph queries across files and changes
+- [query](query.md) — Graph queries across files and changes

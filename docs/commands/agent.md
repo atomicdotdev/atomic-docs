@@ -68,9 +68,10 @@ atomic agent enable --all
 | `--agent <NAME>` | Target a specific agent (e.g. `opencode`, `claude-code`, `agy`, `codex`, `cursor`, `cline`, `copilot`, `devin`, `kilo`, `kiro`, `pi`) |
 | `--force` | Overwrite files even when they look user-owned or user-modified, and re-clone the package cache |
 | `--all` | Install for all detected agents |
-| `--from <PATH>` | Install from a local package directory instead of syncing from Atomic storage |
-| `--global` | For a built-in adapter, install hooks into user-level settings (all projects) |
+| `--from <PATH>` | Install the integration package from a local checkout instead of syncing it from Atomic storage |
+| `--from-skills <PATH>` | Install the skills-source package (e.g. `atomic-skills`) from a local checkout instead of syncing it from Atomic storage |
 | `--hooks <FILE>` | Install from an integration-supplied hooks manifest file directly |
+| `--agents-md` | Also install `AGENTS.md` into the repository root so the Atomic workflow is always-on without picking a bundled agent |
 
 **What it does:**
 
@@ -100,7 +101,6 @@ atomic agent disable --all
 |--------|-------------|
 | `--agent <NAME>` | Target a specific agent |
 | `--all` | Remove all installed integrations |
-| `--global` | Remove hooks from user-level settings |
 | `--hooks <FILE>` | Remove hooks described by an integration-supplied manifest file |
 
 ### `status`
@@ -175,6 +175,7 @@ atomic agent explain <session-id> --all --save
 | `--turn <N>` | Explain a specific turn number |
 | `--all` | Explain all turns in the session |
 | `--save` | Save reasoning into the change's unhashed section and append learnings to the agent's context file |
+| `--model <MODEL>` | Claude CLI model to use for reasoning generation (default: `sonnet`) |
 
 When `--save` is used:
 
@@ -208,6 +209,8 @@ atomic agent attest --verbose
 | `--hash <PREFIX>` | Show details for a specific attestation (supports prefix matching) |
 | `--view <NAME>` | Filter attestations covering changes in this view |
 | `--verbose`, `-v` | Show per-model token breakdown and per-change details |
+| `--summary`, `-s` | Show a project-level AI provenance summary instead of the attestation list |
+| `--pending <PARENT_VIEW>` | Summarize the pending delta of `--view` relative to the given parent view (e.g. `--pending dev`). Only changes that are in `--view` but not in the parent are classified; implies `--summary` and requires `--view` |
 
 **Example output:**
 

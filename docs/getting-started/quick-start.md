@@ -88,7 +88,7 @@ Atomic records every agent turn automatically, with full provenance (model, toke
 
 ```sh
 atomic agent enable --agent opencode      # plugin + skills; switch to the Atomic agent
-atomic agent enable --agent claude-code   # repo hooks; add -g for global ~/.claude/settings.json
+atomic agent enable --agent claude-code   # repo hooks in .claude/settings.json
 atomic agent enable --agent codex         # hooks in ~/.codex/hooks.json
 atomic agent enable --agent copilot       # hooks in ~/.copilot/ (cloud agent: .github/ manifest)
 ```
@@ -98,7 +98,7 @@ Each `--agent` value maps to an integration package (`opencode` → `atomic-open
 Per-harness notes:
 
 - **OpenCode:** after enabling, start `opencode` and switch to the Atomic agent. Recording happens when a session goes idle or a turn ends.
-- **Claude Code:** no agent switching — hooks record automatically on every session. Repo hooks live in the repo where you enabled; add `-g` for user-level hooks in `~/.claude/settings.json`.
+- **Claude Code:** no agent switching — hooks record automatically on every session. Repo hooks live in the repo where you enabled (`.claude/settings.json`); run `atomic agent enable` again inside any other repository that needs recording.
 - **Codex:** hooks are global (`~/.codex/hooks.json`). Add `--agents-md` to install an always-on `AGENTS.md` at the repository root.
 - **Copilot:** no TurnEnd hooks — recording happens only when the session ends, in one batch.
 
@@ -130,7 +130,7 @@ be at the front to stay visible in the log output.
 Trigger one real turn, per harness:
 
 - **OpenCode:** `cd "$TEST_DIR" && opencode run --auto "hello-$(date +%s): Create a file called HELLO.md in the current directory containing exactly the text: hello"` (OpenCode v2: add `--standalone`), or start `opencode` in the test repo and switch to the Atomic agent.
-- **Claude Code:** start `claude` in the test repo with the marker prompt, then end the session. Repo-local hooks (enabled without `-g`) do not carry into the test repo — run `atomic agent enable --agent claude-code` once inside it first, or enable with `-g`.
+- **Claude Code:** start `claude` in the test repo with the marker prompt, then end the session. Repo-local hooks do not carry into the test repo — run `atomic agent enable --agent claude-code` once inside it first.
 - **Codex:** start `codex` in the test repo with the marker prompt, then end the session — the session row appears only after close.
 - **Copilot:** run a Copilot session in the test repo and **end it completely** — recording arrives only at session end, in one batch (the most common "it's not working" false alarm).
 
@@ -387,7 +387,7 @@ atomic push
 
 - [Your First Repository](./first-repository): a deeper dive into the local workflow  
 - [Atomic Vault](./atomic-vault): the full intent lifecycle, review intents, and signed attestations  
-- [Querying the Graph](./querying-the-graph): build the knowledge graph with `atomic query enrich`, then explore it with `atomic query search "login"` and `atomic query graph "login"`. (`atomic vault query` is an alias for `atomic query`.)  
+- [Querying the Graph](./querying-the-graph): build the knowledge graph with `atomic query reindex --full`, then explore it with `atomic query search "login"` and `atomic query graph "login"`. (`atomic vault query` is an alias for `atomic query`.)  
 - [Comparison with Git](./comparison-with-git): how Atomic differs from Git  
 - [AI Agent Workflows](./ai-agent-workflows): provenance, session isolation, attestation details, and `atomic agent explain`  
 - [Migrating from Git](./migrating-from-git) and [Git Shim](./git-shim): the two-way Git workflow  

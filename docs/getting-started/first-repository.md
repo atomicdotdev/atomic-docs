@@ -47,11 +47,13 @@ Initialize a repository in a new or existing project directory:
 atomic init
 ```
 
-This creates a `.atomic` directory containing:
-- **pristine** - The database storing your recorded changes
-- **tree** - Information about tracked files
+This creates a `.atomic` directory containing, among other internal state:
+- **atomic.redb** - The database storing your recorded changes
 - **config.toml** - Repository configuration
-- **changes/** - Storage for change patches
+- **changes/** - Storage for change data
+- **current_view** - The name of the currently checked-out view
+- **sessions/** - The agent session ledger
+- **working-copies/** - Working-copy state for views and sandboxes
 
 Example:
 
@@ -130,7 +132,7 @@ vendor/
 EOF
 ```
 
-The `.atomicignore` file uses glob patterns similar to `.gitignore`. When the Git shim is enabled, `.atomicignore` can be mirrored into Git's `.git/info/exclude` with `atomic git shim mirror-ignores`.
+The `.atomicignore` file uses glob patterns similar to `.gitignore`. On request, `.atomicignore` can also be mirrored into Git's `.git/info/exclude` block with `atomic git shim mirror-ignores` (explicit consent).
 
 ## Adding Files
 

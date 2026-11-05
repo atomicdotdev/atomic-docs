@@ -41,5 +41,5 @@ atomic compact --json
 
 ## See Also
 
-- [doctor](doctor.md) — diagnose and repair repository indexes
-- [view](view.md) — deleted views free `VIEW_CHANGES` entries that GC and compaction can then reclaim
+- [doctor](doctor.md) — Diagnose and repair repository indexes
+- [view](view.md) — Deleted views free `VIEW_CHANGES` entries that GC and compaction can then reclaim
